@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, TextInput, Dimensions, View, Alert } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Alert } from 'react-native';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
+import { ThemedInput } from '@/components/ThemedInput';
 import { register } from '@/services/authService';
 import { validateEmail, validatePassword, validateName } from '@/utils/validations';
-
-const { width } = Dimensions.get('window');
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 export default function RegisterScreen() {
     const [nombre, setNombre] = useState('');
@@ -23,26 +22,7 @@ export default function RegisterScreen() {
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
     const [isFormValid, setIsFormValid] = useState(false);
     const [termsAccepted, setTermsAccepted] = useState(false);
-    const [isNombreFocused, setIsNombreFocused] = useState(false);
-    const [isApellidoFocused, setIsApellidoFocused] = useState(false);
-    const [isEmailFocused, setIsEmailFocused] = useState(false);
-    const [isPasswordFocused, setIsPasswordFocused] = useState(false);
-    const [isConfirmPasswordFocused, setIsConfirmPasswordFocused] = useState(false);
-    const colorScheme = useColorScheme();
-
-    const getThemeColors = () => {
-        return {
-            backgroundColor: colorScheme === 'dark' ? '#272727' : '#FFFFFF',
-            textColor: colorScheme === 'dark' ? '#0FF107' : '#10BF0A',
-            inputBackground: colorScheme === 'dark' ? '#1C1C1B' : '#FFFFFF',
-            inputColor: colorScheme === 'dark' ? '#FFFFFF' : '#1C1C1B',
-            disabledColor: colorScheme === 'dark' ? '#999999' : '#E0E0E0',
-            focusedBorderColor: colorScheme === 'dark' ? '#0EF205' : '#09A503',
-            unfocusedBorderColor: '#BBBBBB',
-        };
-    };
-
-    const themeColors = getThemeColors();
+    const themeColors = useThemeColor();
 
     useEffect(() => {
         const isValid = validateName(nombre) && validateName(apellido) &&
@@ -112,138 +92,59 @@ export default function RegisterScreen() {
     };
 
     return (
-        <ThemedView darkColor="#1C1C1B" lightColor="#FFFFFF" style={styles.container}>
-            <ThemedText style={styles.title}>Registrarse</ThemedText>
-            <ThemedText style={styles.subtitle}>Crea una cuenta y comienza a vender ahora</ThemedText>
+        <ThemedView darkColor={themeColors.backgroundColor} lightColor={themeColors.backgroundColor} style={styles.container}>
+            <ThemedText style={[styles.title, { color: themeColors.textColor }]}>Registrarse</ThemedText>
+            <ThemedText style={[styles.subtitle, { color: themeColors.textParagraph }]}>Crea una cuenta y comienza a vender ahora</ThemedText>
 
-            <ThemedView
-            style={[
-                styles.inputContainer,
-                {
-                    backgroundColor: themeColors.inputBackground,
-                    borderColor: isNombreFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor
-                }]}
-            >
-                <TextInput
-                    style={[styles.input, { color: themeColors.inputColor }]}
-                    placeholder="Nombre"
-                    value={nombre}
-                    onChangeText={handleNombreChange}
-                    placeholderTextColor="#999999"
-                    onFocus={() => setIsNombreFocused(true)}
-                    onBlur={() => setIsNombreFocused(false)}
-                />
-            </ThemedView>
-            {nombreError ? <ThemedText style={styles.errorText}>{nombreError}</ThemedText> : null}
-
-            <ThemedView
-                style={[
-                    styles.inputContainer,
-                    {
-                        backgroundColor: themeColors.inputBackground,
-                        borderColor: isApellidoFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor
-                    }
-                ]}
-            >
-                <TextInput
-                    style={[styles.input, { color: themeColors.inputColor }]}
-                    placeholder="Apellido"
-                    value={apellido}
-                    onChangeText={handleApellidoChange}
-                    placeholderTextColor="#999999"
-                    onFocus={() => setIsApellidoFocused(true)}
-                    onBlur={() => setIsApellidoFocused(false)}
-                />
-            </ThemedView>
-
-            {apellidoError ? <ThemedText style={styles.errorText}>{apellidoError}</ThemedText> : null}
-
-            <ThemedView
-                style={[
-                    styles.inputContainer,
-                    {
-                        backgroundColor: themeColors.inputBackground,
-                        borderColor: isEmailFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor
-                    }
-                ]}
-            >
-                <TextInput
-                    style={[styles.input, { color: themeColors.inputColor }]}
-                    placeholder="Email"
-                    value={email}
-                    onChangeText={handleEmailChange}
-                    keyboardType="email-address"
-                    placeholderTextColor="#999999"
-                    onFocus={() => setIsEmailFocused(true)}
-                    onBlur={() => setIsEmailFocused(false)}
-                />
-            </ThemedView>
-
-            {emailError ? <ThemedText style={styles.errorText}>{emailError}</ThemedText> : null}
-
-            <ThemedView
-                style={[
-                    styles.inputContainer,
-                    {
-                        backgroundColor: themeColors.inputBackground,
-                        borderColor: isPasswordFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor
-                    }
-                ]}
-            >
-                <TextInput
-                    style={[styles.input, { color: themeColors.inputColor }]}
-                    placeholder="Crear contraseña"
-                    value={password}
-                    onChangeText={handlePasswordChange}
-                    secureTextEntry
-                    placeholderTextColor="#999999"
-                    onFocus={() => setIsPasswordFocused(true)}
-                    onBlur={() => setIsPasswordFocused(false)}
-                />
-                <Ionicons name="eye-off-outline" size={16} color="#10BF0A" />
-            </ThemedView>
-
-            {passwordError ? <ThemedText style={styles.errorText}>{passwordError}</ThemedText> : null}
-
-            <ThemedView
-                style={[
-                    styles.inputContainer,
-                    {
-                        backgroundColor: themeColors.inputBackground,
-                        borderColor: isConfirmPasswordFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor
-                    }
-                ]}
-            >
-                <TextInput
-                    style={[styles.input, { color: themeColors.inputColor }]}
-                    placeholder="Confirmar contraseña"
-                    value={confirmPassword}
-                    onChangeText={handleConfirmPasswordChange}
-                    secureTextEntry
-                    placeholderTextColor="#999999"
-                    onFocus={() => setIsConfirmPasswordFocused(true)}
-                    onBlur={() => setIsConfirmPasswordFocused(false)}
-                />
-                <Ionicons name="eye-off-outline" size={16} color="#10BF0A" />
-            </ThemedView>
-
-            {confirmPasswordError ? <ThemedText style={styles.errorText}>{confirmPasswordError}</ThemedText> : null}
+            <ThemedInput
+                placeholder="Nombre"
+                value={nombre}
+                onChangeText={handleNombreChange}
+                error={nombreError}
+            />
+            <ThemedInput
+                placeholder="Apellido"
+                value={apellido}
+                onChangeText={handleApellidoChange}
+                error={apellidoError}
+            />
+            <ThemedInput
+                placeholder="Email"
+                value={email}
+                onChangeText={handleEmailChange}
+                keyboardType="email-address"
+                error={emailError}
+            />
+            <ThemedInput
+                placeholder="Crear contraseña"
+                value={password}
+                onChangeText={handlePasswordChange}
+                secureTextEntry
+                error={passwordError}
+            />
+            <ThemedInput
+                placeholder="Confirmar contraseña"
+                value={confirmPassword}
+                onChangeText={handleConfirmPasswordChange}
+                secureTextEntry
+                error={confirmPasswordError}
+            />
 
             <View style={styles.termsContainer}>
                 <TouchableOpacity onPress={() => setTermsAccepted(!termsAccepted)}>
                     <Ionicons
                         name={termsAccepted ? "checkbox-outline" : "square-outline"}
                         size={24}
-                        color={themeColors.textColor}
+                        color={themeColors.textColorAccent}
                     />
                 </TouchableOpacity>
-                <ThemedText style={styles.termsText}>
+                <ThemedText style={[styles.termsText, { color: themeColors.textParagraph }]}>
                     He leído y estoy de acuerdo con los{' '}
-                    <ThemedText style={[styles.termsLink, { color: themeColors.textColor }]}>
+                    <ThemedText style={[styles.termsLink, { color: themeColors.textColorAccent }]}>
                         Términos y condiciones
                     </ThemedText>{' '}
                     y la{' '}
-                    <ThemedText style={[styles.termsLink, { color: themeColors.textColor }]}>
+                    <ThemedText style={[styles.termsLink, { color: themeColors.textColorAccent }]}>
                         Política de privacidad
                     </ThemedText>
                     .
@@ -261,10 +162,10 @@ export default function RegisterScreen() {
                 </TouchableOpacity>
 
                 <View style={styles.loginContainer}>
-                    <ThemedText style={styles.loginText}>¿Ya tienes cuenta? </ThemedText>
+                    <ThemedText style={[styles.loginText, { color: themeColors.textParagraph }]}>¿Ya tienes cuenta? </ThemedText>
                     <Link href="/login" asChild>
                         <TouchableOpacity>
-                            <ThemedText style={[styles.loginLink, { color: themeColors.textColor }]}>
+                            <ThemedText style={[styles.loginLink, { color: themeColors.textColorAccent }]}>
                                 Inicia sesión ahora
                             </ThemedText>
                         </TouchableOpacity>
@@ -294,22 +195,7 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 12,
-        color: '#999999',
         marginBottom: 20,
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: '100%',
-        marginTop: 16,
-        borderWidth: 1,
-        borderColor: '#BBBBBB',
-        borderRadius: 12,
-        paddingHorizontal: 16,
-    },
-    input: {
-        flex: 1,
-        paddingVertical: 12,
     },
     termsContainer: {
         flexDirection: 'row',
@@ -351,13 +237,5 @@ const styles = StyleSheet.create({
     loginLink: {
         fontSize: 12,
         fontWeight: 'semibold',
-    },
-    errorText: {
-        width: '100%',
-        color: '#ED3241',
-        fontSize: 12,
-        lineHeight: 16,
-        marginTop: 5,
-        textAlign: 'left',
     },
 });

@@ -1,22 +1,30 @@
-/**
- * Learn more about light and dark modes:
- * https://docs.expo.dev/guides/color-schemes/
- */
-
 import { useColorScheme } from 'react-native';
+import Colors from '../constants/Colors';
 
-import { Colors } from '@/constants/Colors';
+export function useThemeColor() {
+  const colorScheme = useColorScheme();
 
-export function useThemeColor(
-  props: { light?: string; dark?: string },
-  colorName: keyof typeof Colors.light & keyof typeof Colors.dark
-) {
-  const theme = useColorScheme() ?? 'light';
-  const colorFromProps = props[theme];
+  const getThemeColors = () => {
+    return {
+      backgroundColor: colorScheme === 'dark' ? Colors.common.black : Colors.common.white,
+      buttonBackgroundColor: colorScheme === 'dark' ? Colors.common.green1 : Colors.common.green2,
+      inputBackground: Colors.common.transparent,
+      borderBackgroundColor: colorScheme === 'dark' ? Colors.common.gray1 : Colors.common.gray6,
+      textColor: colorScheme === 'dark' ? Colors.common.white : Colors.common.black,
+      textParagraph: colorScheme === 'dark' ? Colors.common.gray3 : Colors.common.gray1,
+      textColorAccent: colorScheme === 'dark' ? Colors.common.green1 : Colors.common.green2,
+      inputColor: colorScheme === 'dark' ? Colors.common.white : Colors.common.black,
+      disabledColor: colorScheme === 'dark' ? Colors.common.gray3 : Colors.common.gray5,
+      focusedBorderColor: colorScheme === 'dark' ? Colors.common.green1 : Colors.common.green2,
+      unfocusedBorderColor: Colors.common.gray4,
+      status: {
+        success: Colors.status.success,
+        error: Colors.status.error,
+        warning: Colors.status.warning,
+        info: Colors.status.info,
+      }
+    };
+  };
 
-  if (colorFromProps) {
-    return colorFromProps;
-  } else {
-    return Colors[theme][colorName];
-  }
+  return getThemeColors();
 }

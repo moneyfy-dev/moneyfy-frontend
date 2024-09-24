@@ -1,15 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Animated, TextInput, Dimensions, Alert } from 'react-native';
+import { StyleSheet, TouchableOpacity, Animated, Dimensions, Alert } from 'react-native';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
+import { ThemedInput } from '@/components/ThemedInput';
 import { useAuth } from '@/context/AuthContext';
 import { BackgroundCircles } from '@/components/BackgroundCircles';
 import { Logo } from '@/components/Logo';
 import { login } from '@/services/authService';
 import { validateEmail, validatePassword } from '@/utils/validations';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 const { height } = Dimensions.get('window');
 
@@ -22,25 +23,7 @@ export default function LoginScreen() {
     const [passwordError, setPasswordError] = useState('');
     const [isFormValid, setIsFormValid] = useState(false);
     const formAnimation = useRef(new Animated.Value(height)).current;
-    const colorScheme = useColorScheme();
-    const [isEmailFocused, setIsEmailFocused] = useState(false);
-    const [isPasswordFocused, setIsPasswordFocused] = useState(false);
-
-    const getThemeColors = () => {
-        return {
-            backgroundColor: colorScheme === 'dark' ? '#272727' : '#FFFFFF',
-            inputBackground: colorScheme === 'dark' ? '#1C1C1B' : '#FFFFFF',
-            borderBackgroundColor: colorScheme === 'dark' ? '#575756' : '#f1f1f1',
-            textColor: colorScheme === 'dark' ? '#0FF107' : '#10BF0A',
-            inputColor: colorScheme === 'dark' ? '#FFFFFF' : '#1C1C1B',
-            disabledColor: colorScheme === 'dark' ? '#999999' : '#E0E0E0',
-            focusedBorderColor: colorScheme === 'dark' ? '#0EF205' : '#09A503',
-            unfocusedBorderColor: '#BBBBBB',
-        };
-    };
-
-
-    const themeColors = getThemeColors();
+    const themeColors = useThemeColor();
 
     const showLoginForm = () => {
         setIsFormVisible(true);
@@ -98,7 +81,7 @@ export default function LoginScreen() {
     };
 
     return (
-        <ThemedView darkColor="#1C1C1B" lightColor="#FFFFFF" style={styles.container}>
+        <ThemedView darkColor={themeColors.backgroundColor} lightColor={themeColors.backgroundColor} style={styles.container}>
             <TouchableOpacity
                 style={styles.backgroundTouchable}
                 onPress={hideLoginForm}
@@ -109,19 +92,19 @@ export default function LoginScreen() {
 
             <ThemedView style={styles.logoContainer}>
                 <Logo style={styles.loginLogo} />
-                <ThemedText style={styles.loginTextTitle}>Lorem Ipsum Nesum magiore</ThemedText>
-                <ThemedText style={styles.LoginTextParagraph}>Lorem Ipsum Nesum magiore</ThemedText>
+                <ThemedText style={[styles.loginTextTitle, { color: themeColors.textColor }]}>Lorem Ipsum Nesum magiore</ThemedText>
+                <ThemedText style={[styles.LoginTextParagraph, { color: themeColors.textParagraph }]}>Lorem Ipsum Nesum magiore</ThemedText>
             </ThemedView>
 
             <ThemedView style={[styles.initialContainer, { backgroundColor: themeColors.backgroundColor }]}>
-                <TouchableOpacity style={styles.initialLoginButton} onPress={showLoginForm}>
+                <TouchableOpacity style={[styles.initialLoginButton, { backgroundColor: themeColors.buttonBackgroundColor }]} onPress={showLoginForm}>
                     <ThemedText style={styles.loginButtonText}>Ingresar</ThemedText>
                 </TouchableOpacity>
                 <ThemedView style={styles.registerContainer}>
                     <ThemedText style={styles.registerText}>¿No estás registrado? </ThemedText>
                     <Link href={{ pathname: "/registerScreen" }} asChild>
                         <TouchableOpacity>
-                            <ThemedText style={[styles.registerLink, { color: themeColors.textColor }]}>Registrate ahora</ThemedText>
+                            <ThemedText style={[styles.registerLink, { color: themeColors.textColorAccent }]}>Registrate ahora</ThemedText>
                         </TouchableOpacity>
                     </Link>
                 </ThemedView>
@@ -139,60 +122,28 @@ export default function LoginScreen() {
                     <ThemedView style={styles.logoContainer}>
                         <Logo />
                     </ThemedView>
-                    <ThemedText style={styles.welcomeText}>Bienvenido</ThemedText>
+                    <ThemedText style={[styles.welcomeText, { color: themeColors.textColor }]}>Bienvenido</ThemedText>
 
-                    <ThemedView
-                        style={[
-                            styles.inputContainer,
-                            {
-                                backgroundColor: themeColors.inputBackground,
-                                borderColor: isEmailFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor
-                            }
-                        ]}
-                    >
-                        <TextInput
-                            style={[styles.input, { color: themeColors.inputColor }]}
-                            placeholder="Usuario o email"
-                            value={email}
-                            onChangeText={handleEmailChange}
-                            placeholderTextColor="#bbbbbb"
-                            onFocus={() => setIsEmailFocused(true)}
-                            onBlur={() => setIsEmailFocused(false)}
-                        />
-                    </ThemedView>
-
-                    {emailError ? <ThemedText style={styles.errorText}>{emailError}</ThemedText> : null}
-
-                    <ThemedView
-                        style={[
-                            styles.inputContainer,
-                            {
-                                backgroundColor: themeColors.inputBackground,
-                                borderColor: isPasswordFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor
-                            }
-                        ]}
-                    >
-                        <TextInput
-                            style={[styles.input, { color: themeColors.inputColor }]}
-                            placeholder="Contraseña"
-                            secureTextEntry
-                            value={password}
-                            onChangeText={handlePasswordChange}
-                            placeholderTextColor="#bbbbbb"
-                            onFocus={() => setIsPasswordFocused(true)}
-                            onBlur={() => setIsPasswordFocused(false)}
-                        />
-                        <Ionicons name="eye-off-outline" size={16} color="#10BF0A" />
-                    </ThemedView>
-
-                    {passwordError ? <ThemedText style={styles.errorText}>{passwordError}</ThemedText> : null}
+                    <ThemedInput
+                        placeholder="Usuario o email"
+                        value={email}
+                        onChangeText={handleEmailChange}
+                        error={emailError}
+                    />
+                    <ThemedInput
+                        placeholder="Contraseña"
+                        value={password}
+                        onChangeText={handlePasswordChange}
+                        secureTextEntry
+                        error={passwordError}
+                    />
 
                     <TouchableOpacity style={styles.forgotPasswordContainer}>
-                        <ThemedText style={[styles.forgotPassword, { color: themeColors.textColor }]}>¿Olvidaste tu contraseña?</ThemedText>
+                        <ThemedText style={[styles.forgotPassword, { color: themeColors.textColorAccent }]}>¿Olvidaste tu contraseña?</ThemedText>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.loginButton, !isFormValid && { backgroundColor: themeColors.disabledColor }]}
+                        style={[styles.loginButton, !isFormValid ? { backgroundColor: themeColors.disabledColor } : { backgroundColor: themeColors.buttonBackgroundColor }]}
                         onPress={handleLogin}
                         disabled={!isFormValid}
                     >
@@ -200,19 +151,19 @@ export default function LoginScreen() {
                     </TouchableOpacity>
 
                     <ThemedView style={styles.registerContainer}>
-                        <ThemedText style={styles.registerText}>¿No estás registrado? </ThemedText>
+                        <ThemedText style={[styles.registerText, { color: themeColors.textParagraph }]}>¿No estás registrado? </ThemedText>
                         <Link href={{ pathname: "/registerScreen" }} asChild>
                             <TouchableOpacity>
-                                <ThemedText style={[styles.registerLink, { color: themeColors.textColor }]}>Registrate ahora</ThemedText>
+                                <ThemedText style={[styles.registerLink, { color: themeColors.textColorAccent }]}>Registrate ahora</ThemedText>
                             </TouchableOpacity>
                         </Link>
                     </ThemedView>
 
                     <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
 
-                    <ThemedText style={styles.continueWithText}>O continua con</ThemedText>
+                    <ThemedText style={[styles.continueWithText, { color: themeColors.textParagraph }]}>O continua con</ThemedText>
 
-                    <TouchableOpacity style={styles.googleButton}>
+                    <TouchableOpacity style={[styles.googleButton, { backgroundColor: themeColors.status.error }]}>
                         <Ionicons name="logo-google" size={12} color="#fff" />
                         <ThemedText style={styles.googleButtonText}>Google</ThemedText>
                     </TouchableOpacity>
@@ -286,7 +237,6 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
     },
     loginButton: {
-        backgroundColor: '#10BF0A',
         padding: 15,
         borderRadius: 12,
         width: '100%',
@@ -314,7 +264,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     registerText: {
-        color: '#999999',
         fontSize: 12,
     },
     registerLink: {
@@ -326,14 +275,12 @@ const styles = StyleSheet.create({
         marginVertical: 20,
     },
     continueWithText: {
-        color: '#999999',
         fontSize: 12,
         marginBottom: 16,
     },
     googleButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#ED3241',
         paddingVertical: 8,
         paddingHorizontal: 16,
         borderRadius: 50,
@@ -364,7 +311,6 @@ const styles = StyleSheet.create({
         marginRight: 'auto',
     },
     initialLoginButton: {
-        backgroundColor: '#10BF0A',
         padding: 15,
         borderRadius: 12,
         width: '100%',
@@ -391,18 +337,9 @@ const styles = StyleSheet.create({
     },
     LoginTextParagraph: {
         fontSize: 20,
-        color: '#999999',
         fontWeight: '300',
         marginHorizontal: 'auto',
         textAlign: 'center',
         paddingHorizontal: 24,
-    },
-    errorText: {
-        width: '100%',
-        color: '#ED3241',
-        fontSize: 12,
-        lineHeight: 16,
-        marginTop: 5,
-        textAlign: 'left',
     },
 });
