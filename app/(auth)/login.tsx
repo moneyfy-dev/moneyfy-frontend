@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { StyleSheet, TouchableOpacity, Animated, TextInput, Dimensions, Image } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, TouchableOpacity, Animated, TextInput, Dimensions, Alert } from 'react-native';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
@@ -8,7 +8,8 @@ import { ThemedText } from '@/components/ThemedText';
 import { useAuth } from '@/context/AuthContext';
 import { BackgroundCircles } from '@/components/BackgroundCircles';
 import { Logo } from '@/components/Logo';
-import { ThemedBackground } from '@/components/ThemedBackground';
+import { login } from '@/services/authService';
+import { validateEmail, validatePassword } from '@/utils/validations';
 
 const { height } = Dimensions.get('window');
 
@@ -16,25 +17,30 @@ export default function LoginScreen() {
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { login } = useAuth();
+    const { login: loginContext } = useAuth();
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [isFormValid, setIsFormValid] = useState(false);
     const formAnimation = useRef(new Animated.Value(height)).current;
     const colorScheme = useColorScheme();
+    const [isEmailFocused, setIsEmailFocused] = useState(false);
+    const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
     const getThemeColors = () => {
         return {
             backgroundColor: colorScheme === 'dark' ? '#272727' : '#FFFFFF',
+            inputBackground: colorScheme === 'dark' ? '#1C1C1B' : '#FFFFFF',
+            borderBackgroundColor: colorScheme === 'dark' ? '#575756' : '#f1f1f1',
             textColor: colorScheme === 'dark' ? '#0FF107' : '#10BF0A',
+            inputColor: colorScheme === 'dark' ? '#FFFFFF' : '#1C1C1B',
+            disabledColor: colorScheme === 'dark' ? '#999999' : '#E0E0E0',
+            focusedBorderColor: colorScheme === 'dark' ? '#0EF205' : '#09A503',
+            unfocusedBorderColor: '#BBBBBB',
         };
     };
 
-    const getThemeColorssa = () => {
-        return {
-            backgroundColor: colorScheme === 'dark' ? '#575756' : '#f1f1f1',
-        };
-    };
 
     const themeColors = getThemeColors();
-    const themeColors2 = getThemeColorssa();
 
     const showLoginForm = () => {
         setIsFormVisible(true);
@@ -53,9 +59,42 @@ export default function LoginScreen() {
         });
     };
 
-    const handleLogin = () => {
-        login();
-        // Manejar la navegación después del login
+    useEffect(() => {
+        const isValid = validateEmail(email) && validatePassword(password);
+        setIsFormValid(isValid);
+    }, [email, password]);
+
+    const handleEmailChange = (text: string) => {
+        setEmail(text);
+        if (!validateEmail(text)) {
+            setEmailError('Email inválido');
+        } else {
+            setEmailError('');
+        }
+    };
+
+    const handlePasswordChange = (text: string) => {
+        setPassword(text);
+        if (!validatePassword(text)) {
+            setPasswordError('La contraseña debe tener al menos 8 caracteres');
+        } else {
+            setPasswordError('');
+        }
+    };
+
+    const handleLogin = async () => {
+        if (!isFormValid) {
+            Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
+            return;
+        }
+
+        try {
+            const response = await login(email, password);
+            console.log('Inicio de sesión exitoso:', response);
+            loginContext(response);
+        } catch (error) {
+            Alert.alert('Error', 'Hubo un problema con el inicio de sesión. Inténtalo de nuevo.');
+        }
     };
 
     return (
@@ -101,32 +140,65 @@ export default function LoginScreen() {
                         <Logo />
                     </ThemedView>
                     <ThemedText style={styles.welcomeText}>Bienvenido</ThemedText>
-                    <ThemedView style={[styles.inputContainer, { backgroundColor: themeColors.backgroundColor }]}>
+
+                    <ThemedView
+                        style={[
+                            styles.inputContainer,
+                            {
+                                backgroundColor: themeColors.inputBackground,
+                                borderColor: isEmailFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor
+                            }
+                        ]}
+                    >
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, { color: themeColors.inputColor }]}
                             placeholder="Usuario o email"
                             value={email}
-                            onChangeText={setEmail}
+                            onChangeText={handleEmailChange}
                             placeholderTextColor="#bbbbbb"
+                            onFocus={() => setIsEmailFocused(true)}
+                            onBlur={() => setIsEmailFocused(false)}
                         />
                     </ThemedView>
-                    <ThemedView style={[styles.inputContainer, { backgroundColor: themeColors.backgroundColor }]}>
+
+                    {emailError ? <ThemedText style={styles.errorText}>{emailError}</ThemedText> : null}
+
+                    <ThemedView
+                        style={[
+                            styles.inputContainer,
+                            {
+                                backgroundColor: themeColors.inputBackground,
+                                borderColor: isPasswordFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor
+                            }
+                        ]}
+                    >
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, { color: themeColors.inputColor }]}
                             placeholder="Contraseña"
                             secureTextEntry
                             value={password}
-                            onChangeText={setPassword}
+                            onChangeText={handlePasswordChange}
                             placeholderTextColor="#bbbbbb"
+                            onFocus={() => setIsPasswordFocused(true)}
+                            onBlur={() => setIsPasswordFocused(false)}
                         />
                         <Ionicons name="eye-off-outline" size={16} color="#10BF0A" />
                     </ThemedView>
+
+                    {passwordError ? <ThemedText style={styles.errorText}>{passwordError}</ThemedText> : null}
+
                     <TouchableOpacity style={styles.forgotPasswordContainer}>
                         <ThemedText style={[styles.forgotPassword, { color: themeColors.textColor }]}>¿Olvidaste tu contraseña?</ThemedText>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+
+                    <TouchableOpacity
+                        style={[styles.loginButton, !isFormValid && { backgroundColor: themeColors.disabledColor }]}
+                        onPress={handleLogin}
+                        disabled={!isFormValid}
+                    >
                         <ThemedText style={styles.loginButtonText}>Ingresar</ThemedText>
                     </TouchableOpacity>
+
                     <ThemedView style={styles.registerContainer}>
                         <ThemedText style={styles.registerText}>¿No estás registrado? </ThemedText>
                         <Link href={{ pathname: "/registerScreen" }} asChild>
@@ -135,12 +207,16 @@ export default function LoginScreen() {
                             </TouchableOpacity>
                         </Link>
                     </ThemedView>
-                    <ThemedView style={[styles.divider, { backgroundColor: themeColors2.backgroundColor }]} />
+
+                    <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
+
                     <ThemedText style={styles.continueWithText}>O continua con</ThemedText>
+
                     <TouchableOpacity style={styles.googleButton}>
                         <Ionicons name="logo-google" size={12} color="#fff" />
                         <ThemedText style={styles.googleButtonText}>Google</ThemedText>
                     </TouchableOpacity>
+
                 </ThemedView>
             </Animated.View>
 
@@ -200,15 +276,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         width: '100%',
-        marginBottom: 12,
+        marginTop: 16,
         borderWidth: 1,
-        borderColor: '#BBBBBB',
         borderRadius: 12,
         paddingHorizontal: 16,
     },
     input: {
         flex: 1,
-        color: '#fff',
         paddingVertical: 12,
     },
     loginButton: {
@@ -322,5 +396,13 @@ const styles = StyleSheet.create({
         marginHorizontal: 'auto',
         textAlign: 'center',
         paddingHorizontal: 24,
+    },
+    errorText: {
+        width: '100%',
+        color: '#ED3241',
+        fontSize: 12,
+        lineHeight: 16,
+        marginTop: 5,
+        textAlign: 'left',
     },
 });
