@@ -8,6 +8,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { useAuth } from '@/context/AuthContext';
 import { BackgroundCircles } from '@/components/BackgroundCircles';
 import { Logo } from '@/components/Logo';
+import { ThemedBackground } from '@/components/ThemedBackground';
 
 const { height } = Dimensions.get('window');
 
@@ -58,7 +59,7 @@ export default function LoginScreen() {
     };
 
     return (
-        <ThemedView style={styles.container}>
+        <ThemedView darkColor="#1C1C1B" lightColor="#FFFFFF" style={styles.container}>
             <TouchableOpacity
                 style={styles.backgroundTouchable}
                 onPress={hideLoginForm}
@@ -79,7 +80,7 @@ export default function LoginScreen() {
                 </TouchableOpacity>
                 <ThemedView style={styles.registerContainer}>
                     <ThemedText style={styles.registerText}>¿No estás registrado? </ThemedText>
-                    <Link href={{ pathname: "/register" }} asChild>
+                    <Link href={{ pathname: "/registerScreen" }} asChild>
                         <TouchableOpacity>
                             <ThemedText style={[styles.registerLink, { color: themeColors.textColor }]}>Registrate ahora</ThemedText>
                         </TouchableOpacity>
@@ -128,7 +129,7 @@ export default function LoginScreen() {
                     </TouchableOpacity>
                     <ThemedView style={styles.registerContainer}>
                         <ThemedText style={styles.registerText}>¿No estás registrado? </ThemedText>
-                        <Link href={{ pathname: "/register" }} asChild>
+                        <Link href={{ pathname: "/registerScreen" }} asChild>
                             <TouchableOpacity>
                                 <ThemedText style={[styles.registerLink, { color: themeColors.textColor }]}>Registrate ahora</ThemedText>
                             </TouchableOpacity>

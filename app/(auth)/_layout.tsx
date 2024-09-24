@@ -11,6 +11,7 @@ export default function AuthLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen name="registerScreen" options={{ headerShown: false }} />
       {/* Otras pantallas de autenticación si las tienes */}
     </Stack>
   );
