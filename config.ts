@@ -4,13 +4,13 @@ interface EnvVars {
 
 const ENV: { [key: string]: EnvVars } = {
   dev: {
-    apiUrl: 'https://dev-backend.cl/app',
+    apiUrl: 'http://45.236.128.120:8080/segurosref',
   },
   staging: {
-    apiUrl: 'https://staging-backend.cl/app',
+    apiUrl: 'http://45.236.128.120:8080/segurosref',
   },
   prod: {
-    apiUrl: 'https://backend.cl/app',
+    apiUrl: 'http://45.236.128.120:8080/segurosref',
   }
 };
 

@@ -8,6 +8,8 @@ import { ThemedInput } from '@/components/ThemedInput';
 import { register } from '@/services/authService';
 import { validateEmail, validatePassword, validateName } from '@/utils/validations';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/context/AuthContext';
 
 export default function RegisterScreen() {
     const [nombre, setNombre] = useState('');
@@ -23,6 +25,8 @@ export default function RegisterScreen() {
     const [isFormValid, setIsFormValid] = useState(false);
     const [termsAccepted, setTermsAccepted] = useState(false);
     const themeColors = useThemeColor();
+    const router = useRouter();
+    const { login: loginContext } = useAuth();
 
     useEffect(() => {
         const isValid = validateName(nombre) && validateName(apellido) &&
@@ -85,9 +89,16 @@ export default function RegisterScreen() {
         try {
             const response = await register(nombre, apellido, email, password);
             console.log('Registro exitoso:', response);
-            // Navegar a la pantalla de verificación de código o a la pantalla de inicio de sesión
-        } catch (error) {
-            Alert.alert('Error', 'Hubo un problema con el registro. Inténtalo de nuevo.');
+            await loginContext(response);
+            Alert.alert('Éxito', response.message);
+            router.replace('/(tabs)');
+        } catch (error: any) {
+            console.error('Error en el registro:', error);
+            if (error.response && error.response.status === 406) {
+                Alert.alert('Error', 'Datos no aceptables. Por favor, verifica la información ingresada.');
+            } else {
+                Alert.alert('Error', 'Hubo un problema con el registro. Inténtalo de nuevo.');
+            }
         }
     };
 
@@ -154,11 +165,11 @@ export default function RegisterScreen() {
             <ThemedView style={styles.registerContainer}>
 
                 <TouchableOpacity
-                    style={[styles.registerButton, !isFormValid && { backgroundColor: themeColors.disabledColor }]}
+                    style={[styles.registerButton, !isFormValid ? { backgroundColor: themeColors.disabledColor } : { backgroundColor: themeColors.buttonBackgroundColor }]}
                     onPress={handleRegister}
                     disabled={!isFormValid}
                 >
-                    <ThemedText style={styles.registerButtonText}>Crear cuenta</ThemedText>
+                    <ThemedText style={[styles.registerButtonText, { color: themeColors.buttonTextColor }]}>Crear cuenta</ThemedText>
                 </TouchableOpacity>
 
                 <View style={styles.loginContainer}>
@@ -187,7 +198,6 @@ const styles = StyleSheet.create({
     registerContainer: {
         flex: 1,
         justifyContent: 'flex-end',
-        backgroundColor: 'transparent',
     },
     title: {
         fontSize: 16,
@@ -214,7 +224,6 @@ const styles = StyleSheet.create({
         fontWeight: 'semibold',
     },
     registerButton: {
-        backgroundColor: '#10BF0A',
         height: 50,
         borderRadius: 8,
         justifyContent: 'center',

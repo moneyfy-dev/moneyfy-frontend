@@ -18,8 +18,9 @@ export default {
   },
   common: {
     transparent: 'transparent',
-    black: '#1C1C1B',
+    black: '#111111',
     white: '#FFFFFF',
+    gray0: '#222222',
     gray1: '#575756',
     gray2: '#777777',
     gray3: '#999999',

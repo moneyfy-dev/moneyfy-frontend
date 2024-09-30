@@ -40,7 +40,7 @@ export function ThemedInput({ placeholder, value, onChangeText, secureTextEntry,
           onChangeText={onChangeText}
           secureTextEntry={secureTextEntry && !isPasswordVisible}
           keyboardType={keyboardType}
-          placeholderTextColor={themeColors.disabledColor}
+          placeholderTextColor={themeColors.placeholderColor}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
         />

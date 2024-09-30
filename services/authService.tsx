@@ -4,11 +4,11 @@ import getEnvVars from '../config';
 const { apiUrl } = getEnvVars();
 
 // Servicio para registrar un nuevo usuario
-export const register = async (nombre: string, apellido: string, email: string, password: string) => {
+export const register = async (name: string, lastname: string, email: string, password: string) => {
   try {
-    const response = await axios.post(`${apiUrl}/auth/register`, {
-      nombre,
-      apellido,
+    const response = await axios.post(`${apiUrl}/app/auth/register`, {
+      name,
+      lastname,
       email,
       password,
     });
@@ -22,7 +22,7 @@ export const register = async (nombre: string, apellido: string, email: string, 
 // Servicio para iniciar sesión
 export const login = async (email: string, password: string) => {
   try {
-    const response = await axios.post(`${apiUrl}/auth/log-in`, {
+    const response = await axios.post(`${apiUrl}/app/auth/log-in`, {
       email,
       password,
     });

@@ -1,67 +1,157 @@
-import { Image, StyleSheet, Platform, TouchableOpacity } from 'react-native';
-import { router } from 'expo-router';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { useAuth } from '@/context/AuthContext';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { LineChart } from 'react-native-chart-kit';
 
 export default function HomeScreen() {
-  const { logout } = useAuth();
+  const themeColors = useThemeColor();
 
-  const handleLogout = () => {
-    logout();
-    router.replace('/login');
-  };
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: themeColors.backgroundColor,
+      padding: 20,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    greeting: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: themeColors.textColor,
+    },
+    iconContainer: {
+      flexDirection: 'row',
+    },
+    icon: {
+      marginLeft: 15,
+    },
+    balanceContainer: {
+      marginBottom: 20,
+    },
+    balanceLabel: {
+      fontSize: 16,
+      color: themeColors.textParagraph,
+    },
+    balance: {
+      fontSize: 36,
+      fontWeight: 'bold',
+      color: themeColors.textColor,
+    },
+    card: {
+      backgroundColor: themeColors.backgroundCardColor,
+      borderRadius: 10,
+      padding: 15,
+      marginBottom: 15,
+    },
+    cardTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: themeColors.textColor,
+      marginBottom: 10,
+    },
+    cardValue: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: themeColors.textColorAccent,
+    },
+    button: {
+      backgroundColor: themeColors.buttonBackgroundColor,
+      borderRadius: 10,
+      padding: 15,
+      alignItems: 'center',
+      marginBottom: 15,
+    },
+    buttonText: {
+      color: themeColors.buttonTextColor,
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    actionContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    actionButton: {
+      flex: 1,
+      backgroundColor: themeColors.backgroundCardColor,
+      borderRadius: 10,
+      padding: 15,
+      alignItems: 'center',
+      marginHorizontal: 5,
+    },
+    actionButtonText: {
+      color: themeColors.textColor,
+      fontSize: 12,
+      marginTop: 5,
+    },
+  });
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1C1C1B' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      {/* ... (mantén el contenido existente) ... */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <ThemedText style={styles.logoutButtonText}>Cerrar sesión</ThemedText>
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.greeting}>Hola Alejandro</Text>
+        <View style={styles.iconContainer}>
+          <Ionicons name="notifications-outline" size={24} color={themeColors.textColor} style={styles.icon} />
+          <Ionicons name="help-circle-outline" size={24} color={themeColors.textColor} style={styles.icon} />
+        </View>
+      </View>
+
+      <View style={styles.balanceContainer}>
+        <Text style={styles.balanceLabel}>Tu saldo actual</Text>
+        <Text style={styles.balance}>$70.896</Text>
+      </View>
+
+      <LineChart
+        data={{
+          labels: ["Jun", "Jul", "Ago", "Sep", "Oct"],
+          datasets: [{ data: [50000, 60000, 40000, 70000, 65000] }]
+        }}
+        width={350}
+        height={200}
+        chartConfig={{
+          backgroundColor: themeColors.backgroundCardColor,
+          backgroundGradientFrom: themeColors.backgroundCardColor,
+          backgroundGradientTo: themeColors.backgroundCardColor,
+          decimalPlaces: 0,
+          color: (opacity = 1) => themeColors.textColorAccent,
+          style: { borderRadius: 16 }
+        }}
+        bezier
+        style={{ marginVertical: 8, borderRadius: 16 }}
+      />
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Saldo Disponible</Text>
+        <Text style={styles.cardValue}>$65.280</Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Saldo Retenido</Text>
+        <Text style={styles.cardValue}>$5.566</Text>
+      </View>
+
+      <TouchableOpacity style={styles.button}>
+        <Text style={styles.buttonText}>Cotizador de seguros</Text>
       </TouchableOpacity>
-    </ParallaxScrollView>
+
+      <View style={styles.actionContainer}>
+        <TouchableOpacity style={styles.actionButton}>
+          <Ionicons name="people-outline" size={24} color={themeColors.textColor} />
+          <Text style={styles.actionButtonText}>Mis referidos</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton}>
+          <Ionicons name="cash-outline" size={24} color={themeColors.textColor} />
+          <Text style={styles.actionButtonText}>Retirar Saldo</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton}>
+          <Ionicons name="time-outline" size={24} color={themeColors.textColor} />
+          <Text style={styles.actionButtonText}>Historial de referidos</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-  logoutButton: {
-    backgroundColor: '#f44336',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  logoutButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-});

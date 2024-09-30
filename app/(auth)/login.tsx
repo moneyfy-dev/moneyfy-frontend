@@ -11,6 +11,7 @@ import { Logo } from '@/components/Logo';
 import { login } from '@/services/authService';
 import { validateEmail, validatePassword } from '@/utils/validations';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { useRouter } from 'expo-router';
 
 const { height } = Dimensions.get('window');
 
@@ -24,6 +25,7 @@ export default function LoginScreen() {
     const [isFormValid, setIsFormValid] = useState(false);
     const formAnimation = useRef(new Animated.Value(height)).current;
     const themeColors = useThemeColor();
+    const router = useRouter();
 
     const showLoginForm = () => {
         setIsFormVisible(true);
@@ -74,9 +76,15 @@ export default function LoginScreen() {
         try {
             const response = await login(email, password);
             console.log('Inicio de sesión exitoso:', response);
-            loginContext(response);
-        } catch (error) {
-            Alert.alert('Error', 'Hubo un problema con el inicio de sesión. Inténtalo de nuevo.');
+            await loginContext(response);
+            Alert.alert('Éxito', response.message);
+            router.replace('/(tabs)');
+        } catch (error: any) {
+            if (error.response && error.response.status === 403) {
+                Alert.alert('Error', 'Credenciales incorrectas. Por favor, inténtalo de nuevo.');
+            } else {
+                Alert.alert('Error', 'Hubo un problema con el inicio de sesión. Inténtalo de nuevo.');
+            }
         }
     };
 
@@ -96,12 +104,12 @@ export default function LoginScreen() {
                 <ThemedText style={[styles.LoginTextParagraph, { color: themeColors.textParagraph }]}>Lorem Ipsum Nesum magiore</ThemedText>
             </ThemedView>
 
-            <ThemedView style={[styles.initialContainer, { backgroundColor: themeColors.backgroundColor }]}>
+            <ThemedView style={[styles.initialContainer, { backgroundColor: themeColors.backgroundCardColor }]}>
                 <TouchableOpacity style={[styles.initialLoginButton, { backgroundColor: themeColors.buttonBackgroundColor }]} onPress={showLoginForm}>
-                    <ThemedText style={styles.loginButtonText}>Ingresar</ThemedText>
+                    <ThemedText style={[styles.loginButtonText, { color: themeColors.buttonTextColor }]}>Ingresar</ThemedText>
                 </TouchableOpacity>
                 <ThemedView style={styles.registerContainer}>
-                    <ThemedText style={styles.registerText}>¿No estás registrado? </ThemedText>
+                    <ThemedText style={[styles.registerText, { color: themeColors.textParagraph }]}>¿No estás registrado? </ThemedText>
                     <Link href={{ pathname: "/registerScreen" }} asChild>
                         <TouchableOpacity>
                             <ThemedText style={[styles.registerLink, { color: themeColors.textColorAccent }]}>Registrate ahora</ThemedText>
@@ -118,7 +126,7 @@ export default function LoginScreen() {
                     }
                 ]}
             >
-                <ThemedView style={[styles.card, { backgroundColor: themeColors.backgroundColor }]}>
+                <ThemedView style={[styles.card, { backgroundColor: themeColors.backgroundCardColor }]}>
                     <ThemedView style={styles.logoContainer}>
                         <Logo />
                     </ThemedView>
@@ -147,7 +155,7 @@ export default function LoginScreen() {
                         onPress={handleLogin}
                         disabled={!isFormValid}
                     >
-                        <ThemedText style={styles.loginButtonText}>Ingresar</ThemedText>
+                        <ThemedText style={[styles.loginButtonText, { color: themeColors.buttonTextColor }]}>Ingresar</ThemedText>
                     </TouchableOpacity>
 
                     <ThemedView style={styles.registerContainer}>
@@ -186,16 +194,6 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         alignItems: 'center',
-        // Sombra para iOS
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 20,
-            height: 20,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        // Sombra para Android
-        elevation: 20,
     },
     formContainer: {
         position: 'absolute',
@@ -208,17 +206,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
-        alignItems: 'center',
-        // Sombra para iOS
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 20,
-            height: 20,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        // Sombra para Android
-        elevation: 20,
+        alignItems: 'center'
     },
     cardTitle: {
         marginBottom: 20,
@@ -244,7 +232,6 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     loginButtonText: {
-        color: 'white',
         fontWeight: 'semibold',
         fontSize: 12,
     },

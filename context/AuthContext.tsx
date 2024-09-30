@@ -1,32 +1,64 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AuthContextProps {
   isAuthenticated: boolean;
-  login: (response: any) => void;
-  logout: () => void;
+  isLoading: boolean;
+  login: (response: any) => Promise<void>;
+  logout: () => Promise<void>;
+  userEmail: string | null;
 }
 
 const AuthContext = createContext<AuthContextProps>({
   isAuthenticated: false,
-  login: () => {},
-  logout: () => {},
+  isLoading: true,
+  login: async () => {},
+  logout: async () => {},
+  userEmail: null,
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
-  const login = (response: any) => {
-    // Aquí puedes manejar la respuesta del backend, por ejemplo, guardar el token en el estado
-    console.log('Respuesta del backend:', response);
-    setIsAuthenticated(true);
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const email = await AsyncStorage.getItem('userEmail');
+      if (token && email) {
+        setIsAuthenticated(true);
+        setUserEmail(email);
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const logout = () => {
+  const login = async (response: any) => {
+    if (response.jwt && response.email) {
+      await AsyncStorage.setItem('userToken', response.jwt);
+      await AsyncStorage.setItem('userEmail', response.email);
+      setIsAuthenticated(true);
+      setUserEmail(response.email);
+    }
+  };
+
+  const logout = async () => {
+    await AsyncStorage.removeItem('userToken');
+    await AsyncStorage.removeItem('userEmail');
     setIsAuthenticated(false);
+    setUserEmail(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout, userEmail }}>
       {children}
     </AuthContext.Provider>
   );
