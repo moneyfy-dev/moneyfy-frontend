@@ -8,7 +8,7 @@ import { ThemedInput } from '@/components/ThemedInput';
 import { register } from '@/services/authService';
 import { validateEmail, validatePassword, validateName } from '@/utils/validations';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { useRouter } from 'expo-router';
+import { useRouter, Href } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 
 export default function RegisterScreen() {
@@ -26,7 +26,7 @@ export default function RegisterScreen() {
     const [termsAccepted, setTermsAccepted] = useState(false);
     const themeColors = useThemeColor();
     const router = useRouter();
-    const { login: loginContext } = useAuth();
+    const { login: loginContext, setTempEmail } = useAuth();
 
     useEffect(() => {
         const isValid = validateName(nombre) && validateName(apellido) &&
@@ -89,9 +89,9 @@ export default function RegisterScreen() {
         try {
             const response = await register(nombre, apellido, email, password);
             console.log('Registro exitoso:', response);
-            await loginContext(response);
+            setTempEmail(email); // Establece el email temporalmente
             Alert.alert('Éxito', response.message);
-            router.replace('/(tabs)');
+            router.replace('/confirmation-code' as Href<string>);
         } catch (error: any) {
             console.error('Error en el registro:', error);
             if (error.response && error.response.status === 406) {
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     },
     registerButton: {
         height: 50,
-        borderRadius: 8,
+        borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,

@@ -4,12 +4,13 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Href } from 'expo-router';
 import { LogoutModal } from '@/components/LogoutModal';
-import { useAuth } from '@/context/AuthContext'; // Asegúrate de tener este contexto
+import { useAuth } from '@/context/AuthContext';
+import { AvatarIcon } from '@/components/images/AvatarIcon';
 
 const ConfigScreen = () => {
   const themeColors = useThemeColor();
   const router = useRouter();
-  const { logout, userEmail } = useAuth(); // Usamos logout en lugar de signOut
+  const { logout, userEmail } = useAuth();
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
 
   const handleLogout = () => {
@@ -18,9 +19,8 @@ const ConfigScreen = () => {
 
   const confirmLogout = async () => {
     try {
-      await logout(); // Usamos logout en lugar de signOut
+      await logout();
       setIsLogoutModalVisible(false);
-      // Navega a la pantalla de login o a donde sea apropiado después de cerrar sesión
       router.replace('/login');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
@@ -40,30 +40,29 @@ const ConfigScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: themeColors.backgroundColor }]}>
       <Text style={[styles.title, { color: themeColors.textColor }]}>Ajustes</Text>
-      
+
       <View style={styles.profileSection}>
-        <Image
-          source={{ uri: 'https://via.placeholder.com/100' }}
-          style={styles.profileImage}
-        />
+        <View style={styles.profileImageContainer}>
+          <AvatarIcon width={80} height={80} style={styles.profileImage} />
+          <TouchableOpacity style={[styles.editButton, { backgroundColor: themeColors.buttonBackgroundColor }]}>
+            <Ionicons name="pencil" size={10} color={themeColors.white} />
+          </TouchableOpacity>
+        </View>
         <View>
           <Text style={[styles.name, { color: themeColors.textColor }]}>Alejandro Osses</Text>
           <Text style={[styles.email, { color: themeColors.textParagraph }]}>{userEmail || 'No email'}</Text>
         </View>
-        <TouchableOpacity style={styles.editButton}>
-          <Ionicons name="pencil" size={20} color={themeColors.textColorAccent} />
-        </TouchableOpacity>
       </View>
 
       {menuItems.map((item, index) => (
         <TouchableOpacity
           key={index}
-          style={styles.menuItem}
+          style={[styles.menuItem, { borderBottomColor: themeColors.unfocusedBorderColor }]}
           onPress={item.onPress || (() => router.push(item.route))}
         >
-          <Ionicons name={item.icon} size={24} color={themeColors.textColorAccent} />
+          <Ionicons name={item.icon as any} size={20} color={themeColors.textColorAccent} />
           <Text style={[styles.menuItemText, { color: themeColors.textColor }]}>{item.title}</Text>
-          <Ionicons name="chevron-forward" size={24} color={themeColors.textParagraph} />
+          <Ionicons name="chevron-forward" size={16} color={themeColors.textParagraph} />
         </TouchableOpacity>
       ))}
 
@@ -87,36 +86,52 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   profileSection: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     marginBottom: 30,
+    textAlign: 'center',
+  },
+  profileImageContainer: {
+    position: 'relative',
+    width: 80,
+    height: 80,
+    marginBottom: 16,
   },
   profileImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginRight: 15,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
   name: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   email: {
-    fontSize: 14,
+    fontSize: 12,
+    textAlign: 'center',
   },
   editButton: {
-    marginLeft: 'auto',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    borderBottomWidth: 0.5,
   },
   menuItemText: {
-    fontSize: 16,
-    marginLeft: 15,
+    fontSize: 14,
+    marginLeft: 16,
     flex: 1,
   },
 });

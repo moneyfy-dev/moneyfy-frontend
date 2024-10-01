@@ -7,14 +7,22 @@ interface AuthContextProps {
   login: (response: any) => Promise<void>;
   logout: () => Promise<void>;
   userEmail: string | null;
+  setTempEmail: (email: string) => void; // Nueva función
 }
 
 const AuthContext = createContext<AuthContextProps>({
   isAuthenticated: false,
   isLoading: true,
-  login: async () => {},
-  logout: async () => {},
+  login: async () => {
+    console.warn('login function not implemented');
+  },
+  logout: async () => {
+    console.warn('logout function not implemented');
+  },
   userEmail: null,
+  setTempEmail: () => {
+    console.warn('setTempEmail function not implemented');
+  },
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -57,8 +65,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserEmail(null);
   };
 
+  const setTempEmail = (email: string) => {
+    setUserEmail(email);
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout, userEmail }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout, userEmail, setTempEmail }}>
       {children}
     </AuthContext.Provider>
   );

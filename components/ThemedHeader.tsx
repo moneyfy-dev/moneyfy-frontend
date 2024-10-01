@@ -1,0 +1,57 @@
+import React from 'react';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { ThemedText } from './ThemedText';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { useRouter } from 'expo-router';
+
+interface CustomHeaderProps {
+    title: string;
+    subtitle?: string;
+    showBackButton?: boolean;
+}
+
+export function CustomHeader({ title, subtitle, showBackButton = true }: CustomHeaderProps) {
+    const themeColors = useThemeColor();
+    const router = useRouter();
+
+    return (
+        <SafeAreaView edges={['top']} style={{ backgroundColor: themeColors.backgroundColor }}>
+            <View style={[styles.header, { backgroundColor: themeColors.backgroundColor }]}>
+                {showBackButton && (
+                    <TouchableOpacity onPress={() => router.back()}>
+                        <Ionicons name="chevron-back" size={24} color={themeColors.accentInDarkMode} />
+                    </TouchableOpacity>
+                )}
+                <View style={styles.titleContainer}>
+                    <ThemedText style={[styles.title, { color: themeColors.textColor }]}>{title}</ThemedText>
+                    {subtitle && <ThemedText style={[styles.subtitle, { color: themeColors.textParagraph }]}>{subtitle}</ThemedText>}
+                </View>
+            </View>
+        </SafeAreaView>
+    );
+}
+
+const styles = StyleSheet.create({
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 24,
+        paddingTop: 40,
+    },
+    titleContainer: {
+        paddingRight: 24,
+        marginHorizontal: 'auto',
+        flexDirection: 'column',
+        alignItems: 'center',
+    },
+    title: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    subtitle: {
+        fontSize: 12,
+    },
+});

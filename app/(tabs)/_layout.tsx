@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { StyleSheet, View } from 'react-native';
 
 export default function TabLayout() {
   const themeColors = useThemeColor();
@@ -10,8 +11,21 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: themeColors.textColorAccent,
-        tabBarInactiveTintColor: themeColors.textParagraph,
-        tabBarStyle: { backgroundColor: themeColors.backgroundCardColor },
+        tabBarInactiveTintColor: themeColors.placeholderColor,
+        tabBarStyle: {
+          backgroundColor: themeColors.backgroundColor,
+          height: 88,
+          paddingBottom: 20,
+          borderTopWidth: 0,
+          borderTopColor: themeColors.unfocusedBorderColor,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: 'semibold',
+        },
+        tabBarIconStyle: {
+          marginTop: 12,
+        },
         headerShown: false,
       }}>
       <Tabs.Screen
@@ -19,7 +33,7 @@ export default function TabLayout() {
         options={{
           title: 'Inicio',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
+            <TabBarIcon name="home-outline" color={color} size={size} />
           ),
         }}
       />
@@ -28,7 +42,7 @@ export default function TabLayout() {
         options={{
           title: 'Referidos',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
+            <TabBarIcon name="people-outline" color={color} size={size} />
           ),
         }}
       />
@@ -37,7 +51,7 @@ export default function TabLayout() {
         options={{
           title: 'Historial',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="time-outline" size={size} color={color} />
+            <TabBarIcon name="time-outline" color={color} size={size} />
           ),
         }}
       />
@@ -46,10 +60,30 @@ export default function TabLayout() {
         options={{
           title: 'Config',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
+            <TabBarIcon name="settings-outline" color={color} size={size} />
           ),
         }}
       />
     </Tabs>
   );
 }
+
+function TabBarIcon(props: {
+  name: React.ComponentProps<typeof Ionicons>['name'];
+  color: string;
+  size: number;
+}) {
+  return (
+    <View style={styles.iconContainer}>
+      <Ionicons {...props} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    marginBottom: -3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
