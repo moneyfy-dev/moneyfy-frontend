@@ -1,20 +1,23 @@
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { ViewStyle } from 'react-native';
 
 interface CreditCardIconProps {
   width?: number;
   height?: number;
+  style?: ViewStyle;
 }
 
 export const CreditCardIcon: React.FC<CreditCardIconProps> = ({ 
   width = 117, 
-  height = 107 
+  height = 107,
+  style
 }) => {
   const themeColors = useThemeColor();
 
   return (
-    <Svg width={width} height={height} viewBox="0 0 117 107" fill="none">
+    <Svg width={width} height={height} style={style} viewBox="0 0 117 107" fill="none">
       <Path fillRule="evenodd" clipRule="evenodd" d="M33.2758 64.125V58.625C33.2758 56.45 31.4758 54.65 29.3008 54.65H16.6508C14.4758 54.65 12.6758 56.45 12.6758 58.625V64.125C12.6758 66.3 14.4758 68.1 16.6508 68.1H29.3258C31.5008 68.1 33.2758 66.3 33.2758 64.125Z" fill="#0EF205"/>
       <Path fillRule="evenodd" clipRule="evenodd" d="M20.4746 16.25H114.175V30.075H20.4746V16.25Z" fill={themeColors.iconRefGray}/>
       <Path fillRule="evenodd" clipRule="evenodd" d="M96.5258 62.2V49.65C96.5258 46.95 94.3508 44.65 91.5258 44.65H20.4758H7.67578C4.97578 44.65 2.67578 46.825 2.67578 49.65V99.7C2.67578 102.4 4.85078 104.575 7.67578 104.575H91.5258C94.2258 104.575 96.5258 102.4 96.5258 99.7V62.2ZM29.3258 54.65C31.5008 54.65 33.3008 56.45 33.3008 58.625V64.125C33.3008 66.3 31.5008 68.1 29.3258 68.1H16.6508C14.4758 68.1 12.6758 66.3 12.6758 64.125V58.625C12.6758 56.45 14.4758 54.65 16.6508 54.65H29.3258Z" fill="#E0E0E0"/>

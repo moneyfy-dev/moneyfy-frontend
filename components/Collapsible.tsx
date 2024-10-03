@@ -21,7 +21,7 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
           size={18}
           color={themeColors.textColor}
         />
-        <ThemedText type="defaultSemiBold">{title}</ThemedText>
+        <ThemedText variant='title'>{title}</ThemedText>
       </TouchableOpacity>
       {isOpen && <ThemedView style={styles.content}>{children}</ThemedView>}
     </ThemedView>

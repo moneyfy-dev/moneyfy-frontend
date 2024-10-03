@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ThemedView } from '@/components/ThemedView';
+import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useAuth } from '@/context/AuthContext';
 import { Alert } from 'react-native';
+import { ThemedButton } from '@/components/ThemedButton';
 
 export default function ConfirmationCodeScreen() {
     const [code, setCode] = useState(['', '', '', '']);
@@ -58,63 +59,56 @@ export default function ConfirmationCodeScreen() {
     }, []);
 
     return (
-        <ThemedView style={styles.container}>
-            <ThemedText style={styles.title}>Ingrese el código de confirmación</ThemedText>
-            <ThemedText style={styles.subtitle}>
-                Un código de 4 dígitos fue enviado a {userEmail}
-            </ThemedText>
+        <ThemedLayout>
+            <View style={styles.pageContainer}>
 
-            <View style={styles.codeContainer}>
-                {code.map((digit, index) => (
-                    <ThemedInput
-                        key={index}
-                        ref={inputRefs.current[index]}
-                        value={digit}
-                        onChangeText={(text) => handleCodeChange(text, index)}
-                        keyboardType="numeric"
-                        maxLength={1}
-                        placeholder=""
-                        style={styles.codeInput}
-                    />
-                ))}
+                <ThemedText variant='title' textAlign='center' marginBottom={8}>Ingrese el código de confirmación</ThemedText>
+                <ThemedText variant='paragraph' textAlign='center' marginBottom={40}>
+                    Un código de 4 dígitos fue enviado a {userEmail}
+                </ThemedText>
+
+                <View style={styles.codeContainer}>
+                    {code.map((digit, index) => (
+                        <ThemedInput
+                            key={index}
+                            ref={inputRefs.current[index]}
+                            value={digit}
+                            onChangeText={(text) => handleCodeChange(text, index)}
+                            keyboardType="numeric"
+                            maxLength={1}
+                            placeholder=""
+                            style={styles.codeInput}
+                        />
+                    ))}
+                </View>
             </View>
 
-            <TouchableOpacity onPress={handleResendCode}>
-                <ThemedText style={styles.resendCode}>Reenviar código</ThemedText>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
 
-            <TouchableOpacity
-                style={[styles.continueButton, { backgroundColor: themeColors.buttonBackgroundColor }]}
-                onPress={handleContinue}
-            >
-                <ThemedText style={styles.continueButtonText}>Continuar</ThemedText>
-            </TouchableOpacity>
-        </ThemedView>
+                <TouchableOpacity onPress={handleResendCode}>
+                    <ThemedText variant='textLink' textAlign='center' marginBottom={24}>Reenviar código</ThemedText>
+                </TouchableOpacity>
+
+                <ThemedButton
+                    text="Continuar"
+                    onPress={handleContinue}
+                />
+            </View>
+        </ThemedLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    pageContainer: {
         flex: 1,
-        padding: 20,
         justifyContent: 'center',
-        alignItems: 'center',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    subtitle: {
-        fontSize: 16,
-        textAlign: 'center',
-        marginBottom: 30,
     },
     codeContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '80%',
-        marginBottom: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 8,
+        marginHorizontal: 'auto',
     },
     codeInput: {
         width: 50,
@@ -124,21 +118,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 24,
     },
-    resendCode: {
-        fontSize: 16,
-        color: 'blue',
-        marginBottom: 30,
-    },
-    continueButton: {
-        width: '80%',
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 25,
-    },
-    continueButtonText: {
-        color: 'white',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
+    buttonContainer: {
+        width: '100%',
+        marginTop: 24,
+    }
 });

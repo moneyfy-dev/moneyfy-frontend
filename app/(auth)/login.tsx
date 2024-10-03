@@ -1,17 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Animated, Dimensions, Alert } from 'react-native';
 import { Link } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
 import { useAuth } from '@/context/AuthContext';
-import { BackgroundCircles } from '@/components/BackgroundCircles';
+import { BackgroundCircles } from '@/components/images/BackgroundCircles';
 import { Logo } from '@/components/Logo';
 import { login } from '@/services/authService';
 import { validateEmail, validatePassword } from '@/utils/validations';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
+import { ThemedButton } from '@/components/ThemedButton';
 
 const { height } = Dimensions.get('window');
 
@@ -100,19 +100,20 @@ export default function LoginScreen() {
 
             <ThemedView style={styles.logoContainer}>
                 <Logo style={styles.loginLogo} />
-                <ThemedText style={[styles.loginTextTitle, { color: themeColors.textColor }]}>Lorem Ipsum Nesum magiore</ThemedText>
-                <ThemedText style={[styles.LoginTextParagraph, { color: themeColors.textParagraph }]}>Lorem Ipsum Nesum magiore</ThemedText>
+                <ThemedText variant='jumboTitle' textAlign='center' marginBottom={16}>Lorem Ipsum Nesum magiore</ThemedText>
+                <ThemedText variant='jumboSubTitle' textAlign='center'>Lorem Ipsum Nesum magiore</ThemedText>
             </ThemedView>
 
             <ThemedView style={[styles.initialContainer, { backgroundColor: themeColors.backgroundCardColor }]}>
-                <TouchableOpacity style={[styles.initialLoginButton, { backgroundColor: themeColors.buttonBackgroundColor }]} onPress={showLoginForm}>
-                    <ThemedText style={[styles.loginButtonText, { color: themeColors.buttonTextColor }]}>Ingresar</ThemedText>
-                </TouchableOpacity>
+                <ThemedButton
+                    text="Ingresar"
+                    onPress={showLoginForm}
+                />
                 <ThemedView style={styles.registerContainer}>
-                    <ThemedText style={[styles.registerText, { color: themeColors.textParagraph }]}>¿No estás registrado? </ThemedText>
+                    <ThemedText variant='paragraph'>¿No estás registrado? </ThemedText>
                     <Link href={{ pathname: "/registerScreen" }} asChild>
                         <TouchableOpacity>
-                            <ThemedText style={[styles.registerLink, { color: themeColors.textColorAccent }]}>Registrate ahora</ThemedText>
+                            <ThemedText variant='textLink'>Registrate ahora</ThemedText>
                         </TouchableOpacity>
                     </Link>
                 </ThemedView>
@@ -127,10 +128,10 @@ export default function LoginScreen() {
                 ]}
             >
                 <ThemedView style={[styles.card, { backgroundColor: themeColors.backgroundCardColor }]}>
-                    <ThemedView style={styles.logoContainer}>
+                    <ThemedView style={styles.logoContainerCard}>
                         <Logo />
+                        <ThemedText variant='superTitle' textAlign='left' marginBottom={24}>Bienvenido</ThemedText>
                     </ThemedView>
-                    <ThemedText style={[styles.welcomeText, { color: themeColors.textColor }]}>Bienvenido</ThemedText>
 
                     <ThemedInput
                         placeholder="Usuario o email"
@@ -147,34 +148,36 @@ export default function LoginScreen() {
                     />
 
                     <TouchableOpacity style={styles.forgotPasswordContainer}>
-                        <ThemedText style={[styles.forgotPassword, { color: themeColors.textColorAccent }]}>¿Olvidaste tu contraseña?</ThemedText>
+                        <ThemedText variant='textLink' marginBottom={16}>¿Olvidaste tu contraseña?</ThemedText>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={[styles.loginButton, !isFormValid ? { backgroundColor: themeColors.disabledColor } : { backgroundColor: themeColors.buttonBackgroundColor }]}
+                    <ThemedButton
+                        text="Ingresar"
                         onPress={handleLogin}
                         disabled={!isFormValid}
-                    >
-                        <ThemedText style={[styles.loginButtonText, { color: themeColors.buttonTextColor }]}>Ingresar</ThemedText>
-                    </TouchableOpacity>
+                    />
 
                     <ThemedView style={styles.registerContainer}>
-                        <ThemedText style={[styles.registerText, { color: themeColors.textParagraph }]}>¿No estás registrado? </ThemedText>
+                        <ThemedText variant='paragraph'>¿No estás registrado? </ThemedText>
                         <Link href={{ pathname: "/registerScreen" }} asChild>
                             <TouchableOpacity>
-                                <ThemedText style={[styles.registerLink, { color: themeColors.textColorAccent }]}>Registrate ahora</ThemedText>
+                                <ThemedText variant='textLink'>Registrate ahora</ThemedText>
                             </TouchableOpacity>
                         </Link>
                     </ThemedView>
 
                     <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
 
-                    <ThemedText style={[styles.continueWithText, { color: themeColors.textParagraph }]}>O continua con</ThemedText>
+                    <ThemedText variant='paragraph' marginBottom={16}>O continua con</ThemedText>
 
-                    <TouchableOpacity style={[styles.googleButton, { backgroundColor: themeColors.status.error }]}>
-                        <Ionicons name="logo-google" size={12} color="#fff" />
-                        <ThemedText style={styles.googleButtonText}>Google</ThemedText>
-                    </TouchableOpacity>
+                    <ThemedButton
+                        text="Google"
+                        icon={{ name: 'logo-google', position: 'left' }}
+                        size='sm'
+                        width='auto'
+                        onPress={handleLogin}
+                        backgroundColor={themeColors.status.error}
+                    />
 
                 </ThemedView>
             </Animated.View>
@@ -224,25 +227,8 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 12,
     },
-    loginButton: {
-        padding: 15,
-        borderRadius: 12,
-        width: '100%',
-        alignItems: 'center',
-        marginTop: 20,
-    },
-    loginButtonText: {
-        fontWeight: 'semibold',
-        fontSize: 12,
-    },
     forgotPasswordContainer: {
         marginRight: 'auto',
-    },
-    forgotPassword: {
-        alignSelf: 'flex-start',
-        marginBottom: 16,
-        fontSize: 12,
-        fontWeight: 'semibold',
     },
     registerContainer: {
         flexDirection: 'row',
@@ -250,27 +236,10 @@ const styles = StyleSheet.create({
         marginTop: 16,
         backgroundColor: 'transparent',
     },
-    registerText: {
-        fontSize: 12,
-    },
-    registerLink: {
-        fontSize: 12,
-    },
     divider: {
         height: 1,
         width: '100%',
         marginVertical: 20,
-    },
-    continueWithText: {
-        fontSize: 12,
-        marginBottom: 16,
-    },
-    googleButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 50,
     },
     googleButtonText: {
         color: '#fff',
@@ -284,18 +253,18 @@ const styles = StyleSheet.create({
         bottom: 0,
     },
     logoContainer: {
-        paddingBottom: 20,
+        width: '100%',
         flexDirection: 'column',
         alignItems: 'center',
-        marginBottom: 24,
-        marginRight: 'auto',
         backgroundColor: 'transparent',
+        marginBottom: 24,
     },
-    welcomeText: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        marginRight: 'auto',
+    logoContainerCard: {
+        width: '100%',
+        gap: 16,
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        backgroundColor: 'transparent',
     },
     initialLoginButton: {
         padding: 15,
@@ -312,21 +281,5 @@ const styles = StyleSheet.create({
     },
     loginLogo: {
         marginBottom: 24,
-    },
-    loginTextTitle: {
-        fontSize: 36,
-        lineHeight: 40,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        marginHorizontal: 'auto',
-        textAlign: 'center',
-        paddingHorizontal: 24,
-    },
-    LoginTextParagraph: {
-        fontSize: 20,
-        fontWeight: '300',
-        marginHorizontal: 'auto',
-        textAlign: 'center',
-        paddingHorizontal: 24,
     },
 });

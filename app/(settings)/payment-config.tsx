@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, View, Image } from 'react-native';
 import { useRouter, Href } from 'expo-router';
-import { ThemedSafeAreaView } from '@/components/ThemedSafeAreaView';
+import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { Ionicons } from '@expo/vector-icons';
 import { AccountListScreen } from '@/components/AccountListScreen';
 import { CreditCardIcon } from '@/components/images/CreditCardIcon';
+import { ThemedButton } from '@/components/ThemedButton';
 
 export default function PaymentConfigScreen() {
     const [accounts, setAccounts] = useState([]);
@@ -23,71 +23,40 @@ export default function PaymentConfigScreen() {
     };
 
     return (
-        <ThemedSafeAreaView style={styles.container}>
+        <ThemedLayout padding={[0, 40]}>
 
             {accounts.length === 0 ? (
                 <View style={styles.emptyState}>
-                    <CreditCardIcon width={117} height={107} />
-                    <ThemedText style={[styles.emptyStateTitle, { color: themeColors.textColor }]}>No hay cuentas registradas</ThemedText>
-                    <ThemedText style={[styles.emptyStateSubtitle, { color: themeColors.textParagraph }]}>
+                    <CreditCardIcon width={117} height={107} style={styles.iconImage}/>
+                    <ThemedText variant="title" textAlign='center' marginBottom={8}>No hay cuentas registradas</ThemedText>
+                    <ThemedText variant="paragraph" textAlign='center'>
                         Aún no has agregado una cuenta para recibir tus pagos por referidos, selecciona agregar cuenta
                     </ThemedText>
                 </View>
             ) : (
                 <AccountListScreen accounts={accounts} />
             )}
-
-            <TouchableOpacity
-                style={[styles.addButton, { backgroundColor: themeColors.buttonBackgroundColor }]}
+            <ThemedButton
+                text="Agregar cuenta"
                 onPress={handleAddAccount}
-            >
-                <Ionicons name="add" size={24} color="white" />
-                <ThemedText style={styles.addButtonText}>Agregar cuenta</ThemedText>
-            </TouchableOpacity>
-        </ThemedSafeAreaView>
+                icon={{ name: "add", position: "left" }}
+                style={styles.Button}
+            />
+        </ThemedLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 24,
-    },
     emptyState: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 24,
     },
-    emptyStateIcon: {
-        width: 100,
-        height: 100,
-        marginBottom: 20,
+    iconImage: {
+        marginBottom: 40,
     },
-    emptyStateTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        marginTop: 40,
-    },
-    emptyStateSubtitle: {
-        fontSize: 12,
-        lineHeight: 16,
-        textAlign: 'center',
-        marginBottom: 20,
-    },
-    addButton: {
-        display: 'flex',
-        flexDirection: 'row',
-        gap: 8,
-        height: 50,
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    addButtonText: {
-        color: 'white',
-        fontSize: 12,
-        fontWeight: 'semibold',
-    },
+    Button: {
+        marginTop: 24,
+    }
 });

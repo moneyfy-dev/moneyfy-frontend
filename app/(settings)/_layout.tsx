@@ -1,19 +1,79 @@
-import { Stack } from 'expo-router';
+import React from 'react';
+import { Stack, usePathname } from 'expo-router';
 import { CustomHeader } from '@/components/ThemedHeader';
 
+interface HeaderInfo {
+  title: string;
+  subtitle: string;
+}
+
+const headerInfo: Record<string, HeaderInfo> = {
+  'personal-info': {
+    title: "Información personal",
+    subtitle: "Edita tu información personal"
+  },
+  'payment-config': {
+    title: "Configuración de pago",
+    subtitle: "Selecciona una cuenta"
+  },
+  'add-account': {
+    title: "Agregar cuenta",
+    subtitle: "Agrega la cuenta bancaria para recibir los pagos por referidos"
+  },
+  'referral-code': {
+    title: "Código de referido",
+    subtitle: "Comparte tu código para seguir sumando lucas"
+  },
+  'privacy-security': {
+    title: "Privacidad y Seguridad",
+    subtitle: "Configura tus opciones de seguridad"
+  },
+  'change-password': {
+    title: "Cambiar contraseña",
+    subtitle: "Actualiza tu información de acceso a la App"
+  },
+  'pin-config': {
+    title: "Configuración de PIN",
+    subtitle: "Configura tu PIN o patrón para la App"
+  },
+  'two-factor-auth': {
+    title: "Autenticación de dos pasos",
+    subtitle: "Configura tu autenticación de dos pasos"
+  },
+  'appearance': {
+    title: "Apariencia",
+    subtitle: "Escoje el tema que más te guste"
+  },
+  'notifications': {
+    title: "Notificaciones",
+    subtitle: "Configura tus preferencias de notificaciones"
+  }
+};
+
+function getHeaderInfo(pathname: string): HeaderInfo {
+  const route = pathname.split('/').pop() || '';
+  return headerInfo[route] || { title: "", subtitle: "" };
+}
+
 export default function SettingsLayout() {
+  const pathname = usePathname();
+
   return (
     <Stack
-    screenOptions={{
-      header: () => <CustomHeader title="Información Personal" subtitle="Configura tu información personal" />,
-    }}
-  >
-      <Stack.Screen name="personal-info" options={{ title: "Información Personal" }} />
-      <Stack.Screen name="payment-config" options={{ title: "Configuración de Pago" }} />
-      <Stack.Screen name="appearance" options={{ title: "Apariencia" }} />
-      <Stack.Screen name="referral-code" options={{ title: "Código de Referido" }} />
-      <Stack.Screen name="privacy-security" options={{ title: "Privacidad y Seguridad" }} />
-      <Stack.Screen name="notifications" options={{ title: "Notificaciones" }} />
+      screenOptions={{
+        header: () => {
+          const { title, subtitle } = getHeaderInfo(pathname);
+          return <CustomHeader title={title} subtitle={subtitle} />;
+        },
+      }}
+    >
+      <Stack.Screen name="personal-info" />
+      <Stack.Screen name="payment-config" />
+      <Stack.Screen name="add-account" />
+      <Stack.Screen name="referral-code" />
+      <Stack.Screen name="privacy-security" />
+      <Stack.Screen name="appearance" />
+      <Stack.Screen name="notifications" />
     </Stack>
   );
 }

@@ -1,77 +1,89 @@
-import React from 'react';
-import { View, Text, StyleSheet, Switch, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Switch, TouchableOpacity } from 'react-native';
+import { ThemedLayout } from '@/components/ThemedLayout';
+import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { Ionicons } from '@expo/vector-icons';
 
-const NotificationsScreen = () => {
+interface NotificationSetting {
+  id: string;
+  title: string;
+  description: string;
+  isEnabled: boolean;
+  type: 'switch' | 'checkbox';
+}
+
+export default function NotificationsScreen() {
   const themeColors = useThemeColor();
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSetting[]>([
+    { id: 'email', title: 'Notificaciones por correo', description: 'Recibe actualizaciones importantes, resúmenes y promociones directamente en tu correo electrónico.', isEnabled: false, type: 'switch' },
+    { id: 'push', title: 'Notificaciones push', description: 'Desactiva las alertas en tu dispositivo móvil, pero aún podrás consultar tus notificaciones dentro de la aplicación.', isEnabled: true, type: 'switch' },
+    { id: 'commissions', title: 'Actualización de comisiones', description: 'Recibe una notificación cada vez que una nueva comisión sea generada por tus referidos.', isEnabled: true, type: 'checkbox' },
+    { id: 'salesStatus', title: 'Cambio de estado en ventas', description: 'Mantente al tanto del estado de tus ventas y las de tus referidos. Recibirás una notificación cuando se apruebe, rechace o modifique una venta.', isEnabled: false, type: 'checkbox' },
+    { id: 'fundsAvailable', title: 'Disponibilidad de fondos para retiro', description: 'Te avisaremos cuando el saldo de tus comisiones esté listo para ser retirado o utilizado.', isEnabled: false, type: 'checkbox' },
+    { id: 'newSale', title: 'Nueva venta realizada por un referido', description: 'Recibe una alerta cuando uno de tus referidos directos o indirectos concrete una nueva venta.', isEnabled: false, type: 'checkbox' },
+    { id: 'insuranceUpdates', title: 'Actualizaciones en el cotizador de seguros', description: 'Serás notificado si se añaden nuevos seguros o si se ajustan los planes disponibles en el cotizador.', isEnabled: false, type: 'checkbox' },
+    { id: 'referralInvitations', title: 'Invitaciones de referidos aceptadas', description: 'Recibe una notificación cuando alguien se registre usando tu código de referido.', isEnabled: false, type: 'checkbox' },
+    { id: 'withdrawalReminders', title: 'Recordatorios de retiro de fondos', description: 'Recibirás un recordatorio si tienes fondos disponibles para retiro y aún no los has retirado.', isEnabled: false, type: 'checkbox' },
+    { id: 'specialOffers', title: 'Ofertas y promociones especiales', description: 'Mantente informado sobre descuentos y promociones en seguros para ti y tus referidos.', isEnabled: false, type: 'checkbox' },
+    { id: 'paymentIssues', title: 'Problemas con el pago', description: 'Te notificaremos si surge algún problema con el procesamiento de un pago por parte de tus referidos.', isEnabled: false, type: 'checkbox' },
+  ]);
 
-  const settingsOptions = [
-    { title: 'Notificaciones por correo', description: 'Recibe actualizaciones importantes, resúmenes y promociones directamente en tu correo electrónico.', type: 'switch' },
-    { title: 'Notificaciones push', description: 'Desactiva las alertas en tu dispositivo móvil, pero aún podrás consultar tus notificaciones dentro de la aplicación.', type: 'switch' },
-    { title: 'Actualización de comisiones', description: 'Recibe una notificación cada vez que una nueva comisión sea generada por tus referidos.', type: 'checkbox' },
-    // ... Añade el resto de las opciones aquí
-  ];
+  const toggleSetting = (id: string) => {
+    setNotificationSettings(prevSettings =>
+      prevSettings.map(setting =>
+        setting.id === id ? { ...setting, isEnabled: !setting.isEnabled } : setting
+      )
+    );
+    // Aquí iría la llamada al servicio para actualizar la configuración en el backend
+    // updateNotificationSetting(id, !setting.isEnabled);
+  };
+
+  const renderSetting = (setting: NotificationSetting, index: number) => (
+    <View key={setting.id} style={[styles.settingContainer, { borderBottomWidth: index === notificationSettings.length - 1 ? 0 : 0.5, borderColor: themeColors.borderBackgroundColor }]}>
+      <View style={styles.settingTextContainer}>
+        <ThemedText variant="subTitle" marginBottom={4}>{setting.title}</ThemedText>
+        <ThemedText variant="paragraph">{setting.description}</ThemedText>
+      </View>
+      {setting.type === 'switch' ? (
+        <Switch
+          trackColor={{ false: themeColors.extremeContrastGray, true: themeColors.textColorAccent }}
+          thumbColor={setting.isEnabled ? themeColors.extremeContrastGray : themeColors.textColorAccent}
+          ios_backgroundColor={themeColors.extremeContrastGray}
+          onValueChange={() => toggleSetting(setting.id)}
+          value={setting.isEnabled}
+        />
+      ) : ( 
+        <TouchableOpacity onPress={() => toggleSetting(setting.id)}>
+          <Ionicons
+            name={setting.isEnabled ? "checkbox-outline" : "square-outline"}
+            size={24}
+            color={setting.isEnabled ? themeColors.textColorAccent : themeColors.unfocusedBorderColor}
+          />
+        </TouchableOpacity>
+      )}
+
+    </View>
+  );
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: themeColors.backgroundColor }]}>
-      <Text style={[styles.description, { color: themeColors.textParagraph }]}>
-        Configura tus opciones de seguridad
-      </Text>
-      {settingsOptions.map((option, index) => (
-        <View key={index} style={styles.optionContainer}>
-          <View style={styles.optionTextContainer}>
-            <Text style={[styles.optionTitle, { color: themeColors.textColor }]}>{option.title}</Text>
-            <Text style={[styles.optionDescription, { color: themeColors.textParagraph }]}>{option.description}</Text>
-          </View>
-          {option.type === 'switch' ? (
-            <Switch
-              trackColor={{ false: themeColors.disabledColor, true: themeColors.textColorAccent }}
-              thumbColor={themeColors.backgroundColor}
-            />
-          ) : (
-            <View style={[styles.checkbox, { borderColor: themeColors.textColorAccent }]}>
-              {/* Aquí puedes añadir lógica para mostrar el check */}
-            </View>
-          )}
-        </View>
-      ))}
-    </ScrollView>
+    <ThemedLayout padding={[0, 40]}>
+      {notificationSettings.map(renderSetting)}
+    </ThemedLayout>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  description: {
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  optionContainer: {
+  settingContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    paddingBottom: 24,
+    marginBottom: 24,
   },
-  optionTextContainer: {
+  settingTextContainer: {
     flex: 1,
-    marginRight: 10,
-  },
-  optionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  optionDescription: {
-    fontSize: 14,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderRadius: 4,
-  },
+    marginRight: 16,
+  }
 });
 
-export default NotificationsScreen;

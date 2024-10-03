@@ -6,7 +6,8 @@ import { useRouter, Href } from 'expo-router';
 import { LogoutModal } from '@/components/LogoutModal';
 import { useAuth } from '@/context/AuthContext';
 import { AvatarIcon } from '@/components/images/AvatarIcon';
-
+import { ThemedLayout } from '@/components/ThemedLayout';
+import { ThemedText } from '@/components/ThemedText';
 const ConfigScreen = () => {
   const themeColors = useThemeColor();
   const router = useRouter();
@@ -38,8 +39,11 @@ const ConfigScreen = () => {
   ];
 
   return (
-    <View style={[styles.container, { backgroundColor: themeColors.backgroundColor }]}>
-      <Text style={[styles.title, { color: themeColors.textColor }]}>Ajustes</Text>
+    <ThemedLayout padding={[0, 40]}>
+
+      <View style={styles.header}>
+        <ThemedText variant="title" textAlign="center">Ajustes</ThemedText>
+      </View>
 
       <View style={styles.profileSection}>
         <View style={styles.profileImageContainer}>
@@ -49,19 +53,19 @@ const ConfigScreen = () => {
           </TouchableOpacity>
         </View>
         <View>
-          <Text style={[styles.name, { color: themeColors.textColor }]}>Alejandro Osses</Text>
-          <Text style={[styles.email, { color: themeColors.textParagraph }]}>{userEmail || 'No email'}</Text>
+          <ThemedText variant="title" textAlign="center" marginBottom={4}>Alejandro Osses</ThemedText>
+          <ThemedText variant="paragraph" textAlign="center">{userEmail || 'No email'}</ThemedText>
         </View>
       </View>
 
       {menuItems.map((item, index) => (
         <TouchableOpacity
           key={index}
-          style={[styles.menuItem, { borderBottomColor: themeColors.unfocusedBorderColor }]}
+          style={[styles.menuItem, { borderBottomWidth: index === menuItems.length - 1 ? 0 : 0.5, borderColor: themeColors.borderBackgroundColor }]}
           onPress={item.onPress || (() => router.push(item.route))}
         >
           <Ionicons name={item.icon as any} size={20} color={themeColors.textColorAccent} />
-          <Text style={[styles.menuItemText, { color: themeColors.textColor }]}>{item.title}</Text>
+          <ThemedText variant="subTitle" style={styles.menuItemText}>{item.title}</ThemedText>
           <Ionicons name="chevron-forward" size={16} color={themeColors.textParagraph} />
         </TouchableOpacity>
       ))}
@@ -71,7 +75,7 @@ const ConfigScreen = () => {
         onClose={() => setIsLogoutModalVisible(false)}
         onLogout={confirmLogout}
       />
-    </View>
+    </ThemedLayout>
   );
 };
 
@@ -79,6 +83,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+  },
+  header: {
+    paddingVertical: 24,
   },
   title: {
     fontSize: 24,
@@ -130,7 +137,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
   },
   menuItemText: {
-    fontSize: 14,
     marginLeft: 16,
     flex: 1,
   },

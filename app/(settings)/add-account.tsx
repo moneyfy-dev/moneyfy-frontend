@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ThemedSafeAreaView } from '@/components/ThemedSafeAreaView';
+import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { Ionicons } from '@expo/vector-icons';
+import { ThemedButton } from '@/components/ThemedButton';
 
 export default function AddAccountScreen() {
     const [rut, setRut] = useState('');
@@ -26,136 +26,100 @@ export default function AddAccountScreen() {
     };
 
     return (
-        <ThemedSafeAreaView style={styles.container}>
-            <ScrollView>
+        <ThemedLayout padding={[0 ,40]}>
 
-                <ThemedInput
-                    label="Rut"
-                    value={rut}
-                    onChangeText={setRut}
-                    placeholder="Ingrese su RUT"
-                />
+            <ThemedInput
+                label="Rut"
+                value={rut}
+                onChangeText={setRut}
+                placeholder="Ingrese su RUT"
+            />
 
-                <ThemedInput
-                    label="Nombre"
-                    value={nombre}
-                    onChangeText={setNombre}
-                    placeholder="Ingrese su nombre"
-                />
+            <ThemedInput
+                label="Nombre"
+                value={nombre}
+                onChangeText={setNombre}
+                placeholder="Ingrese su nombre"
+            />
 
-                <ThemedInput
-                    label="Alias"
-                    value={alias}
-                    onChangeText={setAlias}
-                    placeholder="Ingrese un alias para la cuenta"
-                />
+            <ThemedInput
+                label="Alias"
+                value={alias}
+                onChangeText={setAlias}
+                placeholder="Ingrese un alias para la cuenta"
+            />
 
-                <ThemedInput
-                    label="Email"
-                    value={email}
-                    onChangeText={setEmail}
-                    placeholder="Ingrese su email"
-                    keyboardType="email-address"
-                />
+            <ThemedInput
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Ingrese su email"
+                keyboardType="email-address"
+            />
 
-                <ThemedText style={[styles.sectionTitle, { color: themeColors.textColor }]}>Datos de la cuenta</ThemedText>
+            <ThemedText variant="title" marginBottom={16}>Datos de la cuenta</ThemedText>
 
-                <ThemedInput
-                    label="Banco"
-                    value={banco}
-                    onChangeText={setBanco}
-                    placeholder="Seleccione su banco"
-                />
+            <ThemedInput
+                label="Banco"
+                value={banco}
+                onChangeText={setBanco}
+                placeholder="Seleccione su banco"
+            />
 
-                <View style={styles.accountTypeContainer}>
-                    {['CORRIENTE', 'VISTA', 'AHORRO'].map((type) => (
-                        <TouchableOpacity
-                            key={type}
-                            style={[
-                                styles.accountTypeButton,
-                                tipoCuenta === type && { backgroundColor: themeColors.buttonBackgroundColor }
-                            ]}
-                            onPress={() => setTipoCuenta(type)}
+            <ThemedText variant="title" marginBottom={16}>Tipo de cuenta</ThemedText>
+
+            <View style={styles.accountTypeContainer}>
+                {['CORRIENTE', 'VISTA', 'AHORRO'].map((type) => (
+                    <TouchableOpacity
+                        key={type}
+                        style={[
+                            styles.accountTypeButton, { backgroundColor: themeColors.extremeContrastGray },
+                            tipoCuenta === type && { backgroundColor: themeColors.buttonBackgroundColor }
+                        ]}
+                        onPress={() => setTipoCuenta(type)}
+                    >
+                        <ThemedText
+                            variant="textLink"
+                            textAlign="center"
+                            color={tipoCuenta === type ? themeColors.backgroundColor : themeColors.textColorAccent}
                         >
-                            <ThemedText
-                                style={[
-                                    styles.accountTypeText,
-                                    tipoCuenta === type && { color: 'white' }
-                                ]}
-                            >
-                                {type}
-                            </ThemedText>
-                        </TouchableOpacity>
-                    ))}
-                </View>
+                            {type}
+                        </ThemedText>
+                    </TouchableOpacity>
+                ))}
+            </View>
 
-                <ThemedInput
-                    label="N° Cuenta"
-                    value={numeroCuenta}
-                    onChangeText={setNumeroCuenta}
-                    placeholder="Ingrese el número de cuenta"
-                    keyboardType="numeric"
-                />
+            <ThemedInput
+                label="N° Cuenta"
+                value={numeroCuenta}
+                onChangeText={setNumeroCuenta}
+                placeholder="Ingrese el número de cuenta"
+                keyboardType="numeric"
+            />
 
-                <TouchableOpacity
-                    style={[styles.saveButton, { backgroundColor: themeColors.buttonBackgroundColor }]}
-                    onPress={handleSave}
-                >
-                    <ThemedText style={styles.saveButtonText}>Guardar</ThemedText>
-                </TouchableOpacity>
-            </ScrollView>
-        </ThemedSafeAreaView>
+            <ThemedButton
+                text="Guardar"
+                onPress={handleSave}
+                style={styles.Button}
+            />
+        </ThemedLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginLeft: 10,
-    },
-    subtitle: {
-        fontSize: 16,
-        marginBottom: 20,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginTop: 20,
-        marginBottom: 10,
-    },
     accountTypeContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        gap: 16,
         marginBottom: 20,
     },
     accountTypeButton: {
-        padding: 10,
-        borderRadius: 5,
+        flex: 1,
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        borderRadius: 16,
         borderWidth: 1,
     },
-    accountTypeText: {
-        fontSize: 14,
-    },
-    saveButton: {
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 25,
-        marginTop: 20,
-    },
-    saveButtonText: {
-        color: 'white',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
+    Button: {
+        marginTop: 24,
+    }
 });

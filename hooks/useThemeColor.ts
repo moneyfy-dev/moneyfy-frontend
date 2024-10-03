@@ -8,7 +8,7 @@ export function useThemeColor() {
     return {
       backgroundColor: colorScheme === 'dark' ? Colors.common.black : Colors.common.white,
       backgroundCardColor: colorScheme === 'dark' ? Colors.common.gray0 : Colors.common.white,
-      buttonBackgroundColor: colorScheme === 'dark' ? Colors.common.green1 : Colors.common.green2,
+      buttonBackgroundColor: colorScheme === 'dark' ? Colors.common.green2 : Colors.common.green2,
       buttonTextColor: Colors.common.white,
       inputBackground: Colors.common.transparent,
       borderBackgroundColor: colorScheme === 'dark' ? Colors.common.gray1 : Colors.common.gray6,

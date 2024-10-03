@@ -25,8 +25,8 @@ export function CustomHeader({ title, subtitle, showBackButton = true }: CustomH
                     </TouchableOpacity>
                 )}
                 <View style={styles.titleContainer}>
-                    <ThemedText style={[styles.title, { color: themeColors.textColor }]}>{title}</ThemedText>
-                    {subtitle && <ThemedText style={[styles.subtitle, { color: themeColors.textParagraph }]}>{subtitle}</ThemedText>}
+                    <ThemedText variant="title" textAlign="center" marginBottom={4}>{title}</ThemedText>
+                    {subtitle && <ThemedText variant="paragraph" textAlign="center">{subtitle}</ThemedText>}
                 </View>
             </View>
         </SafeAreaView>
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 24,
-        paddingTop: 40,
+        paddingTop: 20,
     },
     titleContainer: {
         paddingRight: 24,

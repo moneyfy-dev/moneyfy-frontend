@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, View, Alert } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedView } from '@/components/ThemedView';
+import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
 import { register } from '@/services/authService';
@@ -10,6 +10,7 @@ import { validateEmail, validatePassword, validateName } from '@/utils/validatio
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter, Href } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import { ThemedButton } from '@/components/ThemedButton';
 
 export default function RegisterScreen() {
     const [nombre, setNombre] = useState('');
@@ -103,109 +104,95 @@ export default function RegisterScreen() {
     };
 
     return (
-        <ThemedView darkColor={themeColors.backgroundColor} lightColor={themeColors.backgroundColor} style={styles.container}>
-            <ThemedText style={[styles.title, { color: themeColors.textColor }]}>Registrarse</ThemedText>
-            <ThemedText style={[styles.subtitle, { color: themeColors.textParagraph }]}>Crea una cuenta y comienza a vender ahora</ThemedText>
+        <ThemedLayout>
+                    <View style={styles.content}>
+                        <ThemedText variant='title' marginBottom={4}>Registrarse</ThemedText>
+                        <ThemedText variant='paragraph' marginBottom={24}>Crea una cuenta y comienza a vender ahora</ThemedText>
 
-            <ThemedInput
-                placeholder="Nombre"
-                value={nombre}
-                onChangeText={handleNombreChange}
-                error={nombreError}
-            />
-            <ThemedInput
-                placeholder="Apellido"
-                value={apellido}
-                onChangeText={handleApellidoChange}
-                error={apellidoError}
-            />
-            <ThemedInput
-                placeholder="Email"
-                value={email}
-                onChangeText={handleEmailChange}
-                keyboardType="email-address"
-                error={emailError}
-            />
-            <ThemedInput
-                placeholder="Crear contraseña"
-                value={password}
-                onChangeText={handlePasswordChange}
-                secureTextEntry
-                error={passwordError}
-            />
-            <ThemedInput
-                placeholder="Confirmar contraseña"
-                value={confirmPassword}
-                onChangeText={handleConfirmPasswordChange}
-                secureTextEntry
-                error={confirmPasswordError}
-            />
+                        <ThemedInput
+                            placeholder="Nombre"
+                            value={nombre}
+                            onChangeText={handleNombreChange}
+                            error={nombreError}
+                        />
+                        <ThemedInput
+                            placeholder="Apellido"
+                            value={apellido}
+                            onChangeText={handleApellidoChange}
+                            error={apellidoError}
+                        />
+                        <ThemedInput
+                            placeholder="Email"
+                            value={email}
+                            onChangeText={handleEmailChange}
+                            keyboardType="email-address"
+                            error={emailError}
+                        />
+                        <ThemedInput
+                            placeholder="Crear contraseña"
+                            value={password}
+                            onChangeText={handlePasswordChange}
+                            secureTextEntry
+                            error={passwordError}
+                        />
+                        <ThemedInput
+                            placeholder="Confirmar contraseña"
+                            value={confirmPassword}
+                            onChangeText={handleConfirmPasswordChange}
+                            secureTextEntry
+                            error={confirmPasswordError}
+                        />
 
-            <View style={styles.termsContainer}>
-                <TouchableOpacity onPress={() => setTermsAccepted(!termsAccepted)}>
-                    <Ionicons
-                        name={termsAccepted ? "checkbox-outline" : "square-outline"}
-                        size={24}
-                        color={themeColors.textColorAccent}
-                    />
-                </TouchableOpacity>
-                <ThemedText style={[styles.termsText, { color: themeColors.textParagraph }]}>
-                    He leído y estoy de acuerdo con los{' '}
-                    <ThemedText style={[styles.termsLink, { color: themeColors.textColorAccent }]}>
-                        Términos y condiciones
-                    </ThemedText>{' '}
-                    y la{' '}
-                    <ThemedText style={[styles.termsLink, { color: themeColors.textColorAccent }]}>
-                        Política de privacidad
-                    </ThemedText>
-                    .
-                </ThemedText>
-            </View>
-
-            <ThemedView style={styles.registerContainer}>
-
-                <TouchableOpacity
-                    style={[styles.registerButton, !isFormValid ? { backgroundColor: themeColors.disabledColor } : { backgroundColor: themeColors.buttonBackgroundColor }]}
-                    onPress={handleRegister}
-                    disabled={!isFormValid}
-                >
-                    <ThemedText style={[styles.registerButtonText, { color: themeColors.buttonTextColor }]}>Crear cuenta</ThemedText>
-                </TouchableOpacity>
-
-                <View style={styles.loginContainer}>
-                    <ThemedText style={[styles.loginText, { color: themeColors.textParagraph }]}>¿Ya tienes cuenta? </ThemedText>
-                    <Link href="/login" asChild>
-                        <TouchableOpacity>
-                            <ThemedText style={[styles.loginLink, { color: themeColors.textColorAccent }]}>
-                                Inicia sesión ahora
+                        <View style={styles.termsContainer}>
+                            <TouchableOpacity onPress={() => setTermsAccepted(!termsAccepted)}>
+                                <Ionicons
+                                    name={termsAccepted ? "checkbox-outline" : "square-outline"}
+                                    size={24}
+                                    color={themeColors.textColorAccent}
+                                />
+                            </TouchableOpacity>
+                            <ThemedText variant='paragraph' style={styles.termsText}>
+                                He leído y estoy de acuerdo con los{' '}
+                                <ThemedText variant='textLink'>
+                                    Términos y condiciones
+                                </ThemedText>{' '}
+                                y la{' '}
+                                <ThemedText variant='textLink'>
+                                    Política de privacidad
+                                </ThemedText>
+                                .
                             </ThemedText>
-                        </TouchableOpacity>
-                    </Link>
-                </View>
-            </ThemedView>
-        </ThemedView>
+                        </View>
+                    </View>
+
+                    <View style={styles.buttonContainer}>
+                        <ThemedButton
+                            text="Crear cuenta"
+                            onPress={handleRegister}
+                            disabled={!isFormValid}
+                        />
+
+                        <View style={styles.loginContainer}>
+                            <ThemedText variant='paragraph'>¿Ya tienes cuenta? </ThemedText>
+                            <Link href="/login" asChild>
+                                <TouchableOpacity>
+                                    <ThemedText variant='textLink'>
+                                        Inicia sesión ahora
+                                    </ThemedText>
+                                </TouchableOpacity>
+                            </Link>
+                        </View>
+                    </View>
+        </ThemedLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    content: {
         flex: 1,
-        paddingHorizontal: 24,
-        paddingTop: 68,
-        paddingBottom: 24,
-        justifyContent: 'flex-start',
     },
-    registerContainer: {
-        flex: 1,
-        justifyContent: 'flex-end',
-    },
-    title: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    subtitle: {
-        fontSize: 12,
-        marginBottom: 20,
+    buttonContainer: {
+        marginTop: 20,
     },
     termsContainer: {
         flexDirection: 'row',
@@ -213,38 +200,12 @@ const styles = StyleSheet.create({
         marginVertical: 20,
     },
     termsText: {
-        marginLeft: 10,
-        fontSize: 12,
-        lineHeight: 16,
         flex: 1,
-    },
-    termsLink: {
-        fontSize: 12,
-        lineHeight: 16,
-        fontWeight: 'semibold',
-    },
-    registerButton: {
-        height: 50,
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    registerButtonText: {
-        color: 'white',
-        fontSize: 12,
-        fontWeight: 'semibold',
+        marginLeft: 12,
     },
     loginContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
-    },
-    loginText: {
-        fontSize: 12,
-        fontWeight: 'regular',
-    },
-    loginLink: {
-        fontSize: 12,
-        fontWeight: 'semibold',
+        marginTop: 16,
     },
 });

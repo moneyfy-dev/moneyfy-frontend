@@ -1,60 +1,100 @@
-import { Text, type TextProps, StyleSheet } from 'react-native';
-
+import React from 'react';
+import { Text, TextStyle, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 
-export type ThemedTextProps = TextProps & {
-  lightColor?: string;
-  darkColor?: string;
-  type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
-};
+type TextVariant = 'jumboTitle' | 'superTitle' | 'title' | 'jumboSubTitle' | 'subTitleBold' | 'subTitle' | 'paragraph' | 'textLink' | 'default';
 
-export function ThemedText({
-  style,
-  lightColor,
-  darkColor,
-  type = 'default',
-  ...rest
-}: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
-
-  return (
-    <Text
-      style={[
-        { color },
-        type === 'default' ? styles.default : undefined,
-        type === 'title' ? styles.title : undefined,
-        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
-        type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'link' ? styles.link : undefined,
-        style,
-      ]}
-      {...rest}
-    />
-  );
+interface ThemedTextProps {
+  children: React.ReactNode;
+  variant?: TextVariant;
+  style?: TextStyle | TextStyle[];
+  textAlign?: 'auto' | 'left' | 'right' | 'center' | 'justify';
+  marginBottom?: number;
+  color?: string; // Nueva prop para color personalizado
 }
 
+export const ThemedText: React.FC<ThemedTextProps> = ({
+  children,
+  variant = 'default',
+  style,
+  textAlign,
+  marginBottom,
+  color, // Nueva prop
+}) => {
+  const themeColors = useThemeColor();
+
+  const variantStyles: Record<TextVariant, TextStyle> = {
+    jumboTitle: {
+      fontSize: 36,
+      lineHeight: 48,
+      color: themeColors.textColor,
+      fontWeight: '800', // extrabold
+    },
+    superTitle: {
+      fontSize: 24,
+      lineHeight: 28,
+      color: themeColors.textColor,
+      fontWeight: '800', // extrabold
+    },
+    title: {
+      fontSize: 16,
+      lineHeight: 22,
+      color: themeColors.textColor,
+      fontWeight: '800', // extrabold
+    },
+    jumboSubTitle: {
+      fontSize: 20,
+      lineHeight: 28,
+      color: themeColors.textParagraph,
+      fontWeight: '300', // normal
+    },
+    subTitleBold: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: themeColors.textColor,
+      fontWeight: '700', // bold
+    },
+    subTitle: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: themeColors.textColor,
+      fontWeight: '300', // normal
+    },
+    paragraph: {
+      fontSize: 12,
+      lineHeight: 16,
+      color: themeColors.textParagraph,
+      fontWeight: '300', // normal
+    },
+    textLink: {
+      fontSize: 12,
+      lineHeight: 16,
+      color: themeColors.textColorAccent,
+      fontWeight: '600', // semibold
+    },
+    default: {
+      color: themeColors.textColor,
+    }
+  };
+
+  const combinedStyle = [
+    styles.baseText,
+    variantStyles[variant],
+    textAlign && { textAlign },
+    marginBottom !== undefined && { marginBottom },
+    color && { color }, // Aplicar color personalizado si se proporciona
+    style,
+  ];
+
+  return (
+    <Text style={combinedStyle}>
+      {children}
+    </Text>
+  );
+};
+
 const styles = StyleSheet.create({
-  default: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    lineHeight: 32,
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  link: {
-    lineHeight: 30,
-    fontSize: 16,
-    color: '#0a7ea4',
+  baseText: {
+    // Estilos base comunes a todos los textos
   },
 });
