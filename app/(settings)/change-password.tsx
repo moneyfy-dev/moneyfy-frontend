@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedInput } from '@/components/ThemedInput';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedButton } from '@/components/ThemedButton';
+import { changePassword } from '@/services/securityService';
 
 export default function ChangePasswordScreen() {
     const [currentPassword, setCurrentPassword] = useState('');
@@ -14,11 +15,15 @@ export default function ChangePasswordScreen() {
     const themeColors = useThemeColor();
     const router = useRouter();
 
-    const handleSave = () => {
-        // Aquí iría la lógica para cambiar la contraseña
-        console.log('Cambiando contraseña...');
-        // Si el cambio es exitoso, podrías navegar de vuelta o mostrar un mensaje de éxito
-        // router.back();
+    const handleSave = async () => {
+        try {
+            await changePassword(currentPassword, newPassword);
+            Alert.alert('Éxito', 'Contraseña cambiada correctamente');
+            router.back();
+        } catch (error) {
+            console.error('Error al cambiar la contraseña:', error);
+            Alert.alert('Error', 'No se pudo cambiar la contraseña');
+        }
     };
 
     return (

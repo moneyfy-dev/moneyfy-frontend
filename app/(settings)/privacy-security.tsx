@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Switch, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Switch, TouchableOpacity, Alert } from 'react-native';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Href } from 'expo-router';
+import { getSecuritySettings, updateSecuritySettings, SecuritySettings } from '@/services/securityService';
 
 interface SecurityOption {
     id: string;
@@ -18,6 +19,11 @@ export default function PrivacySecurityScreen() {
     const themeColors = useThemeColor();
     const router = useRouter();
 
+    const [securitySettings, setSecuritySettings] = useState<SecuritySettings>({
+        twoFactorEnabled: false,
+        fingerprintEnabled: false,
+    });
+
     const [securityOptions, setSecurityOptions] = useState<SecurityOption[]>([
         { id: 'password', title: 'Cambiar contraseña', type: 'navigate', route: '/change-password' },
         { id: 'pin', title: 'Establecer PIN o Patrón', type: 'navigate', route: '/pin-config' },
@@ -25,12 +31,30 @@ export default function PrivacySecurityScreen() {
         { id: 'fingerprint', title: 'Autorizar huella', type: 'switch', isEnabled: true },
     ]);
 
-    const toggleSwitch = (id: string) => {
-        setSecurityOptions(prevOptions =>
-            prevOptions.map(option =>
-                option.id === id ? { ...option, isEnabled: !option.isEnabled } : option
-            )
-        );
+    useEffect(() => {
+        const fetchSecuritySettings = async () => {
+            try {
+                const settings = await getSecuritySettings();
+                setSecuritySettings(settings);
+            } catch (error) {
+                console.error('Error al obtener configuración de seguridad:', error);
+                // Manejar el error (mostrar un mensaje al usuario, etc.)
+            }
+        };
+
+        fetchSecuritySettings();
+    }, []);
+
+    const toggleSwitch = async (id: string) => {
+        try {
+            const updatedSettings = await updateSecuritySettings({
+                [id]: !securitySettings[id as keyof SecuritySettings],
+            });
+            setSecuritySettings(updatedSettings);
+        } catch (error) {
+            console.error('Error al actualizar configuración de seguridad:', error);
+            Alert.alert('Error', 'No se pudo actualizar la configuración de seguridad');
+        }
     };
 
     const handleNavigation = (option: SecurityOption) => {

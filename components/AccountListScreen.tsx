@@ -3,12 +3,7 @@ import { StyleSheet, TouchableOpacity, View, FlatList } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
-
-interface Account {
-    id: string;
-    bankName: string;
-    accountNumber: string;
-}
+import { Account } from '@/services/paymentConfigService';
 
 interface AccountListScreenProps {
     accounts: Account[];

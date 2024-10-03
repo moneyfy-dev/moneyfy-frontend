@@ -1,87 +1,101 @@
 import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, View, ScrollView } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedButton } from '@/components/ThemedButton';
+import { addAccount } from '@/services/paymentConfigService';
 
 export default function AddAccountScreen() {
     const [rut, setRut] = useState('');
-    const [nombre, setNombre] = useState('');
+    const [name, setName] = useState('');
     const [alias, setAlias] = useState('');
     const [email, setEmail] = useState('');
-    const [banco, setBanco] = useState('');
-    const [tipoCuenta, setTipoCuenta] = useState('');
-    const [numeroCuenta, setNumeroCuenta] = useState('');
+    const [bankName, setBankName] = useState('');
+    const [accountType, setAccountType] = useState('');
+    const [accountNumber, setAccountNumber] = useState('');
 
     const themeColors = useThemeColor();
     const router = useRouter();
 
-    const handleSave = () => {
-        // Aquí iría la lógica para guardar la cuenta en el backend
-        console.log('Guardando cuenta...');
-        router.back();
+    const handleSave = async () => {
+        try {
+            const newAccount = await addAccount({
+                rut,
+                name,
+                alias,
+                email,
+                bankName,
+                accountType,
+                accountNumber,
+            });
+            Alert.alert('Success', 'Account added successfully');
+            router.back();
+        } catch (error) {
+            console.error('Error adding account:', error);
+            Alert.alert('Error', 'Could not add the account');
+        }
     };
 
     return (
         <ThemedLayout padding={[0 ,40]}>
-
             <ThemedInput
-                label="Rut"
+                label="RUT"
                 value={rut}
                 onChangeText={setRut}
-                placeholder="Ingrese su RUT"
+                placeholder="Enter your RUT"
             />
 
             <ThemedInput
-                label="Nombre"
-                value={nombre}
-                onChangeText={setNombre}
-                placeholder="Ingrese su nombre"
+                label="Name"
+                value={name}
+                onChangeText={setName}
+                placeholder="Enter your name"
             />
 
             <ThemedInput
                 label="Alias"
                 value={alias}
                 onChangeText={setAlias}
-                placeholder="Ingrese un alias para la cuenta"
+                placeholder="Enter an alias for the account"
             />
 
             <ThemedInput
                 label="Email"
                 value={email}
                 onChangeText={setEmail}
-                placeholder="Ingrese su email"
+                placeholder="Enter your email"
                 keyboardType="email-address"
             />
 
-            <ThemedText variant="title" marginBottom={16}>Datos de la cuenta</ThemedText>
+            <ThemedText variant="title" marginBottom={16}>Account Details</ThemedText>
 
             <ThemedInput
-                label="Banco"
-                value={banco}
-                onChangeText={setBanco}
-                placeholder="Seleccione su banco"
+                label="Bank"
+                value={bankName}
+                onChangeText={setBankName}
+                placeholder="Select your bank"
             />
 
-            <ThemedText variant="title" marginBottom={16}>Tipo de cuenta</ThemedText>
+            <ThemedText variant="title" marginBottom={16}>Account Type</ThemedText>
 
             <View style={styles.accountTypeContainer}>
-                {['CORRIENTE', 'VISTA', 'AHORRO'].map((type) => (
+                {['CHECKING', 'SAVINGS', 'VISTA'].map((type) => (
                     <TouchableOpacity
                         key={type}
                         style={[
-                            styles.accountTypeButton, { backgroundColor: themeColors.extremeContrastGray },
-                            tipoCuenta === type && { backgroundColor: themeColors.buttonBackgroundColor }
+                            styles.accountTypeButton,
+                            { backgroundColor: themeColors.extremeContrastGray },
+                            accountType === type && { backgroundColor: themeColors.buttonBackgroundColor }
                         ]}
-                        onPress={() => setTipoCuenta(type)}
+                        onPress={() => setAccountType(type)}
                     >
                         <ThemedText
                             variant="textLink"
                             textAlign="center"
-                            color={tipoCuenta === type ? themeColors.backgroundColor : themeColors.textColorAccent}
+                            color={accountType === type ? themeColors.backgroundColor : themeColors.textColorAccent}
                         >
                             {type}
                         </ThemedText>
@@ -90,15 +104,15 @@ export default function AddAccountScreen() {
             </View>
 
             <ThemedInput
-                label="N° Cuenta"
-                value={numeroCuenta}
-                onChangeText={setNumeroCuenta}
-                placeholder="Ingrese el número de cuenta"
+                label="Account Number"
+                value={accountNumber}
+                onChangeText={setAccountNumber}
+                placeholder="Enter the account number"
                 keyboardType="numeric"
             />
 
             <ThemedButton
-                text="Guardar"
+                text="Save"
                 onPress={handleSave}
                 style={styles.Button}
             />

@@ -7,15 +7,25 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { AccountListScreen } from '@/components/AccountListScreen';
 import { CreditCardIcon } from '@/components/images/CreditCardIcon';
 import { ThemedButton } from '@/components/ThemedButton';
+import { getAccounts, Account } from '@/services/paymentConfigService';
 
 export default function PaymentConfigScreen() {
-    const [accounts, setAccounts] = useState([]);
+    const [accounts, setAccounts] = useState<Account[]>([]);
     const themeColors = useThemeColor();
     const router = useRouter();
 
     useEffect(() => {
-        // Aquí cargaríamos las cuentas del usuario desde el backend
-        // Por ahora, usaremos un array vacío
+        const fetchAccounts = async () => {
+            try {
+                const fetchedAccounts = await getAccounts();
+                setAccounts(fetchedAccounts);
+            } catch (error) {
+                console.error('Error al obtener cuentas:', error);
+                // Manejar el error (mostrar un mensaje al usuario, etc.)
+            }
+        };
+
+        fetchAccounts();
     }, []);
 
     const handleAddAccount = () => {
@@ -24,7 +34,6 @@ export default function PaymentConfigScreen() {
 
     return (
         <ThemedLayout padding={[0, 40]}>
-
             {accounts.length === 0 ? (
                 <View style={styles.emptyState}>
                     <CreditCardIcon width={117} height={107} style={styles.iconImage}/>
