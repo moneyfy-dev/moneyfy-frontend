@@ -74,10 +74,7 @@ export default function LoginScreen() {
         }
 
         try {
-            const response = await login(email, password);
-            console.log('Inicio de sesión exitoso:', response);
-            await loginContext(response);
-            Alert.alert('Éxito', response.message);
+            await loginContext(email, password);
             router.replace('/(tabs)');
         } catch (error: any) {
             if (error.response && error.response.status === 403) {

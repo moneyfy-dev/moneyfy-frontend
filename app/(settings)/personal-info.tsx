@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, View, Alert, TouchableOpacity, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { StyleSheet, View, Alert, TouchableOpacity, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedInput } from '@/components/ThemedInput';
 import { AvatarIcon } from '@/components/images/AvatarIcon';
@@ -10,69 +10,98 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useAuth } from '@/context/AuthContext';
 import { ThemedButton } from '@/components/ThemedButton';
 import { ThemedText } from '@/components/ThemedText';
-import { PersonalInfo } from '@/types/PersonalInfo';
-import { UserData } from '@/types/userData';
 import { ThemedDatePicker } from '@/components/ThemedDatePicker';
 
 export default function PersonalInfoScreen() {
-    const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
+    const { user, updateUserData } = useAuth();
+    const themeColors = useThemeColor();
+    const [personalInfo, setPersonalInfo] = useState({
         nombre: '',
         apellido: '',
         telefono: '',
         direccion: '',
         fechaNacimiento: new Date(),
+        profilePicture: '',
     });
-    const [showDatePicker, setShowDatePicker] = useState(false);
-
-    const themeColors = useThemeColor();
-    const router = useRouter();
-    const { userData, updateUserData } = useAuth();
 
     useEffect(() => {
-        if (userData) {
+        if (user) {
             setPersonalInfo({
-                nombre: userData.name || '',
-                apellido: userData.surname || '',
-                telefono: userData.phone || '',
-                direccion: userData.address || '',
-                fechaNacimiento: userData.dateOfBirth ? new Date(userData.dateOfBirth) : new Date(),
+                nombre: user.userData.name || '',
+                apellido: user.userData.surname || '',
+                telefono: user.userData.phone || '',
+                direccion: user.userData.address || '',
+                fechaNacimiento: user.userData.dateOfBirth ? new Date(user.userData.dateOfBirth) : new Date(),
+                profilePicture: user.userData.profilePicture || '',
             });
         }
-    }, [userData]);
+    }, [user]);
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            const selectedAsset = result.assets[0];
+            const manipResult = await ImageManipulator.manipulateAsync(
+                selectedAsset.uri,
+                [{ resize: { width: 300 } }],
+                { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+            );
+
+            setPersonalInfo(prev => ({ ...prev, profilePicture: manipResult.uri }));
+        }
+    };
 
     const handleSave = async () => {
         try {
-            await updateUserData({
-                name: personalInfo.nombre,
-                surname: personalInfo.apellido,
-                phone: personalInfo.telefono,
-                address: personalInfo.direccion,
-                dateOfBirth: personalInfo.fechaNacimiento.toISOString().split('T')[0],
-            });
+            const formData = new FormData();
+            formData.append('name', personalInfo.nombre);
+            formData.append('surname', personalInfo.apellido);
+            formData.append('phone', personalInfo.telefono);
+            formData.append('address', personalInfo.direccion);
+            formData.append('dateOfBirth', personalInfo.fechaNacimiento.toISOString().split('T')[0]);
+
+            if (personalInfo.profilePicture) {
+                const filename = personalInfo.profilePicture.split('/').pop();
+                const match = /\.(\w+)$/.exec(filename || '');
+                const type = match ? `image/${match[1]}` : `image`;
+                formData.append('profilePicture', {
+                    uri: personalInfo.profilePicture,
+                    name: filename,
+                    type,
+                } as any);
+            }
+
+            await updateUserData(formData);
             Alert.alert('Éxito', 'Información personal actualizada correctamente');
         } catch (error) {
             console.error('Error al actualizar información personal:', error);
             Alert.alert('Error', 'No se pudo actualizar la información personal');
         }
     };
-    const handleEdit = () => {
-        console.log('Editando información personal');
-    };
 
     return (
         <ThemedLayout padding={[0, 40]}>
-
             <View style={styles.content}>
                 <View style={styles.profileSection}>
-                    <View style={styles.profileImageContainer}>
-                        <AvatarIcon width={80} height={80} style={styles.profileImage} />
-                        <TouchableOpacity style={[styles.editButton, { backgroundColor: themeColors.buttonBackgroundColor }]}>
+                    <TouchableOpacity onPress={pickImage} style={styles.profileImageContainer}>
+                        {personalInfo.profilePicture ? (
+                            <Image source={{ uri: personalInfo.profilePicture }} style={styles.profileImage} />
+                        ) : (
+                            <AvatarIcon width={80} height={80} style={styles.profileImage} />
+                        )}
+                        <View style={[styles.editButton, { backgroundColor: themeColors.buttonBackgroundColor }]}>
                             <Ionicons name="pencil" size={10} color={themeColors.white} />
-                        </TouchableOpacity>
-                    </View>
+                        </View>
+                    </TouchableOpacity>
                     <View>
                         <ThemedText variant="title" textAlign="center" marginBottom={4}>{personalInfo.nombre} {personalInfo.apellido}</ThemedText>
-                        <ThemedText variant="paragraph" textAlign="center">{userData?.email || 'No email'}</ThemedText>
+                        <ThemedText variant="paragraph" textAlign="center">{user?.userData.email || 'No email'}</ThemedText>
                     </View>
                 </View>
                 <ThemedInput

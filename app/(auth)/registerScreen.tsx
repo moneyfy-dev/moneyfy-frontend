@@ -89,10 +89,11 @@ export default function RegisterScreen() {
 
         try {
             const response = await register(nombre, apellido, email, password);
-            console.log('Registro exitoso:', response);
-            setTempEmail(email); // Establece el email temporalmente
-            Alert.alert('Éxito', response.message);
-            router.replace('/confirmation-code' as Href<string>);
+            if (response.data && response.data.user) {
+                setTempEmail(email);
+                Alert.alert('Éxito', response.message);
+                router.replace('/confirmation-code' as Href<string>);
+            }
         } catch (error: any) {
             console.error('Error en el registro:', error);
             if (error.response && error.response.status === 406) {

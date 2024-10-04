@@ -3,9 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { LineChart } from 'react-native-chart-kit';
+import { useAuth } from '@/context/AuthContext';
 
 export default function HomeScreen() {
   const themeColors = useThemeColor();
+  const { user } = useAuth();
 
   const styles = StyleSheet.create({
     container: {
@@ -93,7 +95,7 @@ export default function HomeScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>Hola Alejandro</Text>
+        <Text style={styles.greeting}>Hola {user?.userData.name}</Text>
         <View style={styles.iconContainer}>
           <Ionicons name="notifications-outline" size={24} color={themeColors.textColor} style={styles.icon} />
           <Ionicons name="help-circle-outline" size={24} color={themeColors.textColor} style={styles.icon} />
@@ -102,7 +104,7 @@ export default function HomeScreen() {
 
       <View style={styles.balanceContainer}>
         <Text style={styles.balanceLabel}>Tu saldo actual</Text>
-        <Text style={styles.balance}>$70.896</Text>
+        <Text style={styles.balance}>${user?.wallet.totalBalance.toFixed(2)}</Text>
       </View>
 
       <LineChart
@@ -126,12 +128,12 @@ export default function HomeScreen() {
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Saldo Disponible</Text>
-        <Text style={styles.cardValue}>$65.280</Text>
+        <Text style={styles.cardValue}>${user?.wallet.availableBalance.toFixed(2)}</Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Saldo Retenido</Text>
-        <Text style={styles.cardValue}>$5.566</Text>
+        <Text style={styles.cardValue}>${user?.wallet.outstandingBalance.toFixed(2)}</Text>
       </View>
 
       <TouchableOpacity style={styles.button}>

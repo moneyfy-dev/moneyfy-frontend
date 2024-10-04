@@ -1,18 +1,49 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { login, refreshToken } from '@/services/authService';
-import { UserData, fetchInitialUserData, saveUserDataLocally, getUserDataFromStorage, updateUserData as updateUserDataService } from '@/services/userDataService';
+import getEnvVars from '../config';
+
+const { apiUrl } = getEnvVars();
+
+interface UserData {
+  name: string;
+  surname: string;
+  pin: string;
+  email: string;
+  phone: string;
+  address: string;
+  profileRole: string;
+  profilePicture: string;
+  dateOfBirth: string;
+  rememberToken: string;
+  enable: boolean;
+}
+
+interface Wallet {
+  totalBalance: number;
+  outstandingBalance: number;
+  availableBalance: number;
+  paymentBalance: number;
+  history: any[];
+}
+
+interface User {
+  userId: string;
+  userData: UserData;
+  wallet: Wallet;
+  accounts: any[];
+  referredPeople: any[];
+}
 
 interface AuthContextProps {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  userEmail: string | null;
+  user: User | null;
   setTempEmail: (email: string) => void;
   refreshUserSession: () => Promise<void>;
-  userData: UserData | null;
-  updateUserData: (updatedData: Partial<UserData>) => Promise<void>;
+  updateUserData: (updatedData: Partial<UserData> | FormData) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps>({
@@ -20,18 +51,16 @@ const AuthContext = createContext<AuthContextProps>({
   isLoading: true,
   login: async () => {},
   logout: async () => {},
-  userEmail: null,
+  user: null,
   setTempEmail: () => {},
   refreshUserSession: async () => {},
-  userData: null,
   updateUserData: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     checkAuthStatus();
@@ -39,18 +68,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAuthStatus = async () => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
-      const email = await AsyncStorage.getItem('userEmail');
-      if (token && email) {
+      const userString = await AsyncStorage.getItem('user');
+      const token = await AsyncStorage.getItem('token');
+      if (userString && token) {
+        const userData = JSON.parse(userString);
+        setUser(userData);
         setIsAuthenticated(true);
-        setUserEmail(email);
-      }
-      const storedUserData = await getUserDataFromStorage();
-      if (storedUserData) {
-        setUserData(storedUserData);
+        
+        // Verificar la validez del token y actualizar los datos del usuario
+        await refreshUserSession();
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
+      // Si hay un error, limpiamos los datos locales
+      await logout();
     } finally {
       setIsLoading(false);
     }
@@ -59,16 +90,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginContext = async (email: string, password: string) => {
     try {
       const response = await login(email, password);
-      if (response.jwt && response.email) {
-        await AsyncStorage.setItem('userToken', response.jwt);
-        await AsyncStorage.setItem('userEmail', response.email);
+      if (response.data && response.data.user) {
+        await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
+        await AsyncStorage.setItem('token', response.data.jwt);
+        setUser(response.data.user);
         setIsAuthenticated(true);
-        setUserEmail(response.email);
-
-        // Fetch and store initial user data
-        const initialUserData = await fetchInitialUserData(response.jwt);
-        await saveUserDataLocally(initialUserData);
-        setUserData(initialUserData);
       }
     } catch (error) {
       console.error('Error during login:', error);
@@ -77,29 +103,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await AsyncStorage.removeItem('userToken');
-    await AsyncStorage.removeItem('userEmail');
+    await AsyncStorage.removeItem('user');
+    await AsyncStorage.removeItem('token');
     setIsAuthenticated(false);
-    setUserEmail(null);
-    setUserData(null);
-    await AsyncStorage.removeItem('userData');
+    setUser(null);
   };
 
   const setTempEmail = (email: string) => {
-    setUserEmail(email);
+    if (user) {
+      setUser({ ...user, userData: { ...user.userData, email } });
+    }
   };
 
   const refreshUserSession = async () => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
+      const token = await AsyncStorage.getItem('token');
       if (token) {
         const response = await refreshToken(token);
-        if (response.jwt) {
-          await AsyncStorage.setItem('userToken', response.jwt);
-          // Optionally, fetch updated user data here
-          const updatedUserData = await fetchInitialUserData(response.jwt);
-          await saveUserDataLocally(updatedUserData);
-          setUserData(updatedUserData);
+        if (response.data && response.data.user) {
+          await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
+          await AsyncStorage.setItem('token', response.data.jwt);
+          setUser(response.data.user);
+          setIsAuthenticated(true);
+        } else {
+          // Si no hay datos válidos, cerramos la sesión
+          await logout();
         }
       }
     } catch (error) {
@@ -108,12 +136,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateUserData = async (updatedData: Partial<UserData>) => {
-    if (userData) {
-      const token = await AsyncStorage.getItem('userToken');
-      if (token) {
-        const newUserData = await updateUserDataService(updatedData, token);
-        setUserData(newUserData);
+  const updateUserData = async (updatedData: Partial<UserData> | FormData) => {
+    if (user) {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const headers: HeadersInit = {
+          'Authorization': `Bearer ${token}`,
+        };
+
+        if (!(updatedData instanceof FormData)) {
+          headers['Content-Type'] = 'application/json';
+        }
+
+        const response = await fetch(`${apiUrl}/app/user/update`, {
+          method: 'PUT',
+          headers: headers,
+          body: updatedData instanceof FormData ? updatedData : JSON.stringify(updatedData),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update user data');
+        }
+
+        const updatedUser = await response.json();
+        await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      } catch (error) {
+        console.error('Error updating user data:', error);
+        throw error;
       }
     }
   };
@@ -124,10 +174,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isLoading, 
       login: loginContext, 
       logout, 
-      userEmail, 
+      user, 
       setTempEmail,
       refreshUserSession,
-      userData,
       updateUserData
     }}>
       {children}
