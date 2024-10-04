@@ -46,7 +46,7 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
       fontSize: 20,
       lineHeight: 28,
       color: themeColors.textParagraph,
-      fontWeight: '300', // normal
+      fontWeight: '400', // normal
     },
     subTitleBold: {
       fontSize: 14,
@@ -58,13 +58,13 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
       fontSize: 14,
       lineHeight: 20,
       color: themeColors.textColor,
-      fontWeight: '300', // normal
+      fontWeight: '500', // normal
     },
     paragraph: {
       fontSize: 12,
       lineHeight: 16,
       color: themeColors.textParagraph,
-      fontWeight: '300', // normal
+      fontWeight: '400', // normal
     },
     textLink: {
       fontSize: 12,

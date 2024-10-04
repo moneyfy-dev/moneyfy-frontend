@@ -4,11 +4,11 @@ import getEnvVars from '../config';
 const { apiUrl } = getEnvVars();
 
 // Servicio para registrar un nuevo usuario
-export const register = async (name: string, lastname: string, email: string, password: string) => {
+export const register = async (name: string, surname: string, email: string, password: string) => {
   try {
     const response = await axios.post(`${apiUrl}/app/auth/register`, {
       name,
-      lastname,
+      surname,
       email,
       password,
     });
@@ -29,6 +29,19 @@ export const login = async (email: string, password: string) => {
     return response.data;
   } catch (error) {
     console.error('Error en el inicio de sesión:', error);
+    throw error;
+  }
+};
+
+// Nuevo servicio para refrescar el token
+export const refreshToken = async (token: string) => {
+  try {
+    const response = await axios.post(`${apiUrl}/app/auth/refresh-token`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al refrescar el token:', error);
     throw error;
   }
 };

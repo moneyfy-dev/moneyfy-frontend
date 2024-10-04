@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { useTheme } from '@/context/ThemeContext';
 
 interface ThemeOption {
-  id: string;
+  id: 'light' | 'dark' | 'system';
   title: string;
   description: string;
 }
 
 export default function AppearanceScreen() {
   const themeColors = useThemeColor();
-  const [selectedTheme, setSelectedTheme] = useState<string>('system');
+  const { themeMode, setThemeMode, currentTheme } = useTheme();
 
   const themeOptions: ThemeOption[] = [
     {
@@ -32,14 +33,17 @@ export default function AppearanceScreen() {
     },
   ];
 
-  const selectTheme = (id: string) => {
-    setSelectedTheme(id);
-    // Aquí iría la lógica para cambiar el tema de la aplicación
-    // changeAppTheme(id);
+  const selectTheme = (id: 'light' | 'dark' | 'system') => {
+    setThemeMode(id);
   };
 
+  useEffect(() => {
+    console.log('Current theme mode:', themeMode);
+    console.log('Current theme:', currentTheme);
+  }, [themeMode, currentTheme]);
+
   const renderThemeOption = (option: ThemeOption, index: number) => (
-    <View
+    <TouchableOpacity
       key={option.id}
       style={[
         styles.optionContainer,
@@ -48,22 +52,20 @@ export default function AppearanceScreen() {
           borderColor: themeColors.borderBackgroundColor
         }
       ]}
+      onPress={() => selectTheme(option.id)}
     >
-      <TouchableOpacity
-        style={styles.optionContent}
-        onPress={() => selectTheme(option.id)}
-      >
+      <View style={styles.optionContent}>
         <View
           style={[
             styles.radioButton,
             {
-              borderColor: selectedTheme === option.id
+              borderColor: themeMode === option.id
                 ? themeColors.textColorAccent
                 : themeColors.unfocusedBorderColor
             }
           ]}
         >
-          {selectedTheme === option.id && (
+          {themeMode === option.id && (
             <View
               style={[
                 styles.radioButtonInner,
@@ -76,8 +78,8 @@ export default function AppearanceScreen() {
           <ThemedText variant="subTitle" marginBottom={4}>{option.title}</ThemedText>
           <ThemedText variant="paragraph">{option.description}</ThemedText>
         </View>
-      </TouchableOpacity>
-    </View>
+      </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -111,5 +113,8 @@ const styles = StyleSheet.create({
   },
   optionTextContainer: {
     flex: 1,
+  },
+  debugText: {
+    marginTop: 20,
   },
 });

@@ -45,23 +45,10 @@ const ConfigScreen = () => {
         <ThemedText variant="title" textAlign="center">Ajustes</ThemedText>
       </View>
 
-      <View style={styles.profileSection}>
-        <View style={styles.profileImageContainer}>
-          <AvatarIcon width={80} height={80} style={styles.profileImage} />
-          <TouchableOpacity style={[styles.editButton, { backgroundColor: themeColors.buttonBackgroundColor }]}>
-            <Ionicons name="pencil" size={10} color={themeColors.white} />
-          </TouchableOpacity>
-        </View>
-        <View>
-          <ThemedText variant="title" textAlign="center" marginBottom={4}>Alejandro Osses</ThemedText>
-          <ThemedText variant="paragraph" textAlign="center">{userEmail || 'No email'}</ThemedText>
-        </View>
-      </View>
-
       {menuItems.map((item, index) => (
         <TouchableOpacity
           key={index}
-          style={[styles.menuItem, { borderBottomWidth: index === menuItems.length - 1 ? 0 : 0.5, borderColor: themeColors.borderBackgroundColor }]}
+          style={[styles.menuItem, { borderBottomWidth: index === menuItems.length - 1 ? 0 : 1, borderColor: themeColors.borderBackgroundColor }]}
           onPress={item.onPress || (() => router.push(item.route))}
         >
           <Ionicons name={item.icon as any} size={20} color={themeColors.textColorAccent} />
@@ -91,43 +78,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-  },
-  profileSection: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginBottom: 30,
-    textAlign: 'center',
-  },
-  profileImageContainer: {
-    position: 'relative',
-    width: 80,
-    height: 80,
-    marginBottom: 16,
-  },
-  profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  email: {
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  editButton: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    position: 'absolute',
-    right: 0,
-    bottom: 0,
   },
   menuItem: {
     flexDirection: 'row',
