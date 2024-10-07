@@ -1,5 +1,6 @@
 import axios from 'axios';
 import getEnvVars from '../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { apiUrl } = getEnvVars();
 
@@ -28,9 +29,23 @@ export const updateSecuritySettings = async (settings: Partial<SecuritySettings>
   }
 };
 
-export const changePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
+export const changePassword = async (oldPassword: string, newPassword: string) => {
   try {
-    await axios.post(`${apiUrl}/app/user/change-password`, { currentPassword, newPassword });
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      throw new Error('No se encontró el token de autenticación');
+    }
+
+    const response = await axios.post(
+      `${apiUrl}/app/users/restore/password`,
+      { oldPassword, newPassword },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
   } catch (error) {
     console.error('Error al cambiar la contraseña:', error);
     throw error;

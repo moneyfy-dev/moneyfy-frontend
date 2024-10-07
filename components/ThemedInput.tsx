@@ -10,11 +10,13 @@ interface ThemedInputProps extends TextInputProps {
   onChangeText: (text: string) => void;
   secureTextEntry?: boolean;
   error?: string;
-  label?: string; // Nueva propiedad para el label
+  label?: string;
+  icon?: string; // Nueva propiedad para el icono
+  onIconPress?: () => void; // Nueva propiedad para manejar el press del icono
 }
 
 export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
-  ({ placeholder, value, onChangeText, secureTextEntry, keyboardType, error, style, label, ...props }, ref) => {
+  ({ placeholder, value, onChangeText, secureTextEntry, keyboardType, error, style, label, icon, onIconPress, ...props }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const themeColors = useThemeColor();
@@ -54,6 +56,15 @@ export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
               <Ionicons
                 name={isPasswordVisible ? "eye-outline" : "eye-off-outline"}
                 size={18}
+                color={themeColors.textColorAccent}
+              />
+            </TouchableOpacity>
+          )}
+          {icon && (
+            <TouchableOpacity onPress={onIconPress}>
+              <Ionicons
+                name={icon as any}
+                size={24}
                 color={themeColors.textColorAccent}
               />
             </TouchableOpacity>

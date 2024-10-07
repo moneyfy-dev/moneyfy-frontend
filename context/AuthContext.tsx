@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login, refreshToken } from '@/services/authService';
+import { login, refreshToken, getUserData } from '@/services/authService';
 import getEnvVars from '../config';
+import NetInfo from "@react-native-community/netinfo";
+
+// Elimina la importación de PersistentAuth
 
 const { apiUrl } = getEnvVars();
 
@@ -44,6 +47,8 @@ interface AuthContextProps {
   setTempEmail: (email: string) => void;
   refreshUserSession: () => Promise<void>;
   updateUserData: (updatedData: Partial<UserData> | FormData) => Promise<void>;
+  isPersistentAuthRequired: boolean;
+  handlePersistentAuthSuccess: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps>({
@@ -55,12 +60,15 @@ const AuthContext = createContext<AuthContextProps>({
   setTempEmail: () => {},
   refreshUserSession: async () => {},
   updateUserData: async () => {},
+  isPersistentAuthRequired: false,
+  handlePersistentAuthSuccess: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [isPersistentAuthRequired, setIsPersistentAuthRequired] = useState(false);
 
   useEffect(() => {
     checkAuthStatus();
@@ -74,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userData = JSON.parse(userString);
         setUser(userData);
         setIsAuthenticated(true);
+        setIsPersistentAuthRequired(true);
         
         // Verificar la validez del token y actualizar los datos del usuario
         await refreshUserSession();
@@ -85,6 +94,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const hydrateUserData = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) throw new Error('No token found');
+
+      const isConnected = await NetInfo.fetch().then(state => state.isConnected);
+      
+      if (isConnected) {
+        // Si hay conexión, obtenemos datos frescos del servidor
+        const freshUserData = await getUserData(token);
+        await AsyncStorage.setItem('user', JSON.stringify(freshUserData));
+        setUser(freshUserData);
+      } else {
+        // Si no hay conexión, usamos los datos almacenados localmente
+        const cachedUserData = await AsyncStorage.getItem('user');
+        if (cachedUserData) {
+          setUser(JSON.parse(cachedUserData));
+        }
+      }
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Error hydrating user data:', error);
+      await logout();
+    }
+  };
+
+  const handlePersistentAuthSuccess = async () => {
+    setIsPersistentAuthRequired(false);
+    await hydrateUserData();
   };
 
   const loginContext = async (email: string, password: string) => {
@@ -176,8 +216,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       logout, 
       user, 
       setTempEmail,
-      refreshUserSession,
-      updateUserData
+      refreshUserSession: hydrateUserData,
+      updateUserData,
+      isPersistentAuthRequired,
+      handlePersistentAuthSuccess
     }}>
       {children}
     </AuthContext.Provider>

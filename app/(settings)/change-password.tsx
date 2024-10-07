@@ -16,13 +16,22 @@ export default function ChangePasswordScreen() {
     const router = useRouter();
 
     const handleSave = async () => {
+        if (newPassword !== confirmPassword) {
+            Alert.alert('Error', 'Las nuevas contraseñas no coinciden');
+            return;
+        }
+
         try {
-            await changePassword(currentPassword, newPassword);
-            Alert.alert('Éxito', 'Contraseña cambiada correctamente');
-            router.back();
+            const response = await changePassword(currentPassword, newPassword);
+            if (response.status === 200) {
+                Alert.alert('Éxito', response.message || 'Contraseña cambiada correctamente');
+                router.back();
+            } else {
+                Alert.alert('Error', response.message || 'No se pudo cambiar la contraseña');
+            }
         } catch (error) {
             console.error('Error al cambiar la contraseña:', error);
-            Alert.alert('Error', 'No se pudo cambiar la contraseña');
+            Alert.alert('Error', 'No se pudo cambiar la contraseña. Por favor, intente de nuevo.');
         }
     };
 

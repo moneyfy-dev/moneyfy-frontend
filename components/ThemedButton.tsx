@@ -6,6 +6,7 @@ import { ThemedText } from '@/components/ThemedText';
 
 type ButtonSize = 'lg' | 'sm';
 type ButtonWidth = 'full' | 'auto' | 'half' | 'third' | 'quarter';
+type ButtonVariant = 'primary' | 'secondary';
 
 interface ThemedButtonProps {
     text: string;
@@ -19,6 +20,7 @@ interface ThemedButtonProps {
     backgroundColor?: string;
     size?: ButtonSize;
     width?: ButtonWidth;
+    variant?: ButtonVariant;
 }
 
 export const ThemedButton: React.FC<ThemedButtonProps> = ({
@@ -30,12 +32,15 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
     backgroundColor,
     size = 'lg',
     width = 'full',
+    variant = 'primary',
 }) => {
     const themeColors = useThemeColor();
 
     const buttonBackgroundColor = disabled
         ? themeColors.disabledColor
-        : backgroundColor || themeColors.buttonBackgroundColor;
+        : variant === 'primary'
+        ? backgroundColor || themeColors.buttonBackgroundColor
+        : 'transparent';
 
     const buttonSizeStyle = size === 'sm' ? styles.buttonSm : styles.buttonLg;
     const textSizeStyle = size === 'sm' ? styles.textSm : styles.textLg;
@@ -43,26 +48,31 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
 
     const buttonWidthStyle = styles[`width${width.charAt(0).toUpperCase() + width.slice(1)}` as keyof typeof styles];
 
+    const buttonStyle = [
+        styles.button,
+        buttonSizeStyle,
+        buttonWidthStyle,
+        { backgroundColor: buttonBackgroundColor },
+        variant === 'secondary' && { borderWidth: 1, borderColor: themeColors.buttonBackgroundColor },
+        style
+    ];
+
+    const textColor = variant === 'primary' ? themeColors.buttonTextColor : themeColors.buttonBackgroundColor;
+
     return (
         <TouchableOpacity
-            style={[
-                styles.button,
-                buttonSizeStyle,
-                buttonWidthStyle,
-                { backgroundColor: buttonBackgroundColor },
-                style
-            ]}
+            style={buttonStyle}
             onPress={onPress}
             disabled={disabled}
         >
             {icon && icon.position === 'left' && (
-                <Ionicons name={icon.name} size={iconSize} color="white" style={styles.iconLeft} />
+                <Ionicons name={icon.name} size={iconSize} color={textColor} style={styles.iconLeft} />
             )}
-            <ThemedText style={[styles.buttonText, textSizeStyle, { color: themeColors.buttonTextColor }]}>
+            <ThemedText style={[styles.buttonText, textSizeStyle, { color: textColor }]}>
                 {text}
             </ThemedText>
             {icon && icon.position === 'right' && (
-                <Ionicons name={icon.name} size={iconSize} color="white" style={styles.iconRight} />
+                <Ionicons name={icon.name} size={iconSize} color={textColor} style={styles.iconRight} />
             )}
         </TouchableOpacity>
     );

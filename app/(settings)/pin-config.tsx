@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { sha256 } from 'js-sha256';
 import { ThemedButton } from '@/components/ThemedButton';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PIN_LENGTH = 4;
 const PIN_KEY = 'user_pin_set';
@@ -97,7 +98,8 @@ export default function SetPinScreen() {
         try {
             const pinHash = sha256(newPin);
             await savePinHashToBackend(pinHash);
-            await SecureStore.setItemAsync(PIN_KEY, 'true');
+            await AsyncStorage.setItem(PIN_KEY, 'true');
+            await AsyncStorage.setItem('user_pin', newPin); // Guardar el PIN en el almacenamiento local
             console.log('Setting stage to success');
             setStage('success');
         } catch (error) {

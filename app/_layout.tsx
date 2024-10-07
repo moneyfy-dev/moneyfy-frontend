@@ -10,6 +10,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { PersistentAuthWrapper } from '@/components/PersistentAuthWrapper';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -56,7 +57,9 @@ export default function RootLayout() {
       <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <SafeAreaProvider>
           <AuthProvider>
+            <PersistentAuthWrapper>
             <RootLayoutNav />
+            </PersistentAuthWrapper>
           </AuthProvider>
         </SafeAreaProvider>
       </NavigationThemeProvider>
