@@ -1,10 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login, refreshToken, getUserData } from '@/services/authService';
+import { login, getUserData } from '@/services/authService';
 import getEnvVars from '../config';
 import NetInfo from "@react-native-community/netinfo";
-
-// Elimina la importación de PersistentAuth
 
 const { apiUrl } = getEnvVars();
 
@@ -49,6 +47,7 @@ interface AuthContextProps {
   updateUserData: (updatedData: Partial<UserData> | FormData) => Promise<void>;
   isPersistentAuthRequired: boolean;
   handlePersistentAuthSuccess: () => Promise<void>;
+  userEmail: string; // Añadimos esta línea
 }
 
 const AuthContext = createContext<AuthContextProps>({
@@ -62,6 +61,7 @@ const AuthContext = createContext<AuthContextProps>({
   updateUserData: async () => {},
   isPersistentAuthRequired: false,
   handlePersistentAuthSuccess: async () => {},
+  userEmail: '', // Añadimos esta línea
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -69,6 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [isPersistentAuthRequired, setIsPersistentAuthRequired] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
     checkAuthStatus();
@@ -85,11 +86,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsPersistentAuthRequired(true);
         
         // Verificar la validez del token y actualizar los datos del usuario
-        await refreshUserSession();
+        await hydrateUserData();
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
-      // Si hay un error, limpiamos los datos locales
       await logout();
     } finally {
       setIsLoading(false);
@@ -104,12 +104,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const isConnected = await NetInfo.fetch().then(state => state.isConnected);
       
       if (isConnected) {
-        // Si hay conexión, obtenemos datos frescos del servidor
         const freshUserData = await getUserData(token);
-        await AsyncStorage.setItem('user', JSON.stringify(freshUserData));
-        setUser(freshUserData);
+        await AsyncStorage.setItem('user', JSON.stringify(freshUserData.user));
+        setUser(freshUserData.user);
       } else {
-        // Si no hay conexión, usamos los datos almacenados localmente
         const cachedUserData = await AsyncStorage.getItem('user');
         if (cachedUserData) {
           setUser(JSON.parse(cachedUserData));
@@ -130,9 +128,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginContext = async (email: string, password: string) => {
     try {
       const response = await login(email, password);
-      if (response.data && response.data.user) {
-        await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
+      if (response.data && response.data.jwt) {
         await AsyncStorage.setItem('token', response.data.jwt);
+        await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
         setUser(response.data.user);
         setIsAuthenticated(true);
       }
@@ -150,30 +148,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const setTempEmail = (email: string) => {
+    setUserEmail(email);
     if (user) {
       setUser({ ...user, userData: { ...user.userData, email } });
     }
   };
 
   const refreshUserSession = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (token) {
-        const response = await refreshToken(token);
-        if (response.data && response.data.user) {
-          await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
-          await AsyncStorage.setItem('token', response.data.jwt);
-          setUser(response.data.user);
-          setIsAuthenticated(true);
-        } else {
-          // Si no hay datos válidos, cerramos la sesión
-          await logout();
-        }
-      }
-    } catch (error) {
-      console.error('Error refreshing user session:', error);
-      await logout();
-    }
+    await hydrateUserData();
   };
 
   const updateUserData = async (updatedData: Partial<UserData> | FormData) => {
@@ -188,7 +170,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           headers['Content-Type'] = 'application/json';
         }
 
-        const response = await fetch(`${apiUrl}/app/user/update`, {
+        const response = await fetch(`${apiUrl}/user/update`, {
           method: 'PUT',
           headers: headers,
           body: updatedData instanceof FormData ? updatedData : JSON.stringify(updatedData),
@@ -216,10 +198,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       logout, 
       user, 
       setTempEmail,
-      refreshUserSession: hydrateUserData,
+      refreshUserSession,
       updateUserData,
       isPersistentAuthRequired,
-      handlePersistentAuthSuccess
+      handlePersistentAuthSuccess,
+      userEmail // Añadimos esta línea
     }}>
       {children}
     </AuthContext.Provider>

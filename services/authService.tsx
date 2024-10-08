@@ -3,14 +3,15 @@ import getEnvVars from '../config';
 
 const { apiUrl } = getEnvVars();
 
-// Servicio para registrar un nuevo usuario
 export const register = async (name: string, surname: string, email: string, password: string) => {
   try {
-    const response = await axios.post(`${apiUrl}/app/auth/register`, {
+    const requestData = { name, surname, pwd: password, email };
+    console.log('Datos de registro a enviar:', requestData);
+    const response = await axios.post(`${apiUrl}/auth/register`, {
       name,
       surname,
-      email,
-      password,
+      pwd: password,
+      email
     });
     return response.data;
   } catch (error) {
@@ -19,37 +20,47 @@ export const register = async (name: string, surname: string, email: string, pas
   }
 };
 
-// Servicio para iniciar sesión
+export const confirmRegistration = async (email: string, code: string) => {
+  try {
+    const response = await axios.post(`${apiUrl}/auth/confirm/registration`, {
+      email,
+      code
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error en la confirmación del registro:', error);
+    throw error;
+  }
+};
+
+export const resendConfirmationCode = async (email: string) => {
+  try {
+    const response = await axios.post(`${apiUrl}/auth/resend/code`, {
+      email
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al reenviar el código de confirmación:', error);
+    throw error;
+  }
+};
+
 export const login = async (email: string, password: string) => {
   try {
-    const response = await axios.post(`${apiUrl}/app/auth/log-in`, {
+    const response = await axios.post(`${apiUrl}/auth/log-in`, {
       email,
-      password,
+      pwd: password
     });
     return response.data;
   } catch (error) {
-    console.error('Error en el inicio de sesión:', error);
+    console.error('Error en el login:', error);
     throw error;
   }
 };
 
-// Nuevo servicio para refrescar el token
-export const refreshToken = async (token: string) => {
-  try {
-    const response = await axios.post(`${apiUrl}/app/auth/refresh-token`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error al refrescar el token:', error);
-    throw error;
-  }
-};
-
-// Nuevo servicio para obtener datos del usuario
 export const getUserData = async (token: string) => {
   try {
-    const response = await axios.get(`${apiUrl}/app/user/data`, {
+    const response = await axios.get(`${apiUrl}/user/data`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

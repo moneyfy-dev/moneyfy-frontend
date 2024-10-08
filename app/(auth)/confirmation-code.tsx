@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useAuth } from '@/context/AuthContext';
-import { Alert } from 'react-native';
 import { ThemedButton } from '@/components/ThemedButton';
+import { confirmRegistration, resendConfirmationCode } from '@/services/authService';
 
 export default function ConfirmationCodeScreen() {
     const [code, setCode] = useState(['', '', '', '']);
@@ -16,7 +16,7 @@ export default function ConfirmationCodeScreen() {
     ]);
     const themeColors = useThemeColor();
     const router = useRouter();
-    const { login: loginContext, userEmail } = useAuth();
+    const { login, userEmail } = useAuth();
 
     const handleCodeChange = (text: string, index: number) => {
         if (text.length <= 1 && /^\d*$/.test(text)) {
@@ -31,21 +31,34 @@ export default function ConfirmationCodeScreen() {
     };
 
     const handleContinue = async () => {
-        // Aquí iría la lógica para validar el código con el backend
+        const fullCode = code.join('');
+        if (fullCode.length !== 4) {
+            Alert.alert('Error', 'Por favor, ingrese el código completo de 4 dígitos.');
+            return;
+        }
+
         try {
-            // Simula una respuesta del backend
-            const response = { jwt: 'token_simulado', email: userEmail };
-            await loginContext(response);
-            router.replace('/(tabs)');
+            const response = await confirmRegistration(userEmail, fullCode);
+            if (response.status === 201) {
+                await login(userEmail, ''); // Aquí cambiamos loginContext por login
+                router.replace('/(tabs)');
+            }
         } catch (error) {
             console.error('Error al validar el código:', error);
             Alert.alert('Error', 'No se pudo validar el código. Inténtalo de nuevo.');
         }
     };
 
-    const handleResendCode = () => {
-        // Aquí iría la lógica para reenviar el código
-        console.log('Reenviar código');
+    const handleResendCode = async () => {
+        try {
+            const response = await resendConfirmationCode(userEmail);
+            if (response.status === 200) {
+                Alert.alert('Éxito', 'Se ha enviado un nuevo código de confirmación.');
+            }
+        } catch (error) {
+            console.error('Error al reenviar el código:', error);
+            Alert.alert('Error', 'No se pudo reenviar el código. Inténtalo de nuevo.');
+        }
     };
 
     useEffect(() => {

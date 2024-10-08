@@ -89,7 +89,7 @@ export default function RegisterScreen() {
 
         try {
             const response = await register(nombre, apellido, email, password);
-            if (response.data && response.data.user) {
+            if (response.status === 200) {
                 setTempEmail(email);
                 Alert.alert('Éxito', response.message);
                 router.replace('/confirmation-code' as Href<string>);
