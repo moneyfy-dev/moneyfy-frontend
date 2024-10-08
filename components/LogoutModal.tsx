@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Modal, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedButton } from '@/components/ThemedButton';
 
 interface LogoutModalProps {
   isVisible: boolean;
@@ -20,20 +22,21 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({ isVisible, onClose, on
     >
       <View style={styles.centeredView}>
         <View style={[styles.modalView, { backgroundColor: themeColors.backgroundCardColor }]}>
-          <Text style={[styles.modalText, { color: themeColors.textColor }]}>¿Estás seguro de que quieres cerrar sesión?</Text>
+          <ThemedText variant="subTitle" style={styles.modalText}>
+            ¿Estás seguro de que quieres cerrar sesión?
+          </ThemedText>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, styles.buttonCancel]}
+            <ThemedButton
+              text="Cancelar"
               onPress={onClose}
-            >
-              <Text style={styles.textStyle}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.buttonConfirm]}
+              variant="secondary"
+              style={styles.button}
+            />
+            <ThemedButton
+              text="Cerrar Sesión"
               onPress={onLogout}
-            >
-              <Text style={styles.textStyle}>Cerrar Sesión</Text>
-            </TouchableOpacity>
+              style={styles.button}
+            />
           </View>
         </View>
       </View>
@@ -64,24 +67,13 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
     marginTop: 20,
   },
   button: {
-    borderRadius: 20,
-    padding: 10,
-    elevation: 2,
-    marginHorizontal: 10,
-  },
-  buttonCancel: {
-    backgroundColor: '#2196F3',
-  },
-  buttonConfirm: {
-    backgroundColor: '#f44336',
-  },
-  textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center'
+    flex: 1,
+    marginHorizontal: 5,
   },
   modalText: {
     marginBottom: 15,
