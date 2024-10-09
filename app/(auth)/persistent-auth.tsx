@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, AppState } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedButton } from '@/components/ThemedButton';
 import { ThemedInput } from '@/components/ThemedInput';
@@ -16,11 +16,30 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
   const [pin, setPin] = useState('');
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
+  const [canShowAlert, setCanShowAlert] = useState(true);
   const themeColors = useThemeColor();
 
   useEffect(() => {
     checkBiometricAvailability();
     checkNetworkStatus();
+
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsOffline(!state.isConnected);
+    });
+
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (nextAppState === 'active') {
+        setCanShowAlert(true);
+        checkNetworkStatus();
+      } else {
+        setCanShowAlert(false);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      subscription.remove();
+    };
   }, []);
 
   const checkBiometricAvailability = async () => {
@@ -40,16 +59,22 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
     setIsOffline(!connection.isConnected);
   };
 
+  const showAlert = (title: string, message: string) => {
+    if (canShowAlert) {
+      Alert.alert(title, message);
+    } else {
+      console.log('No se puede mostrar alerta:', title, message);
+    }
+  };
+
   const handleAuthSuccess = async () => {
     if (isOffline) {
-      Alert.alert(
+      showAlert(
         "Modo sin conexión",
-        "No hay conexión a internet. Se mostrarán los datos almacenados localmente.",
-        [{ text: "OK", onPress: () => onAuthSuccess() }]
+        "No hay conexión a internet. Se mostrarán los datos almacenados localmente."
       );
-    } else {
-      onAuthSuccess();
     }
+    onAuthSuccess();
   };
 
   const handleBiometricAuth = async () => {
@@ -60,7 +85,7 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
       }
     } catch (error) {
       console.error('Error during biometric authentication:', error);
-      Alert.alert('Error', 'No se pudo autenticar con biometría');
+      showAlert('Error', 'No se pudo autenticar con biometría. Por favor, use el PIN.');
     }
   };
 
@@ -70,11 +95,11 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
       if (pin === storedPin) {
         handleAuthSuccess();
       } else {
-        Alert.alert('Error', 'PIN incorrecto');
+        showAlert('Error', 'PIN incorrecto');
       }
     } catch (error) {
       console.error('Error during PIN authentication:', error);
-      Alert.alert('Error', 'No se pudo verificar el PIN');
+      showAlert('Error', 'No se pudo verificar el PIN');
     }
   };
 

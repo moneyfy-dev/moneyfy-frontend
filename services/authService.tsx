@@ -7,14 +7,13 @@ export const register = async (name: string, surname: string, email: string, pas
   try {
     const requestData = { name, surname, pwd: password, email };
     console.log('Datos de registro a enviar:', requestData);
-    const response = await axios.post(`${apiUrl}/auth/register`, {
-      name,
-      surname,
-      pwd: password,
-      email
-    });
+    const response = await axios.post(`${apiUrl}/auth/register`, requestData);
     return response.data;
   } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      // Propagamos el error con el status para manejarlo en el componente
+      throw { ...error, status: error.response.status };
+    }
     console.error('Error en el registro:', error);
     throw error;
   }
@@ -35,6 +34,8 @@ export const confirmRegistration = async (email: string, code: string) => {
 
 export const resendConfirmationCode = async (email: string) => {
   try {
+    const requestData = { email };
+    console.log('Datos de registro a enviar:', requestData);
     const response = await axios.post(`${apiUrl}/auth/resend/code`, {
       email
     });

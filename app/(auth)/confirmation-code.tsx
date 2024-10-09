@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput, ScrollView, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Href } from 'expo-router';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
@@ -17,6 +17,20 @@ export default function ConfirmationCodeScreen() {
     const themeColors = useThemeColor();
     const router = useRouter();
     const { login, userEmail } = useAuth();
+    const [isResendDisabled, setIsResendDisabled] = useState(false);
+    const [resendTimer, setResendTimer] = useState(0);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (resendTimer > 0) {
+            interval = setInterval(() => {
+                setResendTimer((prevTimer) => prevTimer - 1);
+            }, 1000);
+        } else if (resendTimer === 0) {
+            setIsResendDisabled(false);
+        }
+        return () => clearInterval(interval);
+    }, [resendTimer]);
 
     const handleCodeChange = (text: string, index: number) => {
         if (text.length <= 1 && /^\d*$/.test(text)) {
@@ -39,9 +53,15 @@ export default function ConfirmationCodeScreen() {
 
         try {
             const response = await confirmRegistration(userEmail, fullCode);
-            if (response.status === 201) {
-                await login(userEmail, ''); // Aquí cambiamos loginContext por login
-                router.replace('/(tabs)');
+            if (response.status === 200) {
+                try {
+                    await login(userEmail, ''); // Asumiendo que esta función devuelve una promesa
+                    router.replace('/(tabs)' as Href<string>);
+                } catch (loginError) {
+                    console.error('Error al iniciar sesión después de la confirmación:', loginError);
+                    Alert.alert('Error', 'La cuenta se activó correctamente, pero hubo un problema al iniciar sesión. Por favor, intente iniciar sesión manualmente.');
+                    router.replace('/login' as Href<string>);
+                }
             }
         } catch (error) {
             console.error('Error al validar el código:', error);
@@ -50,6 +70,11 @@ export default function ConfirmationCodeScreen() {
     };
 
     const handleResendCode = async () => {
+        if (isResendDisabled) return;
+
+        setIsResendDisabled(true);
+        setResendTimer(60); // Deshabilita el botón por 60 segundos
+
         try {
             const response = await resendConfirmationCode(userEmail);
             if (response.status === 200) {
@@ -98,8 +123,17 @@ export default function ConfirmationCodeScreen() {
 
             <View style={styles.buttonContainer}>
 
-                <TouchableOpacity onPress={handleResendCode}>
-                    <ThemedText variant='textLink' textAlign='center' marginBottom={24}>Reenviar código</ThemedText>
+                <TouchableOpacity onPress={handleResendCode} disabled={isResendDisabled}>
+                    <ThemedText 
+                        variant='textLink' 
+                        textAlign='center' 
+                        marginBottom={24}
+                        style={isResendDisabled ? styles.disabledText : {}}
+                    >
+                        {isResendDisabled 
+                            ? `Reenviar código en ${resendTimer}s` 
+                            : 'Reenviar código'}
+                    </ThemedText>
                 </TouchableOpacity>
 
                 <ThemedButton
@@ -134,5 +168,8 @@ const styles = StyleSheet.create({
     buttonContainer: {
         width: '100%',
         marginTop: 24,
+    },
+    disabledText: {
+        opacity: 0.5,
     }
 });

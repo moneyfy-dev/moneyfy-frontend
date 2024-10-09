@@ -6,6 +6,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Href } from 'expo-router';
 import { getSecuritySettings, updateSecuritySettings, SecuritySettings } from '@/services/securityService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface SecurityOption {
     id: string;
@@ -94,9 +95,17 @@ export default function PrivacySecurityScreen() {
         </TouchableOpacity>
     );
 
+    const setupPersistentAuth = async () => {
+        await AsyncStorage.setItem('persistentAuthConfigured', 'true');
+        Alert.alert('Configuración', 'Autenticación persistente configurada. Reinicie la aplicación para ver los cambios.');
+    };
+
     return (
         <ThemedLayout padding={[0, 40]}>
             {securityOptions.map(renderOption)}
+            <TouchableOpacity style={styles.setupButton} onPress={setupPersistentAuth}>
+                <ThemedText variant="subTitle">Configurar autenticación persistente (Simulador)</ThemedText>
+            </TouchableOpacity>
         </ThemedLayout>
     );
 }
@@ -116,6 +125,13 @@ const styles = StyleSheet.create({
     },
     icon: {
         marginRight: 16,
+    },
+    setupButton: {
+        marginTop: 20,
+        padding: 10,
+        backgroundColor: '#e0e0e0',
+        borderRadius: 5,
+        alignItems: 'center',
     },
 });
 

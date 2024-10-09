@@ -1,3 +1,4 @@
+import React from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
@@ -15,7 +16,7 @@ import { PersistentAuthWrapper } from '@/components/PersistentAuthWrapper';
 SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, isPersistentAuthRequired } = useAuth();
 
   if (isLoading) {
     return (
@@ -28,7 +29,11 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       {isAuthenticated ? (
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        isPersistentAuthRequired ? (
+          <Stack.Screen name="(auth)/persistent-auth" options={{ headerShown: false }} />
+        ) : (
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        )
       ) : (
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       )}
@@ -58,7 +63,7 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <AuthProvider>
             <PersistentAuthWrapper>
-            <RootLayoutNav />
+              <RootLayoutNav />
             </PersistentAuthWrapper>
           </AuthProvider>
         </SafeAreaProvider>

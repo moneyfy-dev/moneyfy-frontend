@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
-import { register } from '@/services/authService';
+import { register, resendConfirmationCode } from '@/services/authService';
 import { validateEmail, validatePassword, validateName } from '@/utils/validations';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter, Href } from 'expo-router';
@@ -89,14 +89,24 @@ export default function RegisterScreen() {
 
         try {
             const response = await register(nombre, apellido, email, password);
+            setTempEmail(email);
             if (response.status === 200) {
-                setTempEmail(email);
                 Alert.alert('Éxito', response.message);
                 router.replace('/confirmation-code' as Href<string>);
             }
         } catch (error: any) {
             console.error('Error en el registro:', error);
-            if (error.response && error.response.status === 406) {
+            if (error.response && error.response.status === 409) {
+                setTempEmail(email);
+                try {
+                    await resendConfirmationCode(email);
+                    Alert.alert('Registro incompleto', 'Se ha enviado un nuevo código de verificación a su email. Por favor, complete el proceso de registro.');
+                    router.replace('/confirmation-code' as Href<string>);
+                } catch (resendError) {
+                    console.error('Error al reenviar el código:', resendError);
+                    Alert.alert('Error', 'No se pudo reenviar el código de verificación. Por favor, intente nuevamente.');
+                }
+            } else if (error.response && error.response.status === 406) {
                 Alert.alert('Error', 'Datos no aceptables. Por favor, verifica la información ingresada.');
             } else {
                 Alert.alert('Error', 'Hubo un problema con el registro. Inténtalo de nuevo.');
