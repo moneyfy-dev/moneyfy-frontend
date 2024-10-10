@@ -6,7 +6,7 @@ import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
 import { register, resendConfirmationCode } from '@/services/authService';
-import { validateEmail, validatePassword, validateName } from '@/utils/validations';
+import { validateEmail, validatePassword, validateName, sanitizeName } from '@/utils/validations';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter, Href } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
@@ -28,6 +28,13 @@ export default function RegisterScreen() {
     const themeColors = useThemeColor();
     const router = useRouter();
     const { login: loginContext, setTempEmail } = useAuth();
+    const [touchedFields, setTouchedFields] = useState({
+        nombre: false,
+        apellido: false,
+        email: false,
+        password: false,
+        confirmPassword: false
+    });
 
     useEffect(() => {
         const isValid = validateName(nombre) && validateName(apellido) &&
@@ -38,57 +45,90 @@ export default function RegisterScreen() {
 
     const handleNombreChange = (text: string) => {
         setNombre(text);
-        if (!validateName(text)) {
-            setNombreError('El nombre debe tener al menos 2 letras');
-        } else {
-            setNombreError('');
-        }
+        setNombreError('');
     };
 
     const handleApellidoChange = (text: string) => {
         setApellido(text);
-        if (!validateName(text)) {
-            setApellidoError('El apellido debe tener al menos 2 letras');
-        } else {
-            setApellidoError('');
-        }
+        setApellidoError('');
     };
 
     const handleEmailChange = (text: string) => {
         setEmail(text);
-        if (!validateEmail(text)) {
-            setEmailError('Formato de email inválido');
-        } else {
-            setEmailError('');
-        }
+        setEmailError('');
     };
 
     const handlePasswordChange = (text: string) => {
         setPassword(text);
-        if (!validatePassword(text)) {
-            setPasswordError('La contraseña debe tener al menos 8 caracteres');
-        } else {
-            setPasswordError('');
-        }
+        setPasswordError('');
     };
 
     const handleConfirmPasswordChange = (text: string) => {
         setConfirmPassword(text);
-        if (text !== password) {
-            setConfirmPasswordError('Las contraseñas no coinciden');
-        } else {
-            setConfirmPasswordError('');
+        setConfirmPasswordError('');
+    };
+
+    const validateField = (field: keyof typeof touchedFields) => {
+        if (!touchedFields[field]) return;
+
+        switch (field) {
+            case 'nombre':
+            case 'apellido':
+                const sanitizedName = sanitizeName(field === 'nombre' ? nombre : apellido);
+                if (!validateName(sanitizedName)) {
+                    const errorMessage = sanitizedName.length < 2
+                        ? `El ${field} debe tener al menos 2 letras`
+                        : `El ${field} solo puede contener letras y espacios`;
+                    field === 'nombre' ? setNombreError(errorMessage) : setApellidoError(errorMessage);
+                } else {
+                    field === 'nombre' ? setNombreError('') : setApellidoError('');
+                }
+                break;
+            case 'email':
+                if (!validateEmail(email)) {
+                    setEmailError('Formato de email inválido');
+                } else {
+                    setEmailError('');
+                }
+                break;
+            case 'password':
+                if (!validatePassword(password)) {
+                    setPasswordError('La contraseña debe tener al menos 8 caracteres');
+                } else {
+                    setPasswordError('');
+                }
+                break;
+            case 'confirmPassword':
+                if (password !== confirmPassword) {
+                    setConfirmPasswordError('Las contraseñas no coinciden');
+                } else {
+                    setConfirmPasswordError('');
+                }
+                break;
         }
     };
 
     const handleRegister = async () => {
-        if (!isFormValid) {
+        setTouchedFields({
+            nombre: true,
+            apellido: true,
+            email: true,
+            password: true,
+            confirmPassword: true
+        });
+
+        Object.keys(touchedFields).forEach(field => validateField(field as keyof typeof touchedFields));
+
+        const sanitizedNombre = sanitizeName(nombre);
+        const sanitizedApellido = sanitizeName(apellido);
+
+        if (!validateName(sanitizedNombre) || !validateName(sanitizedApellido) || !validateEmail(email) || !validatePassword(password) || password !== confirmPassword || !termsAccepted) {
             Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
             return;
         }
 
         try {
-            const response = await register(nombre, apellido, email, password);
+            const response = await register(sanitizedNombre, sanitizedApellido, email.trim(), password);
             setTempEmail(email);
             if (response.status === 200) {
                 Alert.alert('Éxito', response.message);
@@ -96,7 +136,10 @@ export default function RegisterScreen() {
             }
         } catch (error: any) {
             console.error('Error en el registro:', error);
-            if (error.response && error.response.status === 409) {
+            if (error instanceof Error && error.message === "The user is already registered") {
+                Alert.alert('Error', error.message);
+            } else if (error.response && error.response.status === 409) {
+                // Usuario existe pero no ha completado el registro
                 setTempEmail(email);
                 try {
                     await resendConfirmationCode(email);
@@ -107,93 +150,113 @@ export default function RegisterScreen() {
                     Alert.alert('Error', 'No se pudo reenviar el código de verificación. Por favor, intente nuevamente.');
                 }
             } else if (error.response && error.response.status === 406) {
-                Alert.alert('Error', 'Datos no aceptables. Por favor, verifica la información ingresada.');
+                Alert.alert('Error', error.message);
             } else {
-                Alert.alert('Error', 'Hubo un problema con el registro. Inténtalo de nuevo.');
+                Alert.alert('Error', error.message);
             }
         }
     };
 
     return (
         <ThemedLayout>
-                    <View style={styles.content}>
-                        <ThemedText variant='title' marginBottom={4}>Registrarse</ThemedText>
-                        <ThemedText variant='paragraph' marginBottom={24}>Crea una cuenta y comienza a vender ahora</ThemedText>
+            <View style={styles.content}>
+                <ThemedText variant='title' marginBottom={4}>Registrarse</ThemedText>
+                <ThemedText variant='paragraph' marginBottom={24}>Crea una cuenta y comienza a vender ahora</ThemedText>
 
-                        <ThemedInput
-                            placeholder="Nombre"
-                            value={nombre}
-                            onChangeText={handleNombreChange}
-                            error={nombreError}
-                        />
-                        <ThemedInput
-                            placeholder="Apellido"
-                            value={apellido}
-                            onChangeText={handleApellidoChange}
-                            error={apellidoError}
-                        />
-                        <ThemedInput
-                            placeholder="Email"
-                            value={email}
-                            onChangeText={handleEmailChange}
-                            keyboardType="email-address"
-                            error={emailError}
-                        />
-                        <ThemedInput
-                            placeholder="Crear contraseña"
-                            value={password}
-                            onChangeText={handlePasswordChange}
-                            secureTextEntry
-                            error={passwordError}
-                        />
-                        <ThemedInput
-                            placeholder="Confirmar contraseña"
-                            value={confirmPassword}
-                            onChangeText={handleConfirmPasswordChange}
-                            secureTextEntry
-                            error={confirmPasswordError}
-                        />
+                <ThemedInput
+                    placeholder="Nombre"
+                    value={nombre}
+                    onChangeText={handleNombreChange}
+                    onBlur={() => {
+                        setTouchedFields(prev => ({ ...prev, nombre: true }));
+                        validateField('nombre');
+                    }}
+                    error={nombreError}
+                />
+                <ThemedInput
+                    placeholder="Apellido"
+                    value={apellido}
+                    onChangeText={handleApellidoChange}
+                    onBlur={() => {
+                        setTouchedFields(prev => ({ ...prev, apellido: true }));
+                        validateField('apellido');
+                    }}
+                    error={apellidoError}
+                />
+                <ThemedInput
+                    placeholder="Email"
+                    value={email}
+                    onChangeText={handleEmailChange}
+                    keyboardType="email-address"
+                    onBlur={() => {
+                        setTouchedFields(prev => ({ ...prev, email: true }));
+                        validateField('email');
+                    }}
+                    error={emailError}
+                />
+                <ThemedInput
+                    placeholder="Crear contraseña"
+                    value={password}
+                    onChangeText={handlePasswordChange}
+                    secureTextEntry
+                    onBlur={() => {
+                        setTouchedFields(prev => ({ ...prev, password: true }));
+                        validateField('password');
+                    }}
+                    error={passwordError}
+                />
+                <ThemedInput
+                    placeholder="Confirmar contraseña"
+                    value={confirmPassword}
+                    onChangeText={handleConfirmPasswordChange}
+                    secureTextEntry
+                    onBlur={() => {
+                        setTouchedFields(prev => ({ ...prev, confirmPassword: true }));
+                        validateField('confirmPassword');
+                    }}
+                    error={confirmPasswordError}
+                />
 
-                        <View style={styles.termsContainer}>
-                            <TouchableOpacity onPress={() => setTermsAccepted(!termsAccepted)}>
-                                <Ionicons
-                                    name={termsAccepted ? "checkbox-outline" : "square-outline"}
-                                    size={24}
-                                    color={themeColors.textColorAccent}
-                                />
-                            </TouchableOpacity>
-                            <ThemedText variant='paragraph' style={styles.termsText}>
-                                He leído y estoy de acuerdo con los{' '}
-                                <ThemedText variant='textLink'>
-                                    Términos y condiciones
-                                </ThemedText>{' '}
-                                y la{' '}
-                                <ThemedText variant='textLink'>
-                                    Política de privacidad
-                                </ThemedText>
-                                .
+                <View style={styles.termsContainer}>
+                    <TouchableOpacity onPress={() => setTermsAccepted(!termsAccepted)}>
+                        <Ionicons
+                            name={termsAccepted ? "checkbox-outline" : "square-outline"}
+                            size={24}
+                            color={themeColors.textColorAccent}
+                        />
+                    </TouchableOpacity>
+                    <ThemedText variant='paragraph' style={styles.termsText}>
+                        He leído y estoy de acuerdo con los{' '}
+                        <ThemedText variant='textLink'>
+                            Términos y condiciones
+                        </ThemedText>{' '}
+                        y la{' '}
+                        <ThemedText variant='textLink'>
+                            Política de privacidad
+                        </ThemedText>
+                        .
+                    </ThemedText>
+                </View>
+            </View>
+
+            <View style={styles.buttonContainer}>
+                <ThemedButton
+                    text="Crear cuenta"
+                    onPress={handleRegister}
+                    disabled={!nombre || !apellido || !email || !password || !confirmPassword || !termsAccepted}
+                />
+
+                <View style={styles.loginContainer}>
+                    <ThemedText variant='paragraph'>¿Ya tienes cuenta? </ThemedText>
+                    <Link href="/login" asChild>
+                        <TouchableOpacity>
+                            <ThemedText variant='textLink'>
+                                Inicia sesión ahora
                             </ThemedText>
-                        </View>
-                    </View>
-
-                    <View style={styles.buttonContainer}>
-                        <ThemedButton
-                            text="Crear cuenta"
-                            onPress={handleRegister}
-                            disabled={!isFormValid}
-                        />
-
-                        <View style={styles.loginContainer}>
-                            <ThemedText variant='paragraph'>¿Ya tienes cuenta? </ThemedText>
-                            <Link href="/login" asChild>
-                                <TouchableOpacity>
-                                    <ThemedText variant='textLink'>
-                                        Inicia sesión ahora
-                                    </ThemedText>
-                                </TouchableOpacity>
-                            </Link>
-                        </View>
-                    </View>
+                        </TouchableOpacity>
+                    </Link>
+                </View>
+            </View>
         </ThemedLayout>
     );
 }

@@ -27,12 +27,12 @@ export default function PersonalInfoScreen() {
     useEffect(() => {
         if (user) {
             setPersonalInfo({
-                nombre: user.userData.name || '',
-                apellido: user.userData.surname || '',
-                telefono: user.userData.phone || '',
-                direccion: user.userData.address || '',
-                fechaNacimiento: user.userData.dateOfBirth ? new Date(user.userData.dateOfBirth) : new Date(),
-                profilePicture: user.userData.profilePicture || '',
+                nombre: user.personalData.name || '',
+                apellido: user.personalData.surname || '',
+                telefono: user.personalData.phone || '',
+                direccion: user.personalData.address || '',
+                fechaNacimiento: user.personalData.dateOfBirth ? new Date(user.personalData.dateOfBirth) : new Date(),
+                profilePicture: user.personalData.profilePicture || '',
             });
         }
     }, [user]);
@@ -101,7 +101,7 @@ export default function PersonalInfoScreen() {
                     </TouchableOpacity>
                     <View>
                         <ThemedText variant="title" textAlign="center" marginBottom={4}>{personalInfo.nombre} {personalInfo.apellido}</ThemedText>
-                        <ThemedText variant="paragraph" textAlign="center">{user?.userData.email || 'No email'}</ThemedText>
+                        <ThemedText variant="paragraph" textAlign="center">{user?.personalData.email || 'No email'}</ThemedText>
                     </View>
                 </View>
                 <ThemedInput

@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login, getUserData } from '@/services/authService';
+import { login, getUserData, verifyToken } from '@/services/authService';
 import getEnvVars from '../config';
 import NetInfo from "@react-native-community/netinfo";
-
+import { getLocalSecuritySettings } from '@/services/securityService';
 const { apiUrl } = getEnvVars();
 
 interface UserData {
@@ -30,7 +30,16 @@ interface Wallet {
 
 interface User {
   userId: string;
-  userData: UserData;
+  personalData: {
+    name: string;
+    surname: string;
+    email: string;
+    phone: string;
+    address: string;
+    dateOfBirth: string;
+    profilePicture: string;
+    enable: boolean;
+  };
   wallet: Wallet;
   accounts: any[];
   referredPeople: any[];
@@ -39,7 +48,7 @@ interface User {
 interface AuthContextProps {
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;  // Cambiado de Promise<void> a Promise<User>
   logout: () => Promise<void>;
   user: User | null;
   setTempEmail: (email: string) => void;
@@ -47,15 +56,27 @@ interface AuthContextProps {
   updateUserData: (updatedData: Partial<UserData> | FormData) => Promise<void>;
   isPersistentAuthRequired: boolean;
   handlePersistentAuthSuccess: () => Promise<void>;
-  userEmail: string; // Añadimos esta línea
+  userEmail: string;
   isPersistentAuthConfigured: boolean;
   checkPersistentAuth: () => Promise<boolean>;
+  checkAuthStatus: () => Promise<void>;
+}
+
+interface LoginResponse {
+  message: string;
+  status: number;
+  data: {
+    user: User;
+    jwt: string;
+  };
 }
 
 const AuthContext = createContext<AuthContextProps>({
   isAuthenticated: false,
   isLoading: true,
-  login: async () => {},
+  login: async (email: string, password: string): Promise<User> => {
+    throw new Error('login function must be overridden');
+  },
   logout: async () => {},
   user: null,
   setTempEmail: () => {},
@@ -63,9 +84,10 @@ const AuthContext = createContext<AuthContextProps>({
   updateUserData: async () => {},
   isPersistentAuthRequired: false,
   handlePersistentAuthSuccess: async () => {},
-  userEmail: '', // Añadimos esta línea
+  userEmail: '',
   isPersistentAuthConfigured: false,
   checkPersistentAuth: async () => false,
+  checkAuthStatus: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -80,21 +102,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkAuthStatus();
   }, []);
 
-  const checkAuthStatus = async () => {
+  const checkAuthStatus = async (): Promise<void> => {
+    console.log('Iniciando checkAuthStatus');
+    setIsLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
-      const persistentAuthConfigured = await AsyncStorage.getItem('persistentAuthConfigured');
-      
-      if (persistentAuthConfigured === 'true' && token) {
-        setIsPersistentAuthRequired(true);
-      } else if (token) {
-        // Usuario autenticado pero sin autenticación persistente
-        await hydrateUserData();
+      const storedUser = await AsyncStorage.getItem('user');
+      console.log('Token encontrado:', token ? 'Sí' : 'No');
+      if (!token) {
+        console.log('No hay token, estableciendo isAuthenticated a false');
+        setIsAuthenticated(false);
+      } else {
+        const isValid = await verifyToken(token);
+        console.log('Token válido:', isValid ? 'Sí' : 'No');
+        setIsAuthenticated(isValid);
+        if (isValid && storedUser) {
+          setUser(JSON.parse(storedUser));
+        } else {
+          await logout();
+        }
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
-      await logout();
+      setIsAuthenticated(false);
     } finally {
+      console.log('Finalizando checkAuthStatus, estableciendo isLoading a false');
       setIsLoading(false);
     }
   };
@@ -107,25 +139,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const hydrateUserData = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
-      console.log('Token recuperado:', token); // Para depuración
-      if (!token) throw new Error('No token found');
-
-      const isConnected = await NetInfo.fetch().then(state => state.isConnected);
-      
-      if (isConnected) {
-        const freshUserData = await getUserData(token);
-        await AsyncStorage.setItem('user', JSON.stringify(freshUserData.user));
-        setUser(freshUserData.user);
-      } else {
-        const cachedUserData = await AsyncStorage.getItem('user');
-        if (cachedUserData) {
-          setUser(JSON.parse(cachedUserData));
-        }
+      if (token) {
+        const userData = await getUserData(token);
+        setUser(userData);
       }
-      setIsAuthenticated(true);
     } catch (error) {
       console.error('Error hydrating user data:', error);
-      await logout();
+      // En caso de error, asegúrate de que el usuario se desautentique
+      setIsAuthenticated(false);
+      setUser(null);
     }
   };
 
@@ -136,11 +158,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginContext = async (email: string, password: string) => {
     try {
-      const response = await login(email, password);
+      const response: LoginResponse = await login(email, password);
       if (response.data && response.data.jwt) {
         await AsyncStorage.setItem('token', response.data.jwt);
-        console.log('Token guardado:', response.data.jwt); // Para depuración
-        // ... resto del código
+        console.log('Token guardado:', response.data.jwt);
+        
+        // Guardar la información del usuario
+        const userData = response.data.user;
+        await AsyncStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
+        setIsAuthenticated(true);
+        return userData; // Devolver los datos del usuario
       } else {
         throw new Error('No se recibió un token válido');
       }
@@ -153,16 +181,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await AsyncStorage.removeItem('user');
-    await AsyncStorage.removeItem('token');
-    setIsAuthenticated(false);
-    setUser(null);
+    setIsLoading(true);
+    try {
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
+      await AsyncStorage.removeItem('persistentAuthConfigured');
+      setUser(null);
+      setIsPersistentAuthRequired(false);
+      setIsPersistentAuthConfigured(false);
+      setIsAuthenticated(false);
+      console.log('Logout completado, isAuthenticated:', false);
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      setIsLoading(false);
+      console.log('isLoading establecido a false después del logout');
+    }
   };
 
   const setTempEmail = (email: string) => {
     setUserEmail(email);
     if (user) {
-      setUser({ ...user, userData: { ...user.userData, email } });
+      setUser({
+        ...user,
+        personalData: { ...user.personalData, email }
+      });
     }
   };
 
@@ -214,9 +257,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateUserData,
       isPersistentAuthRequired,
       handlePersistentAuthSuccess,
-      userEmail, // Añadimos esta línea
+      userEmail,
       isPersistentAuthConfigured,
       checkPersistentAuth,
+      checkAuthStatus,
     }}>
       {children}
     </AuthContext.Provider>

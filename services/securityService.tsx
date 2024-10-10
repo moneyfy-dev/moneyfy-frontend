@@ -4,31 +4,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { apiUrl } = getEnvVars();
 
-export interface SecuritySettings {
-  twoFactorEnabled: boolean;
-  fingerprintEnabled: boolean;
-}
-
-export const getSecuritySettings = async (): Promise<SecuritySettings> => {
-  try {
-    const response = await axios.get(`${apiUrl}/app/user/security-settings`);
-    return response.data;
-  } catch (error) {
-    console.error('Error al obtener configuración de seguridad:', error);
-    throw error;
-  }
-};
-
-export const updateSecuritySettings = async (settings: Partial<SecuritySettings>): Promise<SecuritySettings> => {
-  try {
-    const response = await axios.put(`${apiUrl}/app/user/security-settings`, settings);
-    return response.data;
-  } catch (error) {
-    console.error('Error al actualizar configuración de seguridad:', error);
-    throw error;
-  }
-};
-
 export const changePassword = async (oldPassword: string, newPassword: string) => {
   try {
     const token = await AsyncStorage.getItem('token');
@@ -48,6 +23,27 @@ export const changePassword = async (oldPassword: string, newPassword: string) =
     return response.data;
   } catch (error) {
     console.error('Error al cambiar la contraseña:', error);
+    throw error;
+  }
+};
+
+// Funciones para manejar configuraciones locales
+export const getLocalSecuritySettings = async () => {
+  try {
+    const settings = await AsyncStorage.getItem('securitySettings');
+    return settings ? JSON.parse(settings) : { fingerprintEnabled: false, persistentAuthEnabled: false };
+  } catch (error) {
+    console.error('Error al obtener configuraciones de seguridad locales:', error);
+    return { fingerprintEnabled: false, persistentAuthEnabled: false };
+  }
+};
+
+export const updateLocalSecuritySettings = async (settings: { fingerprintEnabled: boolean, persistentAuthEnabled: boolean }) => {
+  try {
+    await AsyncStorage.setItem('securitySettings', JSON.stringify(settings));
+    return settings;
+  } catch (error) {
+    console.error('Error al actualizar configuraciones de seguridad locales:', error);
     throw error;
   }
 };

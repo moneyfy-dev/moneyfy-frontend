@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { LineChart } from 'react-native-chart-kit';
 import { useAuth } from '@/context/AuthContext';
+import { ThemedText } from '@/components/ThemedText';
 
 export default function HomeScreen() {
   const themeColors = useThemeColor();
@@ -92,10 +93,18 @@ export default function HomeScreen() {
     },
   });
 
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <ThemedText variant="title">Cargando información del usuario...</ThemedText>
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>Hola {user?.userData.name}</Text>
+        <Text style={styles.greeting}>Hola {user.personalData.name}</Text>
         <View style={styles.iconContainer}>
           <Ionicons name="notifications-outline" size={24} color={themeColors.textColor} style={styles.icon} />
           <Ionicons name="help-circle-outline" size={24} color={themeColors.textColor} style={styles.icon} />
@@ -104,7 +113,7 @@ export default function HomeScreen() {
 
       <View style={styles.balanceContainer}>
         <Text style={styles.balanceLabel}>Tu saldo actual</Text>
-        <Text style={styles.balance}>${user?.wallet.totalBalance.toFixed(2)}</Text>
+        <Text style={styles.balance}>${user.wallet.totalBalance.toFixed(2)}</Text>
       </View>
 
       <LineChart

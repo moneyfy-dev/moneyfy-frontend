@@ -13,10 +13,11 @@ interface ThemedInputProps extends TextInputProps {
   label?: string;
   icon?: string; // Nueva propiedad para el icono
   onIconPress?: () => void; // Nueva propiedad para manejar el press del icono
+  onBlur?: () => void;
 }
 
 export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
-  ({ placeholder, value, onChangeText, secureTextEntry, keyboardType, error, style, label, icon, onIconPress, ...props }, ref) => {
+  ({ placeholder, value, onChangeText, secureTextEntry, keyboardType, error, style, label, icon, onIconPress, onBlur, ...props }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const themeColors = useThemeColor();
@@ -48,7 +49,10 @@ export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
             keyboardType={keyboardType}
             placeholderTextColor={themeColors.placeholderColor}
             onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onBlur={() => {
+              setIsFocused(false);
+              onBlur && onBlur();
+            }}
             {...props}
           />
           {secureTextEntry && (

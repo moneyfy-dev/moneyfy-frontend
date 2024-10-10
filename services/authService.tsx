@@ -11,7 +11,11 @@ export const register = async (name: string, surname: string, email: string, pas
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
-      // Propagamos el error con el status para manejarlo en el componente
+      if (error.response.status === 400 && error.response.data?.message) {
+        // Si es un error 400 con un mensaje específico, lo propagamos
+        throw new Error(error.response.data.message);
+      }
+      // Para otros errores, propagamos el error con el status
       throw { ...error, status: error.response.status };
     }
     console.error('Error en el registro:', error);
@@ -61,7 +65,7 @@ export const login = async (email: string, password: string) => {
 
 export const getUserData = async (token: string) => {
   try {
-    const response = await axios.get(`${apiUrl}/user/data`, {
+    const response = await axios.get(`${apiUrl}/users/hydration/data`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -69,6 +73,26 @@ export const getUserData = async (token: string) => {
     return response.data;
   } catch (error) {
     console.error('Error fetching user data:', error);
+    throw error;
+  }
+};
+
+export const verifyToken = async (token: string): Promise<boolean> => {
+  console.log('Iniciando verificación de token');
+  try {
+    const response = await axios.get(`${apiUrl}/users/hydration/data`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log('Respuesta de verificación de token:', response.data);
+    return response.data.isValid;
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    if (axios.isAxiosError(error) && !error.response) {
+      console.log('Error de red al verificar token, considerando inválido');
+      return false;
+    }
     throw error;
   }
 };

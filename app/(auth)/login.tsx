@@ -26,6 +26,7 @@ export default function LoginScreen() {
     const formAnimation = useRef(new Animated.Value(height)).current;
     const themeColors = useThemeColor();
     const router = useRouter();
+    const [touchedFields, setTouchedFields] = useState({ email: false, password: false });
 
     const showLoginForm = () => {
         setIsFormVisible(true);
@@ -51,30 +52,45 @@ export default function LoginScreen() {
 
     const handleEmailChange = (text: string) => {
         setEmail(text);
-        if (!validateEmail(text)) {
-            setEmailError('Email inválido');
-        } else {
-            setEmailError('');
-        }
+        setEmailError('');
     };
 
     const handlePasswordChange = (text: string) => {
         setPassword(text);
-        if (!validatePassword(text)) {
-            setPasswordError('La contraseña debe tener al menos 8 caracteres');
-        } else {
-            setPasswordError('');
+        setPasswordError('');
+    };
+
+    const validateField = (field: 'email' | 'password') => {
+        if (field === 'email' && touchedFields.email) {
+            if (!validateEmail(email)) {
+                setEmailError('Email inválido');
+            } else {
+                setEmailError('');
+            }
+        }
+        if (field === 'password' && touchedFields.password) {
+            if (!validatePassword(password)) {
+                setPasswordError('La contraseña debe tener al menos 8 caracteres');
+            } else {
+                setPasswordError('');
+            }
         }
     };
 
     const handleLogin = async () => {
-        if (!isFormValid) {
+        setTouchedFields({ email: true, password: true });
+        validateField('email');
+        validateField('password');
+
+        if (!validateEmail(email) || !validatePassword(password)) {
             Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
             return;
         }
 
         try {
-            await loginContext(email, password);
+            const userData = await loginContext(email, password);
+            // Asegúrate de que loginContext devuelva los datos del usuario
+            console.log('Datos del usuario después del login:', userData);
             router.replace('/(tabs)');
         } catch (error: any) {
             if (error.response && error.response.status === 403) {
@@ -134,12 +150,20 @@ export default function LoginScreen() {
                         placeholder="Usuario o email"
                         value={email}
                         onChangeText={handleEmailChange}
+                        onBlur={() => {
+                            setTouchedFields(prev => ({ ...prev, email: true }));
+                            validateField('email');
+                        }}
                         error={emailError}
                     />
                     <ThemedInput
                         placeholder="Contraseña"
                         value={password}
                         onChangeText={handlePasswordChange}
+                        onBlur={() => {
+                            setTouchedFields(prev => ({ ...prev, password: true }));
+                            validateField('password');
+                        }}
                         secureTextEntry
                         error={passwordError}
                     />
@@ -151,7 +175,7 @@ export default function LoginScreen() {
                     <ThemedButton
                         text="Ingresar"
                         onPress={handleLogin}
-                        disabled={!isFormValid}
+                        disabled={!email || !password}
                     />
 
                     <ThemedView style={styles.registerContainer}>

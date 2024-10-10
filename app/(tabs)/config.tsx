@@ -11,7 +11,7 @@ import { ThemedText } from '@/components/ThemedText';
 const ConfigScreen = () => {
   const themeColors = useThemeColor();
   const router = useRouter();
-  const { logout, userEmail } = useAuth();
+  const { logout, user } = useAuth(); // Cambiamos userEmail por user
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
 
   const handleLogout = () => {
@@ -20,9 +20,10 @@ const ConfigScreen = () => {
 
   const confirmLogout = async () => {
     try {
+      console.log('Iniciando logout');
       await logout();
+      console.log('Logout completado en ConfigScreen');
       setIsLogoutModalVisible(false);
-      router.replace('/login');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
@@ -40,9 +41,9 @@ const ConfigScreen = () => {
 
   return (
     <ThemedLayout padding={[0, 40]}>
-
       <View style={styles.header}>
         <ThemedText variant="title" textAlign="center">Ajustes</ThemedText>
+        <ThemedText variant="paragraph" textAlign="center">{user?.personalData.email}</ThemedText>
       </View>
 
       {menuItems.map((item, index) => (

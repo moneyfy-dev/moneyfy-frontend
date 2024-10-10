@@ -1,27 +1,32 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { View, ActivityIndicator } from 'react-native';
-
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { PersistentAuthWrapper } from '@/components/PersistentAuthWrapper';
 
+
 SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
-  const { isLoading, isAuthenticated, isPersistentAuthRequired } = useAuth();
+  const { isLoading, isAuthenticated, isPersistentAuthRequired, checkAuthStatus } = useAuth();
+  
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  console.log('RootLayoutNav - Estado:', { isLoading, isAuthenticated, isPersistentAuthRequired });
 
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
   }
@@ -30,12 +35,12 @@ function RootLayoutNav() {
     <Stack screenOptions={{ headerShown: false }}>
       {isAuthenticated ? (
         isPersistentAuthRequired ? (
-          <Stack.Screen name="(auth)/persistent-auth" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)/persistent-auth" />
         ) : (
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" />
         )
       ) : (
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" />
       )}
     </Stack>
   );
