@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -8,7 +8,11 @@ import { ThemedText } from '@/components/ThemedText';
 
 export default function HomeScreen() {
   const themeColors = useThemeColor();
-  const { user } = useAuth();
+  const { user, hydrateUserData } = useAuth();
+
+  useEffect(() => {
+    hydrateUserData();
+  }, []);
 
   const styles = StyleSheet.create({
     container: {

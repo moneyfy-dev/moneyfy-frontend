@@ -46,6 +46,11 @@ export default function PrivacySecurityScreen() {
         };
         await updateLocalSecuritySettings(updatedSettings);
         setSecuritySettings(updatedSettings);
+    
+        // Actualizar AsyncStorage directamente para persistentAuthEnabled
+        if (id === 'persistentAuthEnabled') {
+          await AsyncStorage.setItem('persistentAuthEnabled', updatedSettings[id].toString());
+        }
       } catch (error) {
         console.error('Error al actualizar configuración de seguridad:', error);
         Alert.alert('Error', 'No se pudo actualizar la configuración de seguridad');

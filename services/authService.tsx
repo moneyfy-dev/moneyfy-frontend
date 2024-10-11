@@ -65,7 +65,7 @@ export const login = async (email: string, password: string) => {
 
 export const getUserData = async (token: string) => {
   try {
-    const response = await axios.get(`${apiUrl}/users/hydration/data`, {
+    const response = await axios.post(`${apiUrl}/users/hydration/data`, null, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -77,22 +77,18 @@ export const getUserData = async (token: string) => {
   }
 };
 
-export const verifyToken = async (token: string): Promise<boolean> => {
+export const verifyToken = async (token: string): Promise<{ isValid: boolean; userData: any }> => {
   console.log('Iniciando verificación de token');
   try {
-    const response = await axios.get(`${apiUrl}/users/hydration/data`, {
+    const response = await axios.post(`${apiUrl}/users/hydration/data`, null, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
     console.log('Respuesta de verificación de token:', response.data);
-    return response.data.isValid;
+    return { isValid: response.data.status === 200, userData: response.data.data };
   } catch (error) {
     console.error('Error verifying token:', error);
-    if (axios.isAxiosError(error) && !error.response) {
-      console.log('Error de red al verificar token, considerando inválido');
-      return false;
-    }
-    throw error;
+    return { isValid: false, userData: null };
   }
 };

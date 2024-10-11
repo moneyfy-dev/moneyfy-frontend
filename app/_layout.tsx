@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments, Slot } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
 import { View, ActivityIndicator } from 'react-native';
@@ -31,17 +31,26 @@ function RootLayoutNav() {
   useEffect(() => {
     if (!isNavigationReady) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
+    const timer = setTimeout(() => {
+      const inAuthGroup = segments[0] === '(auth)';
+      const inPersistentAuth = segments[1] === 'persistent-auth';
 
-    if (isAuthenticated && inAuthGroup) {
-      router.replace('/(tabs)');
-    } else if (!isAuthenticated && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    }
-  }, [isAuthenticated, segments, isNavigationReady]);
+      console.log('RootLayoutNav - Estado actualizado:', { isAuthenticated, isPersistentAuthRequired, inAuthGroup, inPersistentAuth });
 
+      if (isAuthenticated && !isPersistentAuthRequired && (inAuthGroup || inPersistentAuth)) {
+        console.log('Redirigiendo a (tabs) desde RootLayoutNav');
+        router.replace('/(tabs)');
+      } else if (!isAuthenticated && !inAuthGroup) {
+        console.log('Redirigiendo a login');
+        router.replace('/(auth)/login');
+      } else if (isAuthenticated && isPersistentAuthRequired && !inPersistentAuth) {
+        console.log('Redirigiendo a autenticación persistente');
+        router.replace('/(auth)/persistent-auth');
+      }
+    }, 100);
 
-  console.log('RootLayoutNav - Estado:', { isLoading, isAuthenticated, isPersistentAuthRequired });
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, isPersistentAuthRequired, segments, isNavigationReady, router]);
 
   if (isLoading || !isNavigationReady) {
     return (
@@ -51,19 +60,7 @@ function RootLayoutNav() {
     );
   }
 
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {isAuthenticated ? (
-        isPersistentAuthRequired ? (
-          <Stack.Screen name="(auth)/persistent-auth" />
-        ) : (
-          <Stack.Screen name="(tabs)" />
-        )
-      ) : (
-        <Stack.Screen name="(auth)" />
-      )}
-    </Stack>
-  );
+  return <Slot />;
 }
 
 export default function RootLayout() {

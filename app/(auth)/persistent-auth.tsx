@@ -7,6 +7,8 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { isBiometricAvailable, authenticateBiometric } from '@/services/biometricService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from "@react-native-community/netinfo";
+import { ThemedLayout } from '@/components/ThemedLayout';
+import { Logo } from '@/components/Logo';
 
 interface PersistentAuthProps {
   onAuthSuccess: () => void;
@@ -68,12 +70,7 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
   };
 
   const handleAuthSuccess = async () => {
-    if (isOffline) {
-      showAlert(
-        "Modo sin conexión",
-        "No hay conexión a internet. Se mostrarán los datos almacenados localmente."
-      );
-    }
+    console.log('Autenticación persistente exitosa, llamando a onAuthSuccess');
     onAuthSuccess();
   };
 
@@ -81,6 +78,7 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
     try {
       const success = await authenticateBiometric();
       if (success) {
+        console.log('Autenticación biométrica exitosa');
         handleAuthSuccess();
       }
     } catch (error) {
@@ -104,37 +102,49 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
   };
 
   return (
-    <View style={styles.container}>
-      <ThemedText variant="title" textAlign="center">Autenticación</ThemedText>
-      <ThemedInput
-        label="PIN"
-        value={pin}
-        onChangeText={setPin}
-        placeholder="Ingrese su PIN"
-        keyboardType="number-pad"
-        secureTextEntry
-        maxLength={4}
-      />
-      <ThemedButton text="Verificar PIN" onPress={handlePinAuth} />
-      {isBiometricEnabled && (
-        <ThemedButton 
-          text="Usar huella digital" 
-          onPress={handleBiometricAuth}
-          variant="secondary"
-          style={styles.biometricButton}
+    <ThemedLayout>
+      <View style={styles.pageContainer}>
+      <Logo style={styles.loginLogo} />
+        <ThemedInput
+          label="PIN"
+          value={pin}
+          onChangeText={setPin}
+          placeholder="Ingrese su PIN"
+          keyboardType="number-pad"
+          secureTextEntry
+          maxLength={4}
         />
-      )}
-    </View>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <ThemedButton text="Verificar PIN" onPress={handlePinAuth} />
+        {isBiometricEnabled && (
+          <ThemedButton
+            text="Usar huella digital"
+            onPress={handleBiometricAuth}
+            variant="secondary"
+            style={styles.biometricButton}
+          />
+        )}
+      </View>
+    </ThemedLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
+  pageContainer: {
+    flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+  },
+  buttonContainer: {
+    width: '100%',
+    marginTop: 24,
   },
   biometricButton: {
     marginTop: 10,
   },
+  loginLogo: {
+    alignSelf: 'center',
+    marginBottom: 24,
+},
 });
