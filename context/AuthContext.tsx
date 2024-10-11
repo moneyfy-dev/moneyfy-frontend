@@ -109,14 +109,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const token = await AsyncStorage.getItem('token');
       const storedUser = await AsyncStorage.getItem('user');
       console.log('Token encontrado:', token ? 'Sí' : 'No');
-      if (!token) {
-        console.log('No hay token, estableciendo isAuthenticated a false');
+      if (!token || !storedUser) {
+        console.log('No hay token o usuario, estableciendo isAuthenticated a false');
         setIsAuthenticated(false);
+        setUser(null);
       } else {
         const isValid = await verifyToken(token);
         console.log('Token válido:', isValid ? 'Sí' : 'No');
-        setIsAuthenticated(isValid);
-        if (isValid && storedUser) {
+        if (isValid) {
+          setIsAuthenticated(true);
           setUser(JSON.parse(storedUser));
         } else {
           await logout();
@@ -125,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Error checking auth status:', error);
       setIsAuthenticated(false);
+      setUser(null);
     } finally {
       console.log('Finalizando checkAuthStatus, estableciendo isLoading a false');
       setIsLoading(false);

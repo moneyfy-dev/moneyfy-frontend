@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
 import { View, ActivityIndicator } from 'react-native';
@@ -16,14 +16,34 @@ SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
   const { isLoading, isAuthenticated, isPersistentAuthRequired, checkAuthStatus } = useAuth();
+  const router = useRouter();
+  const segments = useSegments();
+  const [isNavigationReady, setIsNavigationReady] = useState(false);
   
   useEffect(() => {
-    checkAuthStatus();
+    const checkAuth = async () => {
+      await checkAuthStatus();
+      setIsNavigationReady(true);
+    };
+    checkAuth();
   }, []);
+
+  useEffect(() => {
+    if (!isNavigationReady) return;
+
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (isAuthenticated && inAuthGroup) {
+      router.replace('/(tabs)');
+    } else if (!isAuthenticated && !inAuthGroup) {
+      router.replace('/(auth)/login');
+    }
+  }, [isAuthenticated, segments, isNavigationReady]);
+
 
   console.log('RootLayoutNav - Estado:', { isLoading, isAuthenticated, isPersistentAuthRequired });
 
-  if (isLoading) {
+  if (isLoading || !isNavigationReady) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#0000ff" />
