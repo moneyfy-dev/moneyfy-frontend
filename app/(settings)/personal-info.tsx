@@ -11,6 +11,11 @@ import { useAuth } from '@/context/AuthContext';
 import { ThemedButton } from '@/components/ThemedButton';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedDatePicker } from '@/components/ThemedDatePicker';
+import { updateUserInfo } from '@/services/userService';
+import { validateName, validatePhoneNumber, validateAddress } from '@/utils/validations';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { testUpdateUserInfo } from '@/services/userService';
 
 export default function PersonalInfoScreen() {
     const { user, updateUserData } = useAuth();
@@ -22,6 +27,12 @@ export default function PersonalInfoScreen() {
         direccion: '',
         fechaNacimiento: new Date(),
         profilePicture: '',
+    });
+    const [errors, setErrors] = useState({
+        nombre: '',
+        apellido: '',
+        telefono: '',
+        direccion: '',
     });
 
     useEffect(() => {
@@ -57,31 +68,105 @@ export default function PersonalInfoScreen() {
         }
     };
 
-    const handleSave = async () => {
-        try {
-            const formData = new FormData();
-            formData.append('name', personalInfo.nombre);
-            formData.append('surname', personalInfo.apellido);
-            formData.append('phone', personalInfo.telefono);
-            formData.append('address', personalInfo.direccion);
-            formData.append('dateOfBirth', personalInfo.fechaNacimiento.toISOString().split('T')[0]);
+    const validateForm = () => {
+        let isValid = true;
+        const newErrors = {
+            nombre: '',
+            apellido: '',
+            telefono: '',
+            direccion: '',
+        };
 
-            if (personalInfo.profilePicture) {
-                const filename = personalInfo.profilePicture.split('/').pop();
-                const match = /\.(\w+)$/.exec(filename || '');
-                const type = match ? `image/${match[1]}` : `image`;
-                formData.append('profilePicture', {
-                    uri: personalInfo.profilePicture,
-                    name: filename,
-                    type,
-                } as any);
+        if (!validateName(personalInfo.nombre)) {
+            newErrors.nombre = 'Nombre inválido';
+            isValid = false;
+        }
+
+        if (!validateName(personalInfo.apellido)) {
+            newErrors.apellido = 'Apellido inválido';
+            isValid = false;
+        }
+
+        if (!validatePhoneNumber(personalInfo.telefono)) {
+            newErrors.telefono = 'Número de teléfono inválido';
+            isValid = false;
+        }
+
+        if (!validateAddress(personalInfo.direccion)) {
+            newErrors.direccion = 'La dirección solo puede contener letras, números, espacios, comas y puntos';
+            isValid = false;
+        }
+
+        setErrors(newErrors);
+        return isValid;
+    };
+
+    const handleSave = async () => {
+        if (!validateForm()) {
+            Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
+            return;
+        }
+
+        try {
+            const userData = {
+                name: personalInfo.nombre,
+                surname: personalInfo.apellido,
+                phone: personalInfo.telefono,
+                address: personalInfo.direccion,
+                dateOfBirth: personalInfo.fechaNacimiento.toISOString().split('T')[0],
+                profilePicture: personalInfo.profilePicture || ''
+            };
+
+            const token = await AsyncStorage.getItem('token');
+            if (!token) {
+                throw new Error('No se encontró el token de autenticación');
             }
 
-            await updateUserData(formData);
-            Alert.alert('Éxito', 'Información personal actualizada correctamente');
+            console.log('UserData:', userData);
+            console.log('Token:', token);
+
+            const response = await updateUserInfo(token, userData);
+            
+            console.log('Response:', response);
+
+            if (response && response.user) {
+                await updateUserData(response.user);
+                Alert.alert('Éxito', 'Información personal actualizada correctamente');
+            } else {
+                throw new Error('Respuesta inesperada del servidor');
+            }
         } catch (error) {
             console.error('Error al actualizar información personal:', error);
-            Alert.alert('Error', 'No se pudo actualizar la información personal');
+            if (axios.isAxiosError(error) && error.response) {
+                console.error('Respuesta del servidor:', error.response.data);
+                console.error('Estado de la respuesta:', error.response.status);
+                console.error('Cabeceras de la respuesta:', error.response.headers);
+                Alert.alert('Error', `No se pudo actualizar la información personal: ${error.response.data.message || 'Error desconocido'}`);
+            } else {
+                console.error('Error inesperado:', error);
+                Alert.alert('Error', 'No se pudo actualizar la información personal');
+            }
+        }
+    };
+
+    const handleTestUpdate = async () => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            if (!token) {
+                throw new Error('No se encontró el token de autenticación');
+            }
+            console.log('Token for test update:', token);
+            const result = await testUpdateUserInfo(token);
+            console.log('Test update result:', result);
+            Alert.alert('Éxito', 'Prueba de actualización completada');
+        } catch (error) {
+            console.error('Error en la prueba de actualización:', error);
+            if (axios.isAxiosError(error)) {
+                console.error('Error response:', error.response?.data);
+                console.error('Error status:', error.response?.status);
+                console.error('Error headers:', error.response?.headers);
+            }
+            Alert.alert('Error', 'La prueba de actualización falló');
         }
     };
 
@@ -109,6 +194,7 @@ export default function PersonalInfoScreen() {
                     value={personalInfo.nombre}
                     onChangeText={(value) => setPersonalInfo({ ...personalInfo, nombre: value })}
                     placeholder="Ingrese su nombre"
+                    error={errors.nombre}
                 />
 
                 <ThemedInput
@@ -116,25 +202,35 @@ export default function PersonalInfoScreen() {
                     value={personalInfo.apellido}
                     onChangeText={(value) => setPersonalInfo({ ...personalInfo, apellido: value })}
                     placeholder="Ingrese su apellido"
+                    error={errors.apellido}
                 />
 
                 <ThemedInput
                     label="Teléfono"
                     value={personalInfo.telefono}
                     onChangeText={(value) => setPersonalInfo({ ...personalInfo, telefono: value })}
-                    placeholder="Ingrese su teléfono"
+                    placeholder="+56912345678"
                     keyboardType="phone-pad"
+                    error={errors.telefono}
                 />
 
                 <ThemedInput
                     label="Dirección"
                     value={personalInfo.direccion}
-                    onChangeText={(value) => setPersonalInfo({ ...personalInfo, direccion: value })}
+                    onChangeText={(value) => {
+                        setPersonalInfo({ ...personalInfo, direccion: value });
+                        if (value && !validateAddress(value)) {
+                            setErrors(prev => ({...prev, direccion: 'La dirección solo puede contener letras, números, espacios, comas y puntos'}));
+                        } else {
+                            setErrors(prev => ({...prev, direccion: ''}));
+                        }
+                    }}
                     placeholder="Ingrese su dirección"
+                    error={errors.direccion}
                 />
 
                 <ThemedDatePicker
-                    label="Fecha de Nacimiento"
+                    label="Fecha de Nacimiento" 
                     value={personalInfo.fechaNacimiento}
                     onChange={(date) => setPersonalInfo({ ...personalInfo, fechaNacimiento: date })}
                     placeholder="Seleccione su fecha de nacimiento"
@@ -144,6 +240,10 @@ export default function PersonalInfoScreen() {
             <ThemedButton
                 text="Guardar"
                 onPress={handleSave}
+            />
+            <ThemedButton
+                text="Prueba de Actualización"
+                onPress={handleTestUpdate}
             />
         </ThemedLayout>
     );

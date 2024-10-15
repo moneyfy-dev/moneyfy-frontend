@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login, getUserData, verifyToken } from '@/services/authService';
+import { login, register, getUserData, verifyToken } from '@/services/authService';
 import { differenceInMinutes } from 'date-fns';
 import getEnvVars from '../config';
 const { apiUrl } = getEnvVars();
@@ -92,10 +92,10 @@ const AuthContext = createContext<AuthContextProps>({
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
-  const [isPersistentAuthRequired, setIsPersistentAuthRequired] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isPersistentAuthRequired, setIsPersistentAuthRequired] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState('');
   const [isPersistentAuthConfigured, setIsPersistentAuthConfigured] = useState(false);
   const [lastHydrationTime, setLastHydrationTime] = useState<Date | null>(null);
@@ -104,42 +104,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkAuthStatus();
   }, []);
 
-  const checkAuthStatus = async (): Promise<void> => {
-    console.log('Iniciando checkAuthStatus');
+  const checkAuthStatus = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
       const storedUser = await AsyncStorage.getItem('user');
       const persistentAuthEnabled = await AsyncStorage.getItem('persistentAuthEnabled');
   
-      console.log('Token encontrado:', token ? 'Sí' : 'No');
-      console.log('Autenticación persistente habilitada:', persistentAuthEnabled);
-  
       if (!token || !storedUser) {
-        console.log('No hay token o usuario almacenado, estableciendo isAuthenticated a false');
         setIsAuthenticated(false);
         setUser(null);
+        setIsPersistentAuthRequired(false);
       } else {
-        const isValid = await verifyToken(token);
-        console.log('Token válido:', isValid ? 'Sí' : 'No');
+        const { isValid, userData } = await verifyToken(token);
         if (isValid) {
           setIsAuthenticated(true);
-          setUser(JSON.parse(storedUser));
+          setUser(userData.user);
           setIsPersistentAuthRequired(persistentAuthEnabled === 'true');
-          console.log('isPersistentAuthRequired establecido a:', persistentAuthEnabled === 'true');
         } else {
-          await logout();
+          setIsAuthenticated(false);
+          setUser(null);
+          setIsPersistentAuthRequired(false);
+          await AsyncStorage.removeItem('token');
+          await AsyncStorage.removeItem('user');
         }
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
       setIsAuthenticated(false);
       setUser(null);
+      setIsPersistentAuthRequired(false);
     } finally {
-      console.log('Finalizando checkAuthStatus, estableciendo isLoading a false');
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const checkPersistentAuth = async () => {
     const persistentAuthConfigured = await AsyncStorage.getItem('persistentAuthConfigured');
@@ -174,9 +172,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const handlePersistentAuthSuccess = useCallback(async () => {
     console.log('handlePersistentAuthSuccess llamado');
+    await hydrateUserData(true);
     setIsPersistentAuthRequired(false);
     setIsAuthenticated(true);
-    await hydrateUserData(true);
     console.log('Estado actualizado después de autenticación persistente:', { isAuthenticated: true, isPersistentAuthRequired: false });
   }, [hydrateUserData]);
 

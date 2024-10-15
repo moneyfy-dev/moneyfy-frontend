@@ -43,7 +43,6 @@ const ConfigScreen = () => {
     <ThemedLayout padding={[0, 40]}>
       <View style={styles.header}>
         <ThemedText variant="title" textAlign="center">Ajustes</ThemedText>
-        <ThemedText variant="paragraph" textAlign="center">{user?.personalData.email}</ThemedText>
       </View>
 
       {menuItems.map((item, index) => (

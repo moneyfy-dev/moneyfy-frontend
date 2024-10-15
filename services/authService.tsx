@@ -24,6 +24,8 @@ export const register = async (name: string, surname: string, email: string, pas
 };
 
 export const confirmRegistration = async (email: string, code: string) => {
+  console.log(email, code);
+  
   try {
     const response = await axios.post(`${apiUrl}/auth/confirm/registration`, {
       email,
@@ -40,7 +42,7 @@ export const resendConfirmationCode = async (email: string) => {
   try {
     const requestData = { email };
     console.log('Datos de registro a enviar:', requestData);
-    const response = await axios.post(`${apiUrl}/auth/resend/code`, {
+    const response = await axios.put(`${apiUrl}/auth/resend/code`, {
       email
     });
     return response.data;

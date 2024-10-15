@@ -17,3 +17,14 @@ export const validateEmail = (email: string): boolean => {
   export const sanitizeName = (name: string): string => {
     return name.trim().replace(/\s+/g, ' ');
   };
+
+  export const validatePhoneNumber = (phone: string): boolean => {
+    const phoneRegex = /^\+56[98]\d{8}$/;
+    return phoneRegex.test(phone.trim());
+  };
+  
+  export const validateAddress = (address: string): boolean => {
+    // Permite letras (mayúsculas y minúsculas), números, espacios, comas y puntos
+    const addressRegex = /^[a-zA-Z0-9\s,.]+$/;
+    return addressRegex.test(address.trim());
+  };

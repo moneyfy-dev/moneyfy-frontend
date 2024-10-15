@@ -9,6 +9,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from "@react-native-community/netinfo";
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { Logo } from '@/components/Logo';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/context/AuthContext';
 
 interface PersistentAuthProps {
   onAuthSuccess: () => void;
@@ -20,6 +22,8 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
   const [isOffline, setIsOffline] = useState(false);
   const [canShowAlert, setCanShowAlert] = useState(true);
   const themeColors = useThemeColor();
+  const router = useRouter();
+  const { handlePersistentAuthSuccess } = useAuth();
 
   useEffect(() => {
     checkBiometricAvailability();
@@ -70,8 +74,12 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
   };
 
   const handleAuthSuccess = async () => {
-    console.log('Autenticación persistente exitosa, llamando a onAuthSuccess');
-    onAuthSuccess();
+    console.log('Autenticación persistente exitosa, llamando a handlePersistentAuthSuccess');
+    await handlePersistentAuthSuccess();
+    console.log('Navegando a (tabs) desde PersistentAuth');
+    setTimeout(() => {
+      router.replace('/(tabs)');
+    }, 100);
   };
 
   const handleBiometricAuth = async () => {
@@ -104,7 +112,7 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
   return (
     <ThemedLayout>
       <View style={styles.pageContainer}>
-      <Logo style={styles.loginLogo} />
+        <Logo style={styles.loginLogo} />
         <ThemedInput
           label="PIN"
           value={pin}
@@ -146,5 +154,5 @@ const styles = StyleSheet.create({
   loginLogo: {
     alignSelf: 'center',
     marginBottom: 24,
-},
+  },
 });
