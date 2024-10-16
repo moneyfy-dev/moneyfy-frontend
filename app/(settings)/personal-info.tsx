@@ -11,11 +11,10 @@ import { useAuth } from '@/context/AuthContext';
 import { ThemedButton } from '@/components/ThemedButton';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedDatePicker } from '@/components/ThemedDatePicker';
-import { updateUserInfo } from '@/services/userService';
 import { validateName, validatePhoneNumber, validateAddress } from '@/utils/validations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { testUpdateUserInfo } from '@/services/userService';
+import { updateUserProfile } from '@/services/userService';
 
 export default function PersonalInfoScreen() {
     const { user, updateUserData } = useAuth();
@@ -43,7 +42,7 @@ export default function PersonalInfoScreen() {
                 telefono: user.personalData.phone || '',
                 direccion: user.personalData.address || '',
                 fechaNacimiento: user.personalData.dateOfBirth ? new Date(user.personalData.dateOfBirth) : new Date(),
-                profilePicture: user.personalData.profilePicture || '',
+                profilePicture: user.personalData.profilePicture ? `data:image/jpeg;base64,${user.personalData.profilePicture}` : '',
             });
         }
     }, [user]);
@@ -55,7 +54,7 @@ export default function PersonalInfoScreen() {
             aspect: [1, 1],
             quality: 1,
         });
-
+    
         if (!result.canceled && result.assets && result.assets.length > 0) {
             const selectedAsset = result.assets[0];
             const manipResult = await ImageManipulator.manipulateAsync(
@@ -63,7 +62,7 @@ export default function PersonalInfoScreen() {
                 [{ resize: { width: 300 } }],
                 { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
             );
-
+    
             setPersonalInfo(prev => ({ ...prev, profilePicture: manipResult.uri }));
         }
     };
@@ -103,72 +102,43 @@ export default function PersonalInfoScreen() {
 
     const handleSave = async () => {
         if (!validateForm()) {
-            Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
-            return;
+          Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
+          return;
         }
-
+      
         try {
-            const userData = {
-                name: personalInfo.nombre,
-                surname: personalInfo.apellido,
-                phone: personalInfo.telefono,
-                address: personalInfo.direccion,
-                dateOfBirth: personalInfo.fechaNacimiento.toISOString().split('T')[0],
-                profilePicture: personalInfo.profilePicture || ''
-            };
-
-            const token = await AsyncStorage.getItem('token');
-            if (!token) {
-                throw new Error('No se encontró el token de autenticación');
-            }
-
-            console.log('UserData:', userData);
-            console.log('Token:', token);
-
-            const response = await updateUserInfo(token, userData);
-            
-            console.log('Response:', response);
-
-            if (response && response.user) {
-                await updateUserData(response.user);
-                Alert.alert('Éxito', 'Información personal actualizada correctamente');
-            } else {
-                throw new Error('Respuesta inesperada del servidor');
-            }
+          const token = await AsyncStorage.getItem('token');
+          if (!token) {
+            throw new Error('No se encontró el token de autenticación');
+          }
+      
+          const userData = {
+            name: personalInfo.nombre,
+            surname: personalInfo.apellido,
+            phone: personalInfo.telefono,
+            address: personalInfo.direccion,
+            dateOfBirth: personalInfo.fechaNacimiento.toISOString().split('T')[0],
+            profilePicture: personalInfo.profilePicture
+          };
+      
+          const response = await updateUserProfile(token, userData);
+      
+          if (response && response.user) {
+            await updateUserData(response.user);
+            Alert.alert('Éxito', 'Información personal actualizada correctamente');
+          } else {
+            throw new Error('Respuesta inesperada del servidor');
+          }
         } catch (error) {
-            console.error('Error al actualizar información personal:', error);
-            if (axios.isAxiosError(error) && error.response) {
-                console.error('Respuesta del servidor:', error.response.data);
-                console.error('Estado de la respuesta:', error.response.status);
-                console.error('Cabeceras de la respuesta:', error.response.headers);
-                Alert.alert('Error', `No se pudo actualizar la información personal: ${error.response.data.message || 'Error desconocido'}`);
-            } else {
-                console.error('Error inesperado:', error);
-                Alert.alert('Error', 'No se pudo actualizar la información personal');
-            }
+          console.error('Error al actualizar la información personal:', error);
+          if (axios.isAxiosError(error)) {
+            console.error('Error response:', error.response?.data);
+            console.error('Error status:', error.response?.status);
+            console.error('Error headers:', error.response?.headers);
+          }
+          Alert.alert('Error', 'No se pudo actualizar la información personal');
         }
-    };
-
-    const handleTestUpdate = async () => {
-        try {
-            const token = await AsyncStorage.getItem('token');
-            if (!token) {
-                throw new Error('No se encontró el token de autenticación');
-            }
-            console.log('Token for test update:', token);
-            const result = await testUpdateUserInfo(token);
-            console.log('Test update result:', result);
-            Alert.alert('Éxito', 'Prueba de actualización completada');
-        } catch (error) {
-            console.error('Error en la prueba de actualización:', error);
-            if (axios.isAxiosError(error)) {
-                console.error('Error response:', error.response?.data);
-                console.error('Error status:', error.response?.status);
-                console.error('Error headers:', error.response?.headers);
-            }
-            Alert.alert('Error', 'La prueba de actualización falló');
-        }
-    };
+      };
 
     return (
         <ThemedLayout padding={[0, 40]}>
@@ -220,9 +190,9 @@ export default function PersonalInfoScreen() {
                     onChangeText={(value) => {
                         setPersonalInfo({ ...personalInfo, direccion: value });
                         if (value && !validateAddress(value)) {
-                            setErrors(prev => ({...prev, direccion: 'La dirección solo puede contener letras, números, espacios, comas y puntos'}));
+                            setErrors(prev => ({ ...prev, direccion: 'La dirección solo puede contener letras, números, espacios, comas y puntos' }));
                         } else {
-                            setErrors(prev => ({...prev, direccion: ''}));
+                            setErrors(prev => ({ ...prev, direccion: '' }));
                         }
                     }}
                     placeholder="Ingrese su dirección"
@@ -230,7 +200,7 @@ export default function PersonalInfoScreen() {
                 />
 
                 <ThemedDatePicker
-                    label="Fecha de Nacimiento" 
+                    label="Fecha de Nacimiento"
                     value={personalInfo.fechaNacimiento}
                     onChange={(date) => setPersonalInfo({ ...personalInfo, fechaNacimiento: date })}
                     placeholder="Seleccione su fecha de nacimiento"
@@ -240,10 +210,6 @@ export default function PersonalInfoScreen() {
             <ThemedButton
                 text="Guardar"
                 onPress={handleSave}
-            />
-            <ThemedButton
-                text="Prueba de Actualización"
-                onPress={handleTestUpdate}
             />
         </ThemedLayout>
     );

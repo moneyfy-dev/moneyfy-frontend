@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { login, register, getUserData, verifyToken } from '@/services/authService';
 import { differenceInMinutes } from 'date-fns';
 import getEnvVars from '../config';
+import * as FileSystem from 'expo-file-system';
+
 const { apiUrl } = getEnvVars();
 
 interface UserData {
@@ -52,7 +54,7 @@ interface AuthContextProps {
   user: User | null;
   setTempEmail: (email: string) => void;
   refreshUserSession: () => Promise<void>;
-  updateUserData: (updatedData: Partial<UserData> | FormData) => Promise<void>;
+  updateUserData: (updatedData: Partial<User>) => Promise<void>;
   isPersistentAuthRequired: boolean;
   handlePersistentAuthSuccess: () => Promise<void>;
   userEmail: string;
@@ -237,31 +239,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await hydrateUserData();
   };
 
-  const updateUserData = async (updatedData: Partial<UserData> | FormData) => {
+  const updateUserData = async (updatedData: Partial<User>) => {
     if (user) {
       try {
-        const token = await AsyncStorage.getItem('token');
-        const headers: HeadersInit = {
-          'Authorization': `Bearer ${token}`,
-        };
+        let newUser = { ...user, ...updatedData };
 
-        if (!(updatedData instanceof FormData)) {
-          headers['Content-Type'] = 'application/json';
+        // Manejar la imagen de perfil
+        if (newUser.personalData && newUser.personalData.profilePicture) {
+          const base64Image = newUser.personalData.profilePicture;
+          const fileName = `${newUser.userId}_profile.jpg`;
+          const filePath = `${FileSystem.documentDirectory}${fileName}`;
+
+          // Guardar la imagen en el sistema de archivos
+          await FileSystem.writeAsStringAsync(filePath, base64Image, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+
+          // Actualizar la ruta de la imagen en los datos del usuario
+          newUser.personalData.profilePicture = filePath;
         }
 
-        const response = await fetch(`${apiUrl}/user/update`, {
-          method: 'PUT',
-          headers: headers,
-          body: updatedData instanceof FormData ? updatedData : JSON.stringify(updatedData),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to update user data');
-        }
-
-        const updatedUser = await response.json();
-        await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-        setUser(updatedUser);
+        await AsyncStorage.setItem('user', JSON.stringify(newUser));
+        setUser(newUser);
+        setLastHydrationTime(new Date());
+        await AsyncStorage.setItem('lastHydrationTime', new Date().toISOString());
       } catch (error) {
         console.error('Error updating user data:', error);
         throw error;
