@@ -3,27 +3,31 @@ import { StyleSheet, TouchableOpacity, View, FlatList } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
-import { Account } from '@/services/paymentConfigService';
+import { Account } from '@/types/useAccounts';
 
 interface AccountListScreenProps {
     accounts: Account[];
+    onSelectAccount: (accountId: string) => void;
 }
 
-export function AccountListScreen({ accounts }: AccountListScreenProps) {
+export function AccountListScreen({ accounts, onSelectAccount }: AccountListScreenProps) {
     const themeColors = useThemeColor();
 
     const renderAccount = ({ item }: { item: Account }) => (
-        <TouchableOpacity style={styles.accountItem}>
+        <TouchableOpacity 
+            style={[styles.accountItem, { borderColor: themeColors.borderBackgroundColor }]}
+            onPress={() => onSelectAccount(item.accountId)}
+        >
             <View style={styles.accountInfo}>
-                <View style={[styles.accountIcon, { backgroundColor: themeColors.buttonBackgroundColor }]}>
-                    <Ionicons name="card-outline" size={24} color="white" />
+                <View style={[styles.radioButton, item.selected && { borderColor: themeColors.textColorAccent }]}>
+                    {item.selected && <View style={[styles.radioButtonInner, { backgroundColor: themeColors.textColorAccent }]} />}
                 </View>
                 <View>
-                    <ThemedText style={styles.bankName}>{item.bankName}</ThemedText>
-                    <ThemedText style={styles.accountNumber}>{item.accountNumber}</ThemedText>
+                    <ThemedText variant="subTitleBold">{item.bank}</ThemedText>
+                    <ThemedText variant="paragraph">{item.accountNumber}</ThemedText>
                 </View>
             </View>
-            <Ionicons name="chevron-forward" size={24} color={themeColors.textColor} />
+            <Ionicons name="ellipsis-vertical" size={20} color={themeColors.gray1Gray04} />
         </TouchableOpacity>
     );
 
@@ -31,7 +35,7 @@ export function AccountListScreen({ accounts }: AccountListScreenProps) {
         <FlatList
             data={accounts}
             renderItem={renderAccount}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.accountId}
             style={styles.list}
         />
     );
@@ -44,14 +48,16 @@ const styles = StyleSheet.create({
     accountItem: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        gap: 16,
+        padding: 16,
         alignItems: 'center',
-        padding: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
+        borderWidth: 1,
+        borderRadius: 16,
     },
     accountInfo: {
         flexDirection: 'row',
         alignItems: 'center',
+        gap: 16,
     },
     accountIcon: {
         width: 40,
@@ -67,5 +73,20 @@ const styles = StyleSheet.create({
     },
     accountNumber: {
         fontSize: 14,
+    },
+    radioButton: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: '#000',
+        marginRight: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    radioButtonInner: {
+        width: 12,
+        height: 12,
+        borderRadius: 6,
     },
 });

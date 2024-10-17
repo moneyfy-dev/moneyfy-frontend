@@ -6,36 +6,41 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedButton } from '@/components/ThemedButton';
-import { addAccount } from '@/services/paymentConfigService';
+import { addAccount } from '@/services/accountService';
+import { useAuth } from '@/context/AuthContext';
 
 export default function AddAccountScreen() {
-    const [rut, setRut] = useState('');
-    const [name, setName] = useState('');
+    const [personalId, setPersonalId] = useState('');
+    const [holderName, setHolderName] = useState('');
     const [alias, setAlias] = useState('');
     const [email, setEmail] = useState('');
-    const [bankName, setBankName] = useState('');
+    const [bank, setBank] = useState('');
     const [accountType, setAccountType] = useState('');
     const [accountNumber, setAccountNumber] = useState('');
 
     const themeColors = useThemeColor();
     const router = useRouter();
+    const { updateUserData } = useAuth();
 
     const handleSave = async () => {
         try {
-            const newAccount = await addAccount({
-                rut,
-                name,
+            const newAccountData = {
+                personalId,
+                holderName,
                 alias,
                 email,
-                bankName,
+                bank,
                 accountType,
-                accountNumber,
-            });
-            Alert.alert('Success', 'Account added successfully');
+                accountNumber
+            };
+
+            const updatedAccounts = await addAccount(newAccountData);
+            await updateUserData({ accounts: updatedAccounts });
+            Alert.alert('Éxito', 'Cuenta agregada correctamente');
             router.back();
         } catch (error) {
-            console.error('Error adding account:', error);
-            Alert.alert('Error', 'Could not add the account');
+            console.error('Error al agregar la cuenta:', error);
+            Alert.alert('Error', 'No se pudo agregar la cuenta');
         }
     };
 
@@ -43,76 +48,80 @@ export default function AddAccountScreen() {
         <ThemedLayout padding={[0 ,40]}>
             <ThemedInput
                 label="RUT"
-                value={rut}
-                onChangeText={setRut}
-                placeholder="Enter your RUT"
+                value={personalId}
+                onChangeText={setPersonalId}
+                placeholder="Ingrese su RUT"
             />
 
             <ThemedInput
-                label="Name"
-                value={name}
-                onChangeText={setName}
-                placeholder="Enter your name"
+                label="Nombre"
+                value={holderName}
+                onChangeText={setHolderName}
+                placeholder="Ingrese su nombre"
             />
 
             <ThemedInput
                 label="Alias"
                 value={alias}
                 onChangeText={setAlias}
-                placeholder="Enter an alias for the account"
+                placeholder="Ingrese un alias para la cuenta"
             />
 
             <ThemedInput
-                label="Email"
+                label="Correo electrónico"
                 value={email}
                 onChangeText={setEmail}
-                placeholder="Enter your email"
+                placeholder="Ingrese su correo electrónico"
                 keyboardType="email-address"
             />
 
-            <ThemedText variant="title" marginBottom={16}>Account Details</ThemedText>
+            <ThemedText variant="title" marginBottom={16}>Detalles de la cuenta</ThemedText>
 
             <ThemedInput
-                label="Bank"
-                value={bankName}
-                onChangeText={setBankName}
-                placeholder="Select your bank"
+                label="Banco"
+                value={bank}
+                onChangeText={setBank}
+                placeholder="Seleccione su banco"
             />
 
-            <ThemedText variant="title" marginBottom={16}>Account Type</ThemedText>
+            <ThemedText variant="title" marginBottom={16}>Tipo de cuenta</ThemedText>
 
             <View style={styles.accountTypeContainer}>
-                {['CHECKING', 'SAVINGS', 'VISTA'].map((type) => (
+                {[
+                    { key: 'CHECKING', label: 'CORRIENTE' },
+                    { key: 'SAVINGS', label: 'AHORRO' },
+                    { key: 'VISTA', label: 'VISTA' }
+                ].map(({ key, label }) => (
                     <TouchableOpacity
-                        key={type}
+                        key={key}
                         style={[
                             styles.accountTypeButton,
                             { backgroundColor: themeColors.extremeContrastGray },
-                            accountType === type && { backgroundColor: themeColors.buttonBackgroundColor }
+                            accountType === key && { backgroundColor: themeColors.buttonBackgroundColor }
                         ]}
-                        onPress={() => setAccountType(type)}
+                        onPress={() => setAccountType(key)}
                     >
                         <ThemedText
                             variant="textLink"
                             textAlign="center"
-                            color={accountType === type ? themeColors.backgroundColor : themeColors.textColorAccent}
+                            color={accountType === key ? themeColors.backgroundColor : themeColors.textColorAccent}
                         >
-                            {type}
+                            {label}
                         </ThemedText>
                     </TouchableOpacity>
                 ))}
             </View>
 
             <ThemedInput
-                label="Account Number"
+                label="Número de cuenta"
                 value={accountNumber}
                 onChangeText={setAccountNumber}
-                placeholder="Enter the account number"
+                placeholder="Ingrese el número de cuenta"
                 keyboardType="numeric"
             />
 
             <ThemedButton
-                text="Save"
+                text="Guardar"
                 onPress={handleSave}
                 style={styles.Button}
             />

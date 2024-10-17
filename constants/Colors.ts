@@ -18,6 +18,7 @@ export default {
   },
   common: {
     transparent: 'transparent',
+    white25: 'rgba(255, 255, 255, 0.25)',
     black: '#111111',
     white: '#FFFFFF',
     gray0: '#222222',

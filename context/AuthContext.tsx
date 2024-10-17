@@ -54,7 +54,7 @@ interface AuthContextProps {
   user: User | null;
   setTempEmail: (email: string) => void;
   refreshUserSession: () => Promise<void>;
-  updateUserData: (updatedData: Partial<User>) => Promise<void>;
+  updateUserData: (updatedData: any) => Promise<void>;
   isPersistentAuthRequired: boolean;
   handlePersistentAuthSuccess: () => Promise<void>;
   userEmail: string;
@@ -239,30 +239,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await hydrateUserData();
   };
 
-  const updateUserData = async (updatedData: Partial<User>) => {
+  const updateUserData = async (updatedData: any) => {
     if (user) {
       try {
-        let newUser = { ...user, ...updatedData };
+        let newUser = { ...user, ...updatedData.user };
 
-        // Manejar la imagen de perfil
-        if (newUser.personalData && newUser.personalData.profilePicture) {
-          const base64Image = newUser.personalData.profilePicture;
-          const fileName = `${newUser.userId}_profile.jpg`;
-          const filePath = `${FileSystem.documentDirectory}${fileName}`;
-
-          // Guardar la imagen en el sistema de archivos
-          await FileSystem.writeAsStringAsync(filePath, base64Image, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-
-          // Actualizar la ruta de la imagen en los datos del usuario
-          newUser.personalData.profilePicture = filePath;
-        }
-
+        // Guardar los datos actualizados del usuario en AsyncStorage
         await AsyncStorage.setItem('user', JSON.stringify(newUser));
+        
+        // Actualizar el estado del usuario en el contexto
         setUser(newUser);
+        
+        // Actualizar el tiempo de la última hidratación
         setLastHydrationTime(new Date());
         await AsyncStorage.setItem('lastHydrationTime', new Date().toISOString());
+
+        // Actualizar el token si se proporciona uno nuevo
+        if (updatedData.jwt) {
+          await AsyncStorage.setItem('token', updatedData.jwt);
+        }
+
+        console.log('Datos del usuario actualizados:', newUser);
       } catch (error) {
         console.error('Error updating user data:', error);
         throw error;

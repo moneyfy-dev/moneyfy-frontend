@@ -102,43 +102,47 @@ export default function PersonalInfoScreen() {
 
     const handleSave = async () => {
         if (!validateForm()) {
-          Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
-          return;
+            Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
+            return;
         }
-      
+
         try {
-          const token = await AsyncStorage.getItem('token');
-          if (!token) {
-            throw new Error('No se encontró el token de autenticación');
-          }
-      
-          const userData = {
-            name: personalInfo.nombre,
-            surname: personalInfo.apellido,
-            phone: personalInfo.telefono,
-            address: personalInfo.direccion,
-            dateOfBirth: personalInfo.fechaNacimiento.toISOString().split('T')[0],
-            profilePicture: personalInfo.profilePicture
-          };
-      
-          const response = await updateUserProfile(token, userData);
-      
-          if (response && response.user) {
-            await updateUserData(response.user);
-            Alert.alert('Éxito', 'Información personal actualizada correctamente');
-          } else {
-            throw new Error('Respuesta inesperada del servidor');
-          }
+            const token = await AsyncStorage.getItem('token');
+            if (!token) {
+                throw new Error('No se encontró el token de autenticación');
+            }
+            
+            const userData = {
+                name: personalInfo.nombre,
+                surname: personalInfo.apellido,
+                phone: personalInfo.telefono,
+                address: personalInfo.direccion,
+                dateOfBirth: personalInfo.fechaNacimiento.toISOString().split('T')[0],
+                profilePicture: personalInfo.profilePicture.startsWith('data:image') ? personalInfo.profilePicture.split(',')[1] : personalInfo.profilePicture
+            };
+            
+            const response = await updateUserProfile(token, userData);
+            console.log('1', response);
+            console.log('2', response.data);
+            console.log('3', response.data.user);
+
+            if (response && response.data && response.data.user) {
+                // Actualizar los datos del usuario en el contexto de autenticación
+                await updateUserData(response.data.user);
+                Alert.alert('Éxito', 'Información personal actualizada correctamente');
+            } else {
+                throw new Error('Respuesta inesperada del servidor');
+            }
         } catch (error) {
-          console.error('Error al actualizar la información personal:', error);
-          if (axios.isAxiosError(error)) {
-            console.error('Error response:', error.response?.data);
-            console.error('Error status:', error.response?.status);
-            console.error('Error headers:', error.response?.headers);
-          }
-          Alert.alert('Error', 'No se pudo actualizar la información personal');
+            console.error('Error al actualizar la información personal:', error);
+            if (axios.isAxiosError(error)) {
+                console.error('Error response:', error.response?.data);
+                console.error('Error status:', error.response?.status);
+                console.error('Error headers:', error.response?.headers);
+            }
+            Alert.alert('Error', 'No se pudo actualizar la información personal');
         }
-      };
+    };
 
     return (
         <ThemedLayout padding={[0, 40]}>

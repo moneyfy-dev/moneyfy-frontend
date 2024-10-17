@@ -1,78 +1,42 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import Colors from '@/constants/Colors';
 import { LineChart } from 'react-native-chart-kit';
 import { useAuth } from '@/context/AuthContext';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { LinearGradient } from 'expo-linear-gradient';
+import { AvatarIcon } from '@/components/images/AvatarIcon';
 
 export default function HomeScreen() {
   const themeColors = useThemeColor();
   const { user } = useAuth();
   const [showBalance, setShowBalance] = useState(true);
-
+  const [personalInfo, setPersonalInfo] = useState({
+    nombre: '',
+    apellido: '',
+    telefono: '',
+    direccion: '',
+    fechaNacimiento: new Date(),
+    profilePicture: '',
+  });
+  const screenWidth = Dimensions.get("window").width;
   const toggleBalance = () => setShowBalance(!showBalance);
 
-  const styles = StyleSheet.create({
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 20,
-    },
-    iconContainer: {
-      flexDirection: 'row',
-    },
-    icon: {
-      marginLeft: 15,
-    },
-    balanceContainer: {
-      marginBottom: 20,
-    },
-    balanceRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    eyeIcon: {
-      marginLeft: 10,
-    },
-    chartContainer: {
-      marginVertical: 20,
-      borderRadius: 16,
-      overflow: 'hidden',
-    },
-    cardContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginBottom: 20,
-    },
-    card: {
-      flex: 1,
-      borderRadius: 10,
-      padding: 15,
-      marginHorizontal: 5,
-    },
-    button: {
-      borderRadius: 10,
-      padding: 15,
-      alignItems: 'center',
-      marginBottom: 20,
-    },
-    actionContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    actionButton: {
-      flex: 1,
-      backgroundColor: themeColors.backgroundCardColor,
-      borderRadius: 10,
-      padding: 15,
-      alignItems: 'center',
-      marginHorizontal: 5,
-    },
-  });
+  useEffect(() => {
+    if (user) {
+      setPersonalInfo({
+        nombre: user.personalData.name || '',
+        apellido: user.personalData.surname || '',
+        telefono: user.personalData.phone || '',
+        direccion: user.personalData.address || '',
+        fechaNacimiento: user.personalData.dateOfBirth ? new Date(user.personalData.dateOfBirth) : new Date(),
+        profilePicture: user.personalData.profilePicture ? `data:image/jpeg;base64,${user.personalData.profilePicture}` : '',
+      });
+    }
+  }, [user]);
 
   if (!user) {
     return (
@@ -84,84 +48,249 @@ export default function HomeScreen() {
 
   return (
     <ThemedLayout>
-      <ScrollView>
-        <View style={styles.header}>
-          <ThemedText variant="title">Hola {user.personalData.name}</ThemedText>
-          <View style={styles.iconContainer}>
-            <Ionicons name="notifications-outline" size={24} color={themeColors.textColor} style={styles.icon} />
-            <Ionicons name="help-circle-outline" size={24} color={themeColors.textColor} style={styles.icon} />
-          </View>
+      <View style={styles.header}>
+        <View style={styles.profileImageContainer}>
+          {personalInfo.profilePicture ? (
+            <Image source={{ uri: personalInfo.profilePicture }} style={styles.profileImage} />
+          ) : (
+            <AvatarIcon width={40} height={40} style={styles.profileImage} />
+          )}
+          <ThemedText variant="title">¡Hola {personalInfo.nombre} {personalInfo.apellido}!</ThemedText>
         </View>
+        <View style={styles.iconContainer}>
+          <Ionicons name="notifications-outline" size={24} color={themeColors.textColor} style={styles.icon} />
+          <Ionicons name="help-circle-outline" size={24} color={themeColors.textColor} style={styles.icon} />
+        </View>
+      </View>
 
-        <View style={styles.balanceContainer}>
-          <ThemedText variant="paragraph">Tu saldo actual</ThemedText>
+      <View style={styles.balanceContainer}>
+
+        <View>
+
+          <ThemedText variant="paragraph" marginBottom={5}>Tu saldo actual</ThemedText>
+
           <View style={styles.balanceRow}>
-            <ThemedText variant="jumboTitle" color={themeColors.textColorAccent}>
-              {showBalance ? `$${user.wallet.totalBalance.toFixed(2)}` : '******'}
+            <ThemedText variant="subTitleBold" marginBottom={3} color={themeColors.textColorAccent}>
+              $ {' '}
             </ThemedText>
-            <TouchableOpacity onPress={toggleBalance} style={styles.eyeIcon}>
-              <Ionicons name={showBalance ? "eye-outline" : "eye-off-outline"} size={24} color={themeColors.textColorAccent} />
-            </TouchableOpacity>
+            <ThemedText variant="superTitle" color={themeColors.textColor}>
+              {showBalance ? `${user.wallet.totalBalance.toFixed(0)}` : '******'}
+            </ThemedText>
           </View>
+
         </View>
 
-        <View style={styles.chartContainer}>
-          <LineChart
-            data={{
-              labels: ["Jun", "Jul", "Ago", "Sep", "Oct"],
-              datasets: [{ data: [50000, 60000, 40000, 70000, 65000] }]
-            }}
-            width={350}
-            height={200}
-            chartConfig={{
-              backgroundColor: themeColors.backgroundCardColor,
-              backgroundGradientFrom: themeColors.backgroundCardColor,
-              backgroundGradientTo: themeColors.backgroundCardColor,
-              decimalPlaces: 0,
-              color: (opacity = 1) => themeColors.textColorAccent,
-              style: { borderRadius: 16 }
-            }}
-            bezier
-            style={{ borderRadius: 16 }}
-          />
-        </View>
+        <TouchableOpacity onPress={toggleBalance} style={[styles.eyeIconButton, { backgroundColor: themeColors.extremeContrastGray }]}>
+          <Ionicons name={showBalance ? "eye-outline" : "eye-off-outline"} size={20} color={themeColors.textColorAccent} />
+        </TouchableOpacity>
+      </View>
 
-        <View style={styles.cardContainer}>
-          <LinearGradient
-            colors={[themeColors.buttonBackgroundColor, themeColors.buttonBackgroundColor]}
-            style={[styles.card, { flex: 2 }]}
-          >
-            <ThemedText variant="paragraph" color={themeColors.white}>Saldo Disponible</ThemedText>
-            <ThemedText variant="superTitle" color={themeColors.white}>${user?.wallet.availableBalance.toFixed(2)}</ThemedText>
-          </LinearGradient>
-          <View style={[styles.card, { backgroundColor: themeColors.backgroundCardColor }]}>
-            <ThemedText variant="paragraph">Saldo Retenido</ThemedText>
-            <ThemedText variant="title">${user?.wallet.outstandingBalance.toFixed(2)}</ThemedText>
-          </View>
-        </View>
+      <View style={styles.chartContainer}>
+  <LineChart
+    data={{
+      labels: ["Jun", "Jul", "Ago", "Sep", "Oct"],
+      datasets: [{ data: [70000, 60000, 80000, 70000, 65000] }]
+    }}
+    width={screenWidth + 70} // Ajusta según tus necesidades
+    height={245}
+    yAxisLabel=""
+    yAxisSuffix=""
+    withVerticalLines={true}
+    withHorizontalLines={false}
+    withVerticalLabels={true}
+    withHorizontalLabels={false}
+    withInnerLines={true}
+    withOuterLines={false}
+    chartConfig={{
+      backgroundColor: themeColors.backgroundColor,
+      backgroundGradientFrom: themeColors.backgroundColor,
+      backgroundGradientTo: themeColors.backgroundColor,
+      decimalPlaces: 0,
+      color: (opacity = 1) => Colors.common.green1,
+      labelColor: (opacity = 1) => Colors.common.gray1,
+      style: {
+        borderRadius: 16
+      },
+      propsForDots: {
+        r: "4",
+        strokeWidth: "0",
+      },
+      propsForBackgroundLines: {
+        stroke: Colors.common.gray1,
+        strokeWidth: 1
+      },
+      fillShadowGradient: Colors.common.green1,
+      fillShadowGradientOpacity: 1,
+    }}
+    bezier
+    style={{
+      marginVertical: 8,
+      borderRadius: 0,
+      marginLeft: -50
+    }}
+  />
+</View>
 
+      <View style={styles.cardContainer}>
         <LinearGradient
-          colors={[themeColors.buttonBackgroundColor, themeColors.buttonBackgroundColor]}
-          style={styles.button}
+          colors={[Colors.common.green2, Colors.common.green4]}
+          style={[styles.card, { flex: 1 }]}
         >
-          <ThemedText variant="subTitleBold" color={themeColors.white}>Cotizador de seguros</ThemedText>
+          <Ionicons name="cash-outline" style={{ marginBottom: 10 }} size={24} color={themeColors.white} />
+          <ThemedText variant="paragraph" color={themeColors.white}>Saldo Disponible</ThemedText>
+          <ThemedText variant="title" color={themeColors.textColorAccent}>${' '}{user?.wallet.availableBalance.toFixed(0)}</ThemedText>
         </LinearGradient>
-
-        <View style={styles.actionContainer}>
-          <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="people-outline" size={24} color={themeColors.textColorAccent} />
-            <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Mis referidos</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="cash-outline" size={24} color={themeColors.textColorAccent} />
-            <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Retirar Saldo</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="time-outline" size={24} color={themeColors.textColorAccent} />
-            <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Historial de referidos</ThemedText>
-          </TouchableOpacity>
+        <View style={[styles.card, { backgroundColor: themeColors.backgroundCardColor, flex: 1 }]}>
+          <Ionicons name="lock-closed-outline" style={{ marginBottom: 10 }} size={24} color={themeColors.white} />
+          <ThemedText variant="paragraph">Saldo Retenido</ThemedText>
+          <ThemedText variant="title">${user?.wallet.outstandingBalance.toFixed(0)}</ThemedText>
         </View>
-      </ScrollView>
+      </View>
+
+      <TouchableOpacity>
+        <LinearGradient
+          colors={[Colors.common.green2, Colors.common.green4]}
+          style={styles.quoteButton}
+        >
+          <View style={styles.quoteIcon}>
+            <Ionicons name="receipt-outline" size={20} color={themeColors.white} />
+          </View>
+          <View>
+            <ThemedText variant="paragraph" color={themeColors.white}>Cotizador de seguros</ThemedText>
+            <ThemedText variant="title" color={themeColors.white}>Cotizar Ahora!</ThemedText>
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+
+      <View style={styles.actionContainer}>
+
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
+          <View style={styles.actionButtonIcon}>
+            <Ionicons name="people-outline" size={20} color={themeColors.white} />
+          </View>
+          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Mis referidos</ThemedText>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
+          <View style={styles.actionButtonIcon}>
+          <Ionicons name="cash-outline" size={20} color={themeColors.white} />
+          </View>
+          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Retirar Saldo</ThemedText>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
+          <View style={styles.actionButtonIcon}>
+            <Ionicons name="time-outline" size={20} color={themeColors.white} />
+          </View>
+          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Historial de referidos</ThemedText>
+        </TouchableOpacity>
+
+      </View>
     </ThemedLayout>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  profileImageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  iconContainer: {
+    flexDirection: 'row',
+  },
+  icon: {
+    marginLeft: 15,
+  },
+  balanceContainer: {
+    marginBottom: 24,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  balanceRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  eyeIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chartContainer: {
+    marginBottom: 24,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  cardContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    gap: 16,
+  },
+  card: {
+    flex: 1,
+    borderRadius: 8,
+    padding: 16,
+  },
+  button: {
+    borderRadius: 8,
+    padding: 15,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  quoteButton: {
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 20,
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 16,
+  },
+  quoteIcon: {
+    backgroundColor: Colors.common.white25,
+    borderRadius: 8,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 40,
+    height: 40,
+  },
+  actionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  actionButton: {
+    flex: 1,
+    borderRadius: 10,
+    padding: 15,
+    alignItems: 'flex-start',
+    marginHorizontal: 5,
+  },
+  actionButtonIcon: {
+    backgroundColor: Colors.common.green2,
+    borderRadius: 8,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 32,
+    height: 32,
+    marginBottom: 10,
+  },
+});

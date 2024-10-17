@@ -43,7 +43,7 @@ export const updateUserProfile = async (token: string, userData: {
     });
 
     console.log('Update successful:', response.data);
-    return response.data.data.user; // Devuelve los datos del usuario actualizados
+    return response.data; // Devuelve los datos del usuario actualizados
   } catch (error) {
     console.error('Update failed:', error);
     if (axios.isAxiosError(error) && error.response) {

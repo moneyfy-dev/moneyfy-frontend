@@ -1,30 +1,22 @@
+import axios from 'axios';
+import getEnvVars from '../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Account } from '@/types/useAccounts';
 
-// Datos simulados para pruebas
-const mockAccounts: Account[] = [
-  { id: '1', bankName: 'Banco Estado', accountNumber: '1234567890' },
-  { id: '2', bankName: 'Banco Santander', accountNumber: '0987654321' },
-];
+const { apiUrl } = getEnvVars();
 
-export const getAccounts = async (): Promise<Account[]> => {
-  // Simulamos una llamada a la API con un retraso
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(mockAccounts);
-    }, 1000);
+export const addAccount = async (accountData: Omit<Account, 'accountId' | 'selected' | 'createdDate' | 'updatedDate'>): Promise<Account[]> => {
+  const token = await AsyncStorage.getItem('token');
+  const response = await axios.post(`${apiUrl}/accounts/create`, accountData, {
+    headers: { Authorization: `Bearer ${token}` }
   });
+  return response.data.user.accounts;
 };
 
-export const addAccount = async (account: Omit<Account, 'id'>): Promise<Account> => {
-  // Simulamos la adición de una cuenta
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const newAccount: Account = {
-        ...account,
-        id: Date.now().toString(), // Generamos un ID único
-      };
-      mockAccounts.push(newAccount);
-      resolve(newAccount);
-    }, 1000);
+export const selectAccount = async (accountId: string): Promise<Account[]> => {
+  const token = await AsyncStorage.getItem('token');
+  const response = await axios.post(`${apiUrl}/accounts/select/${accountId}`, {}, {
+    headers: { Authorization: `Bearer ${token}` }
   });
+  return response.data.user.accounts;
 };
