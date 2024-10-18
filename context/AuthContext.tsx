@@ -4,6 +4,7 @@ import { login, register, getUserData, verifyToken } from '@/services/authServic
 import { differenceInMinutes } from 'date-fns';
 import getEnvVars from '../config';
 import * as FileSystem from 'expo-file-system';
+import { Notifications } from '@/types/useNotifications';
 
 const { apiUrl } = getEnvVars();
 
@@ -41,6 +42,7 @@ interface User {
     profilePicture: string;
     enable: boolean;
   };
+  notifs: Notifications;
   wallet: Wallet;
   accounts: any[];
   referredPeople: any[];
@@ -243,22 +245,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (user) {
       try {
         let newUser = { ...user, ...updatedData.user };
-
-        // Guardar los datos actualizados del usuario en AsyncStorage
         await AsyncStorage.setItem('user', JSON.stringify(newUser));
-        
-        // Actualizar el estado del usuario en el contexto
         setUser(newUser);
-        
-        // Actualizar el tiempo de la última hidratación
         setLastHydrationTime(new Date());
         await AsyncStorage.setItem('lastHydrationTime', new Date().toISOString());
-
-        // Actualizar el token si se proporciona uno nuevo
         if (updatedData.jwt) {
           await AsyncStorage.setItem('token', updatedData.jwt);
         }
-
+        setUser(newUser);
         console.log('Datos del usuario actualizados:', newUser);
       } catch (error) {
         console.error('Error updating user data:', error);

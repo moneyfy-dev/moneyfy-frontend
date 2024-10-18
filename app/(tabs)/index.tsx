@@ -86,50 +86,50 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.chartContainer}>
-  <LineChart
-    data={{
-      labels: ["Jun", "Jul", "Ago", "Sep", "Oct"],
-      datasets: [{ data: [70000, 60000, 80000, 70000, 65000] }]
-    }}
-    width={screenWidth + 70} // Ajusta según tus necesidades
-    height={245}
-    yAxisLabel=""
-    yAxisSuffix=""
-    withVerticalLines={true}
-    withHorizontalLines={false}
-    withVerticalLabels={true}
-    withHorizontalLabels={false}
-    withInnerLines={true}
-    withOuterLines={false}
-    chartConfig={{
-      backgroundColor: themeColors.backgroundColor,
-      backgroundGradientFrom: themeColors.backgroundColor,
-      backgroundGradientTo: themeColors.backgroundColor,
-      decimalPlaces: 0,
-      color: (opacity = 1) => Colors.common.green1,
-      labelColor: (opacity = 1) => Colors.common.gray1,
-      style: {
-        borderRadius: 16
-      },
-      propsForDots: {
-        r: "4",
-        strokeWidth: "0",
-      },
-      propsForBackgroundLines: {
-        stroke: Colors.common.gray1,
-        strokeWidth: 1
-      },
-      fillShadowGradient: Colors.common.green1,
-      fillShadowGradientOpacity: 1,
-    }}
-    bezier
-    style={{
-      marginVertical: 8,
-      borderRadius: 0,
-      marginLeft: -50
-    }}
-  />
-</View>
+        <LineChart
+          data={{
+            labels: ["Jun", "Jul", "Ago", "Sep", "Oct"],
+            datasets: [{ data: [70000, 60000, 80000, 70000, 65000] }]
+          }}
+          width={screenWidth + 70} // Ajusta según tus necesidades
+          height={245}
+          yAxisLabel=""
+          yAxisSuffix=""
+          withVerticalLines={true}
+          withHorizontalLines={false}
+          withVerticalLabels={true}
+          withHorizontalLabels={false}
+          withInnerLines={true}
+          withOuterLines={false}
+          chartConfig={{
+            backgroundColor: themeColors.backgroundColor,
+            backgroundGradientFrom: themeColors.backgroundColor,
+            backgroundGradientTo: themeColors.backgroundColor,
+            decimalPlaces: 0,
+            color: (opacity = 1) => Colors.common.green1,
+            labelColor: (opacity = 1) => Colors.common.gray1,
+            style: {
+              borderRadius: 16
+            },
+            propsForDots: {
+              r: "4",
+              strokeWidth: "0",
+            },
+            propsForBackgroundLines: {
+              stroke: Colors.common.gray1,
+              strokeWidth: 1
+            },
+            fillShadowGradient: Colors.common.green1,
+            fillShadowGradientOpacity: 1,
+          }}
+          bezier
+          style={{
+            marginVertical: 8,
+            borderRadius: 0,
+            marginLeft: -50
+          }}
+        />
+      </View>
 
       <View style={styles.cardContainer}>
         <LinearGradient
@@ -173,7 +173,7 @@ export default function HomeScreen() {
 
         <TouchableOpacity style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
           <View style={styles.actionButtonIcon}>
-          <Ionicons name="cash-outline" size={20} color={themeColors.white} />
+            <Ionicons name="cash-outline" size={20} color={themeColors.white} />
           </View>
           <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Retirar Saldo</ThemedText>
         </TouchableOpacity>
@@ -232,7 +232,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   chartContainer: {
-    marginBottom: 24,
     borderRadius: 16,
     overflow: 'hidden',
   },

@@ -10,6 +10,7 @@ import { selectAccount } from '@/services/accountService';
 import { useAuth } from '@/context/AuthContext';
 import { Account } from '@/types/useAccounts';
 import { AccountListScreen } from '@/components/AccountListScreen';
+import axios from 'axios';
 
 export default function PaymentConfigScreen() {
     const [accounts, setAccounts] = useState<Account[]>([]);
@@ -25,11 +26,21 @@ export default function PaymentConfigScreen() {
 
     const handleSelectAccount = async (accountId: string) => {
         try {
-            const updatedAccounts = await selectAccount(accountId);
-            setAccounts(updatedAccounts);
-            await updateUserData({ accounts: updatedAccounts });
+            const response = await selectAccount(accountId);
+            console.log(response);
+            setAccounts(response.data.user.accounts);
+
+            if (response && response.data && response.data.user) {
+                await updateUserData(response.data.user);
+                Alert.alert('Éxito', 'Cuenta Seleccionada');
+            } else {
+                throw new Error('Respuesta inesperada del servidor');
+            }
         } catch (error) {
             console.error('Error al seleccionar la cuenta:', error);
+            if (axios.isAxiosError(error)) {
+                console.error('Error response:', error);
+            }
             Alert.alert('Error', 'No se pudo seleccionar la cuenta');
         }
     };
@@ -38,18 +49,29 @@ export default function PaymentConfigScreen() {
         router.push('/add-account');
     };
 
+    const handleAccountUpdated = () => {
+        // Actualizar la lista de cuentas después de una actualización o eliminación
+        if (user && user.accounts) {
+            setAccounts(user.accounts);
+        }
+    };
+
     return (
         <ThemedLayoutFlatList padding={[0, 40]}>
             {accounts.length === 0 ? (
                 <View style={styles.emptyState}>
-                    <CreditCardIcon width={117} height={107} style={styles.iconImage}/>
+                    <CreditCardIcon width={117} height={107} style={styles.iconImage} />
                     <ThemedText variant="title" textAlign='center' marginBottom={8}>No hay cuentas registradas</ThemedText>
                     <ThemedText variant="paragraph" textAlign='center'>
                         Aún no has agregado una cuenta para recibir tus pagos por referidos, selecciona agregar cuenta
                     </ThemedText>
                 </View>
             ) : (
-                <AccountListScreen accounts={accounts} onSelectAccount={handleSelectAccount} />
+                <AccountListScreen 
+                    accounts={accounts} 
+                    onSelectAccount={handleSelectAccount} 
+                    onAccountUpdated={handleAccountUpdated}
+                />
             )}
             <ThemedButton
                 text="Agregar cuenta"

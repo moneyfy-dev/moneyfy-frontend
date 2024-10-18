@@ -1,15 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, View, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedButton } from '@/components/ThemedButton';
-import { addAccount } from '@/services/accountService';
+import { addAccount, updateAccount } from '@/services/accountService';
 import { useAuth } from '@/context/AuthContext';
+import { validateName, validateEmail, validateRUT } from '@/utils/validations';
+import axios from 'axios';
+
+const BANKS = [
+  "Banco Scotiabank", "Banco BBVA", "Banco Itau", "Banco BICE", "Banco HSBC",
+  "Banco Consorcio", "Banco Corpbanca", "Banco BCI/Mach", "Banco Estado", "Banco Falabella",
+  "Banco Internacional", "Banco Paris", "Banco Ripley", "Banco Santander", "Banco Security",
+  "Banco Chile", "Banco del Desarrollo", "Banco Brasil", "Banco Rabobank", "Banco J.P. Morgan Chase",
+  "Transbank", "Coopeuch / Dale", "Tenpo Prepago", "Prepago Los Heroes", "Mercado Pago",
+  "TAPP Caja los Andes", "Copec Pay", "La Polar Prepago", "Global66", "Prex"
+];
 
 export default function AddAccountScreen() {
+    const { accountId } = useLocalSearchParams<{ accountId: string }>();
     const [personalId, setPersonalId] = useState('');
     const [holderName, setHolderName] = useState('');
     const [alias, setAlias] = useState('');
@@ -17,14 +29,66 @@ export default function AddAccountScreen() {
     const [bank, setBank] = useState('');
     const [accountType, setAccountType] = useState('');
     const [accountNumber, setAccountNumber] = useState('');
+    const [errors, setErrors] = useState({
+        personalId: '',
+        holderName: '',
+        email: '',
+    });
 
     const themeColors = useThemeColor();
     const router = useRouter();
-    const { updateUserData } = useAuth();
+    const { user, updateUserData } = useAuth();
+
+    useEffect(() => {
+        if (accountId && user) {
+            const account = user.accounts.find(acc => acc.accountId === accountId);
+            if (account) {
+                setPersonalId(account.personalId);
+                setHolderName(account.holderName);
+                setAlias(account.alias);
+                setEmail(account.email);
+                setBank(account.bank);
+                setAccountType(account.accountType);
+                setAccountNumber(account.accountNumber);
+            }
+        }
+    }, [accountId, user]);
+
+    const validateForm = () => {
+        let isValid = true;
+        const newErrors = {
+            personalId: '',
+            holderName: '',
+            email: '',
+        };
+
+        if (!validateName(holderName)) {
+            newErrors.holderName = 'Nombre inválido';
+            isValid = false;
+        }
+
+        if (!validateEmail(email)) {
+            newErrors.email = 'Correo electrónico inválido';
+            isValid = false;
+        }
+
+        if (!validateRUT(personalId)) {
+            newErrors.personalId = 'RUT inválido';
+            isValid = false;
+        }
+
+        setErrors(newErrors);
+        return isValid;
+    };
 
     const handleSave = async () => {
+        if (!validateForm()) {
+            Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
+            return;
+        }
+
         try {
-            const newAccountData = {
+            const accountData = {
                 personalId,
                 holderName,
                 alias,
@@ -33,14 +97,28 @@ export default function AddAccountScreen() {
                 accountType,
                 accountNumber
             };
+            
+            let response;
+            if (accountId) {
+                response = await updateAccount(accountId, accountData);
+                
+            } else {
+                response = await addAccount(accountData);
+            }
 
-            const updatedAccounts = await addAccount(newAccountData);
-            await updateUserData({ accounts: updatedAccounts });
-            Alert.alert('Éxito', 'Cuenta agregada correctamente');
-            router.back();
+            if (response && response.data && response.data.user) {
+                await updateUserData(response.data.user);
+                Alert.alert('Éxito', accountId ? 'Cuenta actualizada correctamente' : 'Cuenta agregada correctamente');
+                router.back();
+            } else {
+                throw new Error('Respuesta inesperada del servidor');
+            }
         } catch (error) {
-            console.error('Error al agregar la cuenta:', error);
-            Alert.alert('Error', 'No se pudo agregar la cuenta');
+            console.error('Error al procesar la cuenta:', error);
+            if (axios.isAxiosError(error)) {
+                console.error('Error response:', error);
+            }
+            Alert.alert('Error', accountId ? 'No se pudo actualizar la cuenta' : 'No se pudo agregar la cuenta');
         }
     };
 
@@ -51,6 +129,8 @@ export default function AddAccountScreen() {
                 value={personalId}
                 onChangeText={setPersonalId}
                 placeholder="Ingrese su RUT"
+                error={errors.personalId}
+                isRUT={true}
             />
 
             <ThemedInput
@@ -58,6 +138,7 @@ export default function AddAccountScreen() {
                 value={holderName}
                 onChangeText={setHolderName}
                 placeholder="Ingrese su nombre"
+                error={errors.holderName}
             />
 
             <ThemedInput
@@ -73,6 +154,7 @@ export default function AddAccountScreen() {
                 onChangeText={setEmail}
                 placeholder="Ingrese su correo electrónico"
                 keyboardType="email-address"
+                error={errors.email}
             />
 
             <ThemedText variant="title" marginBottom={16}>Detalles de la cuenta</ThemedText>
@@ -82,6 +164,8 @@ export default function AddAccountScreen() {
                 value={bank}
                 onChangeText={setBank}
                 placeholder="Seleccione su banco"
+                isSelect={true}
+                options={BANKS}
             />
 
             <ThemedText variant="title" marginBottom={16}>Tipo de cuenta</ThemedText>

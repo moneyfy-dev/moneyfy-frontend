@@ -1,8 +1,9 @@
-import React, { forwardRef, useState } from 'react';
-import { TextInput, StyleSheet, View, TouchableOpacity, TextInputProps } from 'react-native';
+import React, { forwardRef, useState, useEffect } from 'react';
+import { TextInput, StyleSheet, View, TouchableOpacity, TextInputProps, Modal, FlatList } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { useThemeColor } from '../hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
+import { ThemedButton } from './ThemedButton';
 
 interface ThemedInputProps extends TextInputProps {
   placeholder: string;
@@ -11,20 +12,70 @@ interface ThemedInputProps extends TextInputProps {
   secureTextEntry?: boolean;
   error?: string;
   label?: string;
-  icon?: string; // Nueva propiedad para el icono
-  onIconPress?: () => void; // Nueva propiedad para manejar el press del icono
+  icon?: string;
+  onIconPress?: () => void;
   onBlur?: () => void;
+  isSelect?: boolean;
+  options?: string[];
+  isRUT?: boolean; // Nueva prop para identificar inputs de RUT
 }
 
 export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
-  ({ placeholder, value, onChangeText, secureTextEntry, keyboardType, error, style, label, icon, onIconPress, onBlur, ...props }, ref) => {
+  ({ placeholder, value, onChangeText, secureTextEntry, keyboardType, error, style, label, icon, onIconPress, onBlur, isSelect, options, isRUT, ...props }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [formattedValue, setFormattedValue] = useState('');
     const themeColors = useThemeColor();
+
+    useEffect(() => {
+      if (isRUT) {
+        setFormattedValue(formatRUT(value));
+      } else {
+        setFormattedValue(value);
+      }
+    }, [value, isRUT]);
+
+    const formatRUT = (rut: string) => {
+      // Eliminar todos los caracteres no numéricos
+      const cleaned = rut.replace(/\D/g, '');
+      
+      // Aplicar el formato
+      let formatted = '';
+      if (cleaned.length > 1) {
+        formatted = cleaned.slice(0, -1).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '-' + cleaned.slice(-1);
+      } else {
+        formatted = cleaned;
+      }
+      
+      return formatted;
+    };
+
+    const handleRUTChange = (text: string) => {
+      // Eliminar todos los caracteres no numéricos
+      const numericValue = text.replace(/\D/g, '');
+      onChangeText(formatRUT(numericValue));
+    };
 
     const togglePasswordVisibility = () => {
       setIsPasswordVisible(!isPasswordVisible);
     };
+
+    const handleSelectOption = (option: string) => {
+      onChangeText(option);
+      setIsModalVisible(false);
+    };
+
+    const renderSelectInput = () => (
+      <TouchableOpacity
+        style={[styles.input]}
+        onPress={() => setIsModalVisible(true)}
+      >
+        <ThemedText style={{ color: themeColors.inputColor }}>
+          {value || placeholder}
+        </ThemedText>
+      </TouchableOpacity>
+    );
 
     return (
       <View style={styles.container}>
@@ -39,22 +90,24 @@ export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
             style
           ]}
         >
-          <TextInput
-            ref={ref}
-            style={[styles.input, { color: themeColors.inputColor }]}
-            placeholder={placeholder}
-            value={value}
-            onChangeText={onChangeText}
-            secureTextEntry={secureTextEntry && !isPasswordVisible}
-            keyboardType={keyboardType}
-            placeholderTextColor={themeColors.placeholderColor}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => {
-              setIsFocused(false);
-              onBlur && onBlur();
-            }}
-            {...props}
-          />
+          {isSelect ? renderSelectInput() : (
+            <TextInput
+              ref={ref}
+              style={[styles.input, { color: themeColors.inputColor }]}
+              placeholder={placeholder}
+              value={formattedValue}
+              onChangeText={isRUT ? handleRUTChange : onChangeText}
+              secureTextEntry={secureTextEntry && !isPasswordVisible}
+              keyboardType={isRUT ? 'numeric' : keyboardType}
+              placeholderTextColor={themeColors.placeholderColor}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => {
+                setIsFocused(false);
+                onBlur && onBlur();
+              }}
+              {...props}
+            />
+          )}
           {secureTextEntry && (
             <TouchableOpacity onPress={togglePasswordVisibility}>
               <Ionicons
@@ -73,8 +126,40 @@ export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
               />
             </TouchableOpacity>
           )}
+          {isSelect && (
+            <Ionicons
+              name="chevron-down-outline"
+              size={24}
+              color={themeColors.textColorAccent}
+            />
+          )}
         </View>
         {error ? <ThemedText style={[styles.errorText, { color: themeColors.status.error }]}>{error}</ThemedText> : null}
+        <Modal
+          visible={isModalVisible}
+          transparent={true}
+          animationType="slide"
+        >
+          <View style={[styles.modalContainer, { backgroundColor: themeColors.backgroundColor }]}>
+            <FlatList
+              data={options}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.optionItem}
+                  onPress={() => handleSelectOption(item)}
+                >
+                  <ThemedText>{item}</ThemedText>
+                </TouchableOpacity>
+              )}
+            />
+            <ThemedButton
+              text="Cerrar"
+              onPress={() => setIsModalVisible(false)}
+              style={styles.closeButton}
+            />
+          </View>
+        </Modal>
       </View>
     );
   }
@@ -107,5 +192,20 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginTop: 5,
     textAlign: 'left',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  optionItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    width: '100%',
+  },
+  closeButton: {
+    marginTop: 20,
   },
 });

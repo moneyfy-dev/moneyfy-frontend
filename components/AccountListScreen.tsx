@@ -1,17 +1,53 @@
-import React from 'react';
-import { StyleSheet, TouchableOpacity, View, FlatList } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, TouchableOpacity, View, FlatList, Modal, Alert } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { Account } from '@/types/useAccounts';
+import { useRouter } from 'expo-router';
+import { deleteAccount } from '@/services/accountService';
 
 interface AccountListScreenProps {
     accounts: Account[];
     onSelectAccount: (accountId: string) => void;
+    onAccountUpdated: () => void;
 }
 
-export function AccountListScreen({ accounts, onSelectAccount }: AccountListScreenProps) {
+export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated }: AccountListScreenProps) {
     const themeColors = useThemeColor();
+    const router = useRouter();
+    const [menuVisible, setMenuVisible] = useState(false);
+    const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+
+    const handleMenuPress = (account: Account) => {
+        setSelectedAccount(account);
+        setMenuVisible(true);
+    };
+
+    const handleDeleteAccount = async () => {
+        if (selectedAccount) {
+            try {
+                await deleteAccount(selectedAccount.accountId);
+                Alert.alert('Éxito', 'Cuenta eliminada correctamente');
+                onAccountUpdated();
+            } catch (error) {
+                console.error('Error al eliminar la cuenta:', error);
+                Alert.alert('Error', 'No se pudo eliminar la cuenta');
+            }
+        }
+        setMenuVisible(false);
+    };
+
+    const handleEditAccount = () => {
+        if (selectedAccount) {
+            router.push({
+                pathname: '/add-account',
+                params: { accountId: selectedAccount.accountId }
+            });
+        }
+        setMenuVisible(false);
+    };
 
     const renderAccount = ({ item }: { item: Account }) => (
         <TouchableOpacity 
@@ -19,25 +55,61 @@ export function AccountListScreen({ accounts, onSelectAccount }: AccountListScre
             onPress={() => onSelectAccount(item.accountId)}
         >
             <View style={styles.accountInfo}>
-                <View style={[styles.radioButton, item.selected && { borderColor: themeColors.textColorAccent }]}>
+                <View style={[styles.radioButton, { borderColor: Colors.common.gray4 }, item.selected && { borderColor: themeColors.textColorAccent }]}>
                     {item.selected && <View style={[styles.radioButtonInner, { backgroundColor: themeColors.textColorAccent }]} />}
                 </View>
                 <View>
-                    <ThemedText variant="subTitleBold">{item.bank}</ThemedText>
-                    <ThemedText variant="paragraph">{item.accountNumber}</ThemedText>
+                    <ThemedText variant="subTitleBold">{item.alias}</ThemedText>
+                    <ThemedText variant="paragraph">{item.bank} - {item.accountNumber}</ThemedText>
                 </View>
             </View>
-            <Ionicons name="ellipsis-vertical" size={20} color={themeColors.gray1Gray04} />
+            <TouchableOpacity onPress={() => handleMenuPress(item)}>
+                <Ionicons name="ellipsis-vertical" size={20} color={themeColors.gray1Gray04} />
+            </TouchableOpacity>
         </TouchableOpacity>
     );
 
     return (
-        <FlatList
-            data={accounts}
-            renderItem={renderAccount}
-            keyExtractor={(item) => item.accountId}
-            style={styles.list}
-        />
+        <>
+            <FlatList
+                data={accounts}
+                renderItem={renderAccount}
+                keyExtractor={(item) => item.accountId}
+                style={styles.list}
+            />
+            <Modal
+                visible={menuVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setMenuVisible(false)}
+            >
+                <TouchableOpacity 
+                    style={styles.modalOverlay} 
+                    activeOpacity={1} 
+                    onPress={() => setMenuVisible(false)}
+                >
+                    <View style={[styles.menuPanel, { backgroundColor: themeColors.backgroundColor }]}>
+                        <TouchableOpacity style={styles.menuItem} onPress={handleEditAccount}>
+                            <Ionicons name="create-outline" size={24} color={themeColors.textColor} />
+                            <ThemedText style={styles.menuItemText}>Editar</ThemedText>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.menuItem} onPress={() => {
+                            Alert.alert(
+                                "Confirmar eliminación",
+                                "¿Estás seguro de que quieres eliminar esta cuenta?",
+                                [
+                                    { text: "Cancelar", style: "cancel" },
+                                    { text: "Confirmar", onPress: handleDeleteAccount }
+                                ]
+                            );
+                        }}>
+                            <Ionicons name="trash-outline" size={24} color={themeColors.status.error} />
+                            <ThemedText style={[styles.menuItemText, { color: themeColors.status.error }]}>Eliminar</ThemedText>
+                        </TouchableOpacity>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+        </>
     );
 }
 
@@ -50,6 +122,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         gap: 16,
         padding: 16,
+        marginBottom: 16,
         alignItems: 'center',
         borderWidth: 1,
         borderRadius: 16,
@@ -79,7 +152,6 @@ const styles = StyleSheet.create({
         height: 24,
         borderRadius: 12,
         borderWidth: 2,
-        borderColor: '#000',
         marginRight: 10,
         justifyContent: 'center',
         alignItems: 'center',
@@ -88,5 +160,25 @@ const styles = StyleSheet.create({
         width: 12,
         height: 12,
         borderRadius: 6,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    menuPanel: {
+        width: '80%',
+        borderRadius: 10,
+        padding: 20,
+    },
+    menuItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 15,
+    },
+    menuItemText: {
+        marginLeft: 10,
+        fontSize: 16,
     },
 });

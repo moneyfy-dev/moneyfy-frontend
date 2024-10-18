@@ -122,9 +122,6 @@ export default function PersonalInfoScreen() {
             };
             
             const response = await updateUserProfile(token, userData);
-            console.log('1', response);
-            console.log('2', response.data);
-            console.log('3', response.data.user);
 
             if (response && response.data && response.data.user) {
                 // Actualizar los datos del usuario en el contexto de autenticación
