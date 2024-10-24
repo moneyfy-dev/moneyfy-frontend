@@ -27,7 +27,6 @@ export default function PaymentConfigScreen() {
     const handleSelectAccount = async (accountId: string) => {
         try {
             const response = await selectAccount(accountId);
-            console.log(response);
             setAccounts(response.data.user.accounts);
 
             if (response && response.data && response.data.user) {
@@ -37,9 +36,7 @@ export default function PaymentConfigScreen() {
                 throw new Error('Respuesta inesperada del servidor');
             }
         } catch (error) {
-            console.error('Error al seleccionar la cuenta:', error);
             if (axios.isAxiosError(error)) {
-                console.error('Error response:', error);
             }
             Alert.alert('Error', 'No se pudo seleccionar la cuenta');
         }

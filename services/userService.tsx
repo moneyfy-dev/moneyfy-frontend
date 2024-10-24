@@ -1,9 +1,10 @@
 import axios from 'axios';
 import getEnvVars from '../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { apiUrl } = getEnvVars();
 
-export const updateUserProfile = async (token: string, userData: {
+export const updateUserProfile = async (userData: {
   name: string;
   surname: string;
   phone: string;
@@ -12,7 +13,10 @@ export const updateUserProfile = async (token: string, userData: {
   profilePicture?: string;
 }) => {
   try {
-    console.log('Sending user data:', JSON.stringify({ ...userData, profilePicture: userData.profilePicture ? 'Image present' : 'No image' }));
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+        throw new Error('No se encontró el token de autenticación');
+    }
     
     const formData = new FormData();
     Object.keys(userData).forEach(key => {
@@ -24,16 +28,23 @@ export const updateUserProfile = async (token: string, userData: {
       }
     });
 
-    if (userData.profilePicture) {
-      const uriParts = userData.profilePicture.split('.');
-      const fileType = uriParts[uriParts.length - 1];
-      
-      formData.append('profilePicture', {
-        uri: userData.profilePicture,
-        name: `profilePicture.${fileType}`,
-        type: `image/${fileType}`
-      } as any);
+    if (userData.profilePicture !== undefined) {
+      if (userData.profilePicture === '') {
+        // Si la imagen de perfil es una cadena vacía, indica que debe ser eliminada
+        formData.append('profilePicture', '');
+      } else {
+        const uriParts = userData.profilePicture.split('.');
+        const fileType = uriParts[uriParts.length - 1];
+        
+        formData.append('profilePicture', {
+          uri: userData.profilePicture,
+          name: `profilePicture.${fileType}`,
+          type: `image/${fileType}`
+        } as any);
+      }
     }
+
+    console.log('formData',formData);
 
     const response = await axios.put(`${apiUrl}/users/update`, formData, {
       headers: {

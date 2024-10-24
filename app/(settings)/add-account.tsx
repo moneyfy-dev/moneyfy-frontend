@@ -48,7 +48,7 @@ export default function AddAccountScreen() {
                 setAlias(account.alias);
                 setEmail(account.email);
                 setBank(account.bank);
-                setAccountType(account.accountType);
+                setAccountType(account.accountType.toUpperCase());
                 setAccountNumber(account.accountNumber);
             }
         }
@@ -172,8 +172,8 @@ export default function AddAccountScreen() {
 
             <View style={styles.accountTypeContainer}>
                 {[
-                    { key: 'CHECKING', label: 'CORRIENTE' },
-                    { key: 'SAVINGS', label: 'AHORRO' },
+                    { key: 'CORRIENTE', label: 'CORRIENTE' },
+                    { key: 'AHORRO', label: 'AHORRO' },
                     { key: 'VISTA', label: 'VISTA' }
                 ].map(({ key, label }) => (
                     <TouchableOpacity

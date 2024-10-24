@@ -12,9 +12,10 @@ import { ThemedButton } from '@/components/ThemedButton';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedDatePicker } from '@/components/ThemedDatePicker';
 import { validateName, validatePhoneNumber, validateAddress } from '@/utils/validations';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { updateUserProfile } from '@/services/userService';
+import * as FileSystem from 'expo-file-system';
+import { ProfilePictureModal } from '@/components/ProfilePictureModal';
 
 export default function PersonalInfoScreen() {
     const { user, updateUserData } = useAuth();
@@ -33,6 +34,7 @@ export default function PersonalInfoScreen() {
         telefono: '',
         direccion: '',
     });
+    const [isModalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -48,6 +50,7 @@ export default function PersonalInfoScreen() {
     }, [user]);
 
     const pickImage = async () => {
+        setModalVisible(false);
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
@@ -107,21 +110,39 @@ export default function PersonalInfoScreen() {
         }
 
         try {
-            const token = await AsyncStorage.getItem('token');
-            if (!token) {
-                throw new Error('No se encontró el token de autenticación');
+            let profilePicture = personalInfo.profilePicture;
+
+            // Si la imagen de perfil no ha cambiado y está en base64, convertirla a un archivo JPEG
+            if (profilePicture.startsWith('data:image')) {
+                const base64Data = profilePicture.split(',')[1];
+                const filePath = `${FileSystem.documentDirectory}profilePicture.jpg`;
+                await FileSystem.writeAsStringAsync(filePath, base64Data, { encoding: FileSystem.EncodingType.Base64 });
+                profilePicture = filePath;
+            } else if (!profilePicture) {
+                // Si el usuario ha eliminado la imagen, enviar una cadena vacía
+                profilePicture = '';
             }
-            
-            const userData = {
+
+            const userData: {
+                name: string;
+                surname: string;
+                phone: string;
+                address: string;
+                dateOfBirth: string;
+                profilePicture?: string;
+            } = {
                 name: personalInfo.nombre,
                 surname: personalInfo.apellido,
                 phone: personalInfo.telefono,
                 address: personalInfo.direccion,
                 dateOfBirth: personalInfo.fechaNacimiento.toISOString().split('T')[0],
-                profilePicture: personalInfo.profilePicture.startsWith('data:image') ? personalInfo.profilePicture.split(',')[1] : personalInfo.profilePicture
             };
             
-            const response = await updateUserProfile(token, userData);
+            if (profilePicture !== '') {
+                userData.profilePicture = profilePicture;
+            }
+            
+            const response = await updateUserProfile(userData);
 
             if (response && response.data && response.data.user) {
                 // Actualizar los datos del usuario en el contexto de autenticación
@@ -141,18 +162,35 @@ export default function PersonalInfoScreen() {
         }
     };
 
+    const handleDeleteProfilePicture = () => {
+        setPersonalInfo(prev => ({ ...prev, profilePicture: '' }));
+        setModalVisible(false); // Cierra el modal después de la acción
+    };
+
+    const thereIsprofilePicture = () => {
+        if (personalInfo.profilePicture !== '') {
+            setModalVisible(true);
+        } else {
+            pickImage();
+        }
+    }
+
+    const handleCloseModal = () => {
+        setModalVisible(false);
+    };
+
     return (
         <ThemedLayout padding={[0, 40]}>
             <View style={styles.content}>
                 <View style={styles.profileSection}>
-                    <TouchableOpacity onPress={pickImage} style={styles.profileImageContainer}>
+                    <TouchableOpacity onPress={thereIsprofilePicture} style={styles.profileImageContainer}>
                         {personalInfo.profilePicture ? (
                             <Image source={{ uri: personalInfo.profilePicture }} style={styles.profileImage} />
                         ) : (
-                            <AvatarIcon width={80} height={80} style={styles.profileImage} />
+                            <AvatarIcon width={120} height={120} style={styles.profileImage} />
                         )}
                         <View style={[styles.editButton, { backgroundColor: themeColors.buttonBackgroundColor }]}>
-                            <Ionicons name="pencil" size={10} color={themeColors.white} />
+                            <Ionicons name="camera-outline" size={22} color={themeColors.white} />
                         </View>
                     </TouchableOpacity>
                     <View>
@@ -212,6 +250,12 @@ export default function PersonalInfoScreen() {
                 text="Guardar"
                 onPress={handleSave}
             />
+            <ProfilePictureModal
+                isVisible={isModalVisible}
+                onClose={handleCloseModal}
+                onDelete={handleDeleteProfilePicture}
+                onChange={pickImage}
+            />
         </ThemedLayout>
     );
 }
@@ -228,22 +272,22 @@ const styles = StyleSheet.create({
     },
     profileImageContainer: {
         position: 'relative',
-        width: 80,
-        height: 80,
+        width: 120,
+        height: 120,
         marginBottom: 16,
     },
     profileImage: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
+        width: 120,
+        height: 120,
+        borderRadius: 60,
     },
     editButton: {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        width: 24,
-        height: 24,
-        borderRadius: 12,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
         position: 'absolute',
         right: 0,
         bottom: 0,

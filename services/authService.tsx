@@ -6,7 +6,6 @@ const { apiUrl } = getEnvVars();
 export const register = async (name: string, surname: string, email: string, password: string) => {
   try {
     const requestData = { name, surname, pwd: password, email };
-    console.log('Datos de registro a enviar:', requestData);
     const response = await axios.post(`${apiUrl}/auth/register`, requestData);
     return response.data;
   } catch (error) {
@@ -18,13 +17,11 @@ export const register = async (name: string, surname: string, email: string, pas
       // Para otros errores, propagamos el error con el status
       throw { ...error, status: error.response.status };
     }
-    console.error('Error en el registro:', error);
     throw error;
   }
 };
 
 export const confirmRegistration = async (email: string, code: string) => {
-  console.log(email, code);
   
   try {
     const response = await axios.post(`${apiUrl}/auth/confirm/registration`, {
@@ -33,7 +30,6 @@ export const confirmRegistration = async (email: string, code: string) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error en la confirmación del registro:', error);
     throw error;
   }
 };
@@ -41,13 +37,11 @@ export const confirmRegistration = async (email: string, code: string) => {
 export const resendConfirmationCode = async (email: string) => {
   try {
     const requestData = { email };
-    console.log('Datos de registro a enviar:', requestData);
     const response = await axios.put(`${apiUrl}/auth/resend/code`, {
       email
     });
     return response.data;
   } catch (error) {
-    console.error('Error al reenviar el código de confirmación:', error);
     throw error;
   }
 };
@@ -60,7 +54,6 @@ export const login = async (email: string, password: string) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error en el login:', error);
     throw error;
   }
 };
@@ -74,23 +67,20 @@ export const getUserData = async (token: string) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching user data:', error);
     throw error;
   }
 };
 
 export const verifyToken = async (token: string): Promise<{ isValid: boolean; userData: any }> => {
-  console.log('Iniciando verificación de token');
+  
   try {
     const response = await axios.post(`${apiUrl}/users/hydration/data`, null, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log('Respuesta de verificación de token:', response.data);
     return { isValid: response.data.status === 200, userData: response.data.data };
   } catch (error) {
-    console.error('Error verifying token:', error);
     return { isValid: false, userData: null };
   }
 };

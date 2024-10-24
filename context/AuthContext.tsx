@@ -1,26 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login, register, getUserData, verifyToken } from '@/services/authService';
+import { login, getUserData, verifyToken } from '@/services/authService';
 import { differenceInMinutes } from 'date-fns';
-import getEnvVars from '../config';
-import * as FileSystem from 'expo-file-system';
 import { Notifications } from '@/types/useNotifications';
-
-const { apiUrl } = getEnvVars();
-
-interface UserData {
-  name: string;
-  surname: string;
-  pin: string;
-  email: string;
-  phone: string;
-  address: string;
-  profileRole: string;
-  profilePicture: string;
-  dateOfBirth: string;
-  rememberToken: string;
-  enable: boolean;
-}
 
 interface Wallet {
   totalBalance: number;
@@ -134,7 +116,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     } catch (error) {
-      console.error('Error checking auth status:', error);
       setIsAuthenticated(false);
       setUser(null);
       setIsPersistentAuthRequired(false);
@@ -167,7 +148,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       } catch (error) {
-        console.error('Error hydrating user data:', error);
         setIsAuthenticated(false);
         setUser(null);
       }
@@ -175,11 +155,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const handlePersistentAuthSuccess = useCallback(async () => {
-    console.log('handlePersistentAuthSuccess llamado');
     await hydrateUserData(true);
     setIsPersistentAuthRequired(false);
     setIsAuthenticated(true);
-    console.log('Estado actualizado después de autenticación persistente:', { isAuthenticated: true, isPersistentAuthRequired: false });
   }, [hydrateUserData]);
 
   const loginContext = async (email: string, password: string) => {
@@ -187,7 +165,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response: LoginResponse = await login(email, password);
       if (response.data && response.data.jwt) {
         await AsyncStorage.setItem('token', response.data.jwt);
-        console.log('Token guardado:', response.data.jwt);
         
         // Guardar la información del usuario
         const userData = response.data.user;
@@ -201,7 +178,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('No se recibió un token válido');
       }
     } catch (error) {
-      console.error('Error during login:', error);
       setIsAuthenticated(false);
       setUser(null);
       throw error;
@@ -218,12 +194,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsPersistentAuthRequired(false);
       setIsPersistentAuthConfigured(false);
       setIsAuthenticated(false);
-      console.log('Logout completado, isAuthenticated:', false);
     } catch (error) {
-      console.error('Error during logout:', error);
     } finally {
       setIsLoading(false);
-      console.log('isLoading establecido a false después del logout');
     }
   };
 
@@ -242,22 +215,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateUserData = async (updatedData: any) => {
-    if (user) {
-      try {
-        let newUser = { ...user, ...updatedData.user };
-        await AsyncStorage.setItem('user', JSON.stringify(newUser));
-        setUser(newUser);
-        setLastHydrationTime(new Date());
-        await AsyncStorage.setItem('lastHydrationTime', new Date().toISOString());
-        if (updatedData.jwt) {
-          await AsyncStorage.setItem('token', updatedData.jwt);
-        }
-        setUser(newUser);
-        console.log('Datos del usuario actualizados:', newUser);
-      } catch (error) {
-        console.error('Error updating user data:', error);
-        throw error;
+
+    try {
+      // Reemplaza completamente el objeto del usuario con los datos actualizados
+      const newUser = updatedData;
+      setUser(newUser);
+
+      // Guarda los datos actualizados en AsyncStorage
+      await AsyncStorage.setItem('user', JSON.stringify(newUser));
+      setLastHydrationTime(new Date());
+      await AsyncStorage.setItem('lastHydrationTime', new Date().toISOString());
+
+      // Si hay un nuevo token, actualízalo también
+      if (updatedData.jwt) {
+        await AsyncStorage.setItem('token', updatedData.jwt);
       }
+    } catch (error) {
+      throw error;
     }
   };
 
