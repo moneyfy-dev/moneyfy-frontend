@@ -47,7 +47,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="historial"
+        name="cotizar"
         options={{
           title: 'Historial',
           tabBarIcon: ({ color, size }) => (
