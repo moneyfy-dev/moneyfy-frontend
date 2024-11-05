@@ -164,6 +164,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response: LoginResponse = await login(email, password);
       if (response.data && response.data.jwt) {
+        console.log(response);
         await AsyncStorage.setItem('token', response.data.jwt);
         
         // Guardar la información del usuario
@@ -178,6 +179,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('No se recibió un token válido');
       }
     } catch (error) {
+      console.log('caca:', error);
+      
       setIsAuthenticated(false);
       setUser(null);
       throw error;

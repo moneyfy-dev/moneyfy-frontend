@@ -13,9 +13,13 @@ export const updateUserProfile = async (userData: {
   profilePicture?: string;
 }) => {
   try {
-    const token = await AsyncStorage.getItem('token');
-    if (!token) {
-        throw new Error('No se encontró el token de autenticación');
+    const [token, sessionToken] = await Promise.all([
+      AsyncStorage.getItem('token'),
+      AsyncStorage.getItem('sessionToken')
+    ]);
+
+    if (!token || !sessionToken) {
+      throw new Error('No se encontraron los tokens necesarios');
     }
     
     const formData = new FormData();
@@ -49,6 +53,7 @@ export const updateUserProfile = async (userData: {
     const response = await axios.put(`${apiUrl}/users/update`, formData, {
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Refresh-Token': sessionToken,
         'Content-Type': 'multipart/form-data',
       },
     });

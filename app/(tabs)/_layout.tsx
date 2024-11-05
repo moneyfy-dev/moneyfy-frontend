@@ -47,9 +47,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="cotizar"
+        name="quote"
         options={{
-          title: 'Historial',
+          title: 'Cotizar',
           tabBarIcon: ({ color, size }) => (
             <TabBarIcon name="time-outline" color={color} size={size} />
           ),

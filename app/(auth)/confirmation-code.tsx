@@ -10,9 +10,9 @@ import { ThemedButton } from '@/components/ThemedButton';
 import { confirmRegistration, resendConfirmationCode } from '@/services/authService';
 
 export default function ConfirmationCodeScreen() {
-    const [code, setCode] = useState(['', '', '', '']);
+    const [code, setCode] = useState(['', '', '', '', '', '']);
     const inputRefs = useRef<Array<React.RefObject<TextInput>>>([
-        React.createRef(), React.createRef(), React.createRef(), React.createRef()
+        React.createRef(), React.createRef(), React.createRef(), React.createRef(), React.createRef(), React.createRef()
     ]);
     const themeColors = useThemeColor();
     const router = useRouter();
@@ -38,7 +38,7 @@ export default function ConfirmationCodeScreen() {
             newCode[index] = text;
             setCode(newCode);
 
-            if (text.length === 1 && index < 3) {
+            if (text.length === 1 && index < 5) {
                 inputRefs.current[index + 1].current?.focus();
             }
         }
@@ -46,8 +46,8 @@ export default function ConfirmationCodeScreen() {
 
     const handleContinue = async () => {
         const fullCode = code.join('');
-        if (fullCode.length !== 4) {
-            Alert.alert('Error', 'Por favor, ingrese el código completo de 4 dígitos.');
+        if (fullCode.length !== 6) {
+            Alert.alert('Error', 'Por favor, ingrese el código completo de 6 dígitos.');
             return;
         }
 
@@ -102,7 +102,7 @@ export default function ConfirmationCodeScreen() {
 
                 <ThemedText variant='title' textAlign='center' marginBottom={8}>Ingrese el código de confirmación</ThemedText>
                 <ThemedText variant='paragraph' textAlign='center' marginBottom={40}>
-                    Un código de 4 dígitos fue enviado a {userEmail}
+                    Un código de 6 dígitos fue enviado a {userEmail}
                 </ThemedText>
 
                 <View style={styles.codeContainer}>

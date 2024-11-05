@@ -22,7 +22,7 @@ export const register = async (name: string, surname: string, email: string, pas
 };
 
 export const confirmRegistration = async (email: string, code: string) => {
-  
+  console.log(email, code);
   try {
     const response = await axios.post(`${apiUrl}/auth/confirm/registration`, {
       email,
@@ -30,6 +30,7 @@ export const confirmRegistration = async (email: string, code: string) => {
     });
     return response.data;
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
@@ -47,6 +48,7 @@ export const resendConfirmationCode = async (email: string) => {
 };
 
 export const login = async (email: string, password: string) => {
+  console.log(email, password);
   try {
     const response = await axios.post(`${apiUrl}/auth/log-in`, {
       email,
@@ -54,6 +56,7 @@ export const login = async (email: string, password: string) => {
     });
     return response.data;
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
