@@ -34,9 +34,9 @@ export default function QuoteScreen() {
     }
   };
 
-  const TabButton = ({ type, label, icon }: { type: SearchType, label: string, icon: string }) => (
+  const TabButton = ({ type, label, icon, text }: { type: SearchType, label: string, icon: string, text: string }) => (
     <TouchableOpacity
-      style={[styles.tabButton, activeTab === type && styles.tabButtonActive]}
+      style={styles.tabButton}
       onPress={() => {
         setActiveTab(type);
         setSearchValue('');
@@ -47,39 +47,48 @@ export default function QuoteScreen() {
           colors={[Colors.common.green2, Colors.common.green4]}
           style={styles.tabButtonGradient}
         >
-          <Ionicons name={icon as any} size={20} color={themeColors.white} />
-          <ThemedText variant="paragraph" color={themeColors.white}>{label}</ThemedText>
+          <View style={[styles.tabIcon, { backgroundColor: Colors.common.white25 }]}>
+            <Ionicons name={icon as any} size={20} color={themeColors.white} />
+          </View>
+          <View style={styles.tabButtonText}>
+            <ThemedText variant="paragraph" color={themeColors.white}>{label}</ThemedText>
+            <ThemedText variant="subTitleBold" color={themeColors.white}>{text}</ThemedText>
+          </View>
         </LinearGradient>
       ) : (
-        <View style={styles.tabButtonContent}>
-          <Ionicons name={icon as any} size={20} color={themeColors.textColorAccent} />
-          <ThemedText variant="paragraph">{label}</ThemedText>
+        <View style={[styles.tabButtonContent, { backgroundColor: themeColors.extremeContrastGray }]}>
+          <View style={[styles.tabIcon, { backgroundColor: Colors.common.green2 }]}>
+            <Ionicons name={icon as any} size={20} color={Colors.common.white} />
+          </View>
+          <View style={styles.tabButtonText}>
+
+            <ThemedText variant="paragraph">{label}</ThemedText>
+            <ThemedText variant="subTitleBold">{text}</ThemedText>
+          </View>
         </View>
       )}
     </TouchableOpacity>
   );
 
   return (
-    <ThemedLayout padding={[24, 24]}>
+    <ThemedLayout padding={[48, 24]}>
       <View style={styles.header}>
-        <ThemedText variant="superTitle" marginBottom={8}>
+        <ThemedText variant="superTitle" marginBottom={16} textAlign="center">
           Cotiza rápidamente el seguro más adecuado
         </ThemedText>
-        <ThemedText variant="paragraph" color={themeColors.textParagraph}>
+        <ThemedText variant="paragraph" textAlign="center" color={themeColors.textParagraph}>
           Cotiza diferentes planes de seguros ingresando la información de tu vehículo o el RUT del propietario.
         </ThemedText>
       </View>
 
       <View style={styles.tabContainer}>
-        <TabButton type="plate" label="Buscar Patente" icon="car-outline" />
-        <TabButton type="rut" label="Buscar RUT" icon="person-outline" />
+        <TabButton type="plate" label="Buscar" text="Patente" icon="car-outline" />
+        <TabButton type="rut" label="Buscar" text="RUT" icon="person-outline" />
       </View>
 
       <View style={styles.searchSection}>
-        <ThemedText variant="subTitle" marginBottom={8}>
-          {activeTab === 'plate' ? 'Patente' : 'RUT'}
-        </ThemedText>
         <ThemedInput
+          label={activeTab === 'plate' ? 'Patente' : 'RUT'}
           placeholder={`Ingresa ${activeTab === 'plate' ? 'la patente del vehículo' : 'el RUT del propietario'}`}
           value={searchValue}
           onChangeText={setSearchValue}
@@ -90,18 +99,18 @@ export default function QuoteScreen() {
         />
       </View>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.manualEntryButton}
         onPress={() => router.push('/(quote)/manual-search')}
       >
-        <Ionicons 
-          name="hand-left-outline" 
-          size={20} 
+        <Ionicons
+          name="hand-left-outline"
+          size={20}
           color={themeColors.textColorAccent}
         />
-        <ThemedText 
-          variant="paragraph" 
-          color={themeColors.textColorAccent}
+        <ThemedText
+          variant="paragraph"
+          color={themeColors.textColor}
           style={styles.manualEntryText}
         >
           Ingreso manual
@@ -113,7 +122,7 @@ export default function QuoteScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    marginBottom: 32,
+    marginBottom: 48,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -122,36 +131,37 @@ const styles = StyleSheet.create({
   },
   tabButton: {
     flex: 1,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  tabButtonActive: {
-    elevation: 2,
-    shadowColor: Colors.common.green4,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
   },
   tabButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: 12,
+    justifyContent: 'flex-start',
+    gap: 18,
+    padding: 16,
+    borderRadius: 16,
   },
   tabButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: 12,
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: Colors.common.gray3,
+    justifyContent: 'flex-start',
+    gap: 18,
+    padding: 16,
+    borderRadius: 16,
+  },
+  tabIcon: {
     borderRadius: 8,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 40,
+    height: 40,
+  },
+  tabButtonText: {
+    display: 'flex',
+    flexDirection: 'column',
   },
   searchSection: {
-    marginBottom: 24,
+    marginBottom: 16,
   },
   searchInput: {
     marginBottom: 0,
@@ -159,10 +169,10 @@ const styles = StyleSheet.create({
   manualEntryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
     gap: 8,
   },
   manualEntryText: {
-    marginLeft: 4,
+    marginLeft: 10,
   },
 });

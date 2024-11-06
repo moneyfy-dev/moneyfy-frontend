@@ -141,9 +141,9 @@ export default function PersonalInfoScreen() {
             if (profilePicture !== '') {
                 userData.profilePicture = profilePicture;
             }
-            
-            const response = await updateUserProfile(userData);
 
+            const response = await updateUserProfile(userData);
+            
             if (response && response.data && response.data.user) {
                 // Actualizar los datos del usuario en el contexto de autenticación
                 await updateUserData(response.data.user);

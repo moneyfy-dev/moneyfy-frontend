@@ -61,11 +61,12 @@ export const login = async (email: string, password: string) => {
   }
 };
 
-export const getUserData = async (token: string) => {
+export const getUserData = async (token: string, sessionToken: string) => {
   try {
     const response = await axios.post(`${apiUrl}/users/hydration/data`, null, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        'Authorization': `Bearer ${sessionToken}`,
+        'Refresh-Token': token
       },
     });
     return response.data;
@@ -74,12 +75,12 @@ export const getUserData = async (token: string) => {
   }
 };
 
-export const verifyToken = async (token: string): Promise<{ isValid: boolean; userData: any }> => {
-  
+export const verifyToken = async (token: string, sessionToken: string): Promise<{ isValid: boolean; userData: any }> => {
   try {
     const response = await axios.post(`${apiUrl}/users/hydration/data`, null, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        'Authorization': `Bearer ${sessionToken}`,
+        'Refresh-Token': token
       },
     });
     return { isValid: response.data.status === 200, userData: response.data.data };

@@ -49,12 +49,15 @@ interface AuthContextProps {
 }
 
 interface LoginResponse {
+  data: {
+    tokens: {
+      jwtRefresh: string;
+      jwtSession: string;
+    };
+    user: User;
+  };
   message: string;
   status: number;
-  data: {
-    user: User;
-    jwt: string;
-  };
 }
 
 const AuthContext = createContext<AuthContextProps>({
@@ -94,15 +97,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
+      const sessionToken = await AsyncStorage.getItem('sessionToken');
       const storedUser = await AsyncStorage.getItem('user');
       const persistentAuthEnabled = await AsyncStorage.getItem('persistentAuthEnabled');
   
-      if (!token || !storedUser) {
+      if (!token || !sessionToken || !storedUser) {
         setIsAuthenticated(false);
         setUser(null);
         setIsPersistentAuthRequired(false);
+        // Limpiar tokens si alguno falta
+        await AsyncStorage.multiRemove(['token', 'sessionToken', 'user']);
       } else {
-        const { isValid, userData } = await verifyToken(token);
+        const { isValid, userData } = await verifyToken(token, sessionToken);
         if (isValid) {
           setIsAuthenticated(true);
           setUser(userData.user);
@@ -111,14 +117,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsAuthenticated(false);
           setUser(null);
           setIsPersistentAuthRequired(false);
-          await AsyncStorage.removeItem('token');
-          await AsyncStorage.removeItem('user');
+          await AsyncStorage.multiRemove(['token', 'sessionToken', 'user']);
         }
       }
     } catch (error) {
       setIsAuthenticated(false);
       setUser(null);
       setIsPersistentAuthRequired(false);
+      await AsyncStorage.multiRemove(['token', 'sessionToken', 'user']);
     } finally {
       setIsLoading(false);
     }
@@ -136,13 +142,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (shouldHydrate) {
       try {
         const token = await AsyncStorage.getItem('token');
-        if (token) {
-          const response = await getUserData(token);
+        const sessionToken = await AsyncStorage.getItem('sessionToken');
+        if (token && sessionToken) {
+          const response = await getUserData(token, sessionToken);
           if (response.data && response.data.user) {
             setUser(response.data.user);
             setLastHydrationTime(now);
             await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
             await AsyncStorage.setItem('lastHydrationTime', now.toISOString());
+            await AsyncStorage.setItem('token', response.data.tokens.jwtRefresh);
+            await AsyncStorage.setItem('sessionToken', response.data.tokens.jwtSession);
           } else {
             throw new Error('Invalid user data received');
           }
@@ -163,9 +172,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginContext = async (email: string, password: string) => {
     try {
       const response: LoginResponse = await login(email, password);
-      if (response.data && response.data.jwt) {
-        console.log(response);
-        await AsyncStorage.setItem('token', response.data.jwt);
+      console.log(response);
+      if (response.data && response.data.tokens) {
+        // Guardar ambos tokens
+        await AsyncStorage.setItem('token', response.data.tokens.jwtRefresh);
+        await AsyncStorage.setItem('sessionToken', response.data.tokens.jwtSession);
         
         // Guardar la información del usuario
         const userData = response.data.user;
@@ -176,11 +187,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await AsyncStorage.setItem('lastHydrationTime', new Date().toISOString());
         return userData;
       } else {
-        throw new Error('No se recibió un token válido');
+        throw new Error('No se recibieron los tokens válidos');
       }
     } catch (error) {
-      console.log('caca:', error);
-      
+      console.error('Error en login:', error);
       setIsAuthenticated(false);
       setUser(null);
       throw error;
@@ -191,6 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('sessionToken');
       await AsyncStorage.removeItem('user');
       await AsyncStorage.removeItem('persistentAuthConfigured');
       setUser(null);
@@ -230,8 +241,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await AsyncStorage.setItem('lastHydrationTime', new Date().toISOString());
 
       // Si hay un nuevo token, actualízalo también
-      if (updatedData.jwt) {
-        await AsyncStorage.setItem('token', updatedData.jwt);
+      if (updatedData.tokens) {
+        await AsyncStorage.setItem('token', updatedData.tokens.jwtRefresh);
+        await AsyncStorage.setItem('sessionToken', updatedData.tokens.jwtSession);
       }
     } catch (error) {
       throw error;

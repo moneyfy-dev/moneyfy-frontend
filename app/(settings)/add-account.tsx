@@ -101,7 +101,6 @@ export default function AddAccountScreen() {
             let response;
             if (accountId) {
                 response = await updateAccount(accountId, accountData);
-                
             } else {
                 response = await addAccount(accountData);
             }

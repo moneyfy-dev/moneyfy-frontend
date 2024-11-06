@@ -39,7 +39,7 @@ export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
     const formatRUT = (rut: string) => {
       // Eliminar todos los caracteres no numéricos
       const cleaned = rut.replace(/\D/g, '');
-      
+
       // Aplicar el formato
       let formatted = '';
       if (cleaned.length > 1) {
@@ -47,7 +47,7 @@ export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
       } else {
         formatted = cleaned;
       }
-      
+
       return formatted;
     };
 
@@ -68,7 +68,11 @@ export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
 
     const renderSelectInput = () => (
       <TouchableOpacity
-        style={[styles.input]}
+      style={[
+        styles.input,
+        { height: 48 }, // Asegurar altura consistente
+        { justifyContent: 'center' } // Centrar contenido verticalmente
+      ]}
         onPress={() => setIsModalVisible(true)}
       >
         <ThemedText style={{ color: themeColors.inputColor }}>
@@ -121,17 +125,19 @@ export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
             <TouchableOpacity onPress={onIconPress}>
               <Ionicons
                 name={icon as any}
-                size={24}
+                size={18}
                 color={themeColors.textColorAccent}
               />
             </TouchableOpacity>
           )}
           {isSelect && (
-            <Ionicons
-              name="chevron-down-outline"
-              size={24}
-              color={themeColors.textColorAccent}
-            />
+            <TouchableOpacity onPress={() => setIsModalVisible(true)}>
+              <Ionicons
+                name="chevron-down-outline"
+                size={18}
+                color={themeColors.textColorAccent}
+              />
+            </TouchableOpacity>
           )}
         </View>
         {error ? <ThemedText style={[styles.errorText, { color: themeColors.status.error }]}>{error}</ThemedText> : null}
@@ -184,7 +190,8 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    paddingVertical: 12,
+    height: 48,
+    paddingVertical: 0,
   },
   errorText: {
     width: '100%',

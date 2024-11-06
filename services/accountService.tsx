@@ -1,7 +1,6 @@
 import axios from 'axios';
 import getEnvVars from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Account } from '@/types/useAccounts';
 
 const { apiUrl } = getEnvVars();
 
@@ -15,24 +14,36 @@ export const addAccount = async (accountData: {
   accountNumber: string;
 }) => {
   const token = await AsyncStorage.getItem('token');
+  const sessionToken = await AsyncStorage.getItem('sessionToken');
   const response = await axios.post(`${apiUrl}/accounts/create`, accountData, {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: {
+      'Authorization': `Bearer ${sessionToken}`,
+      'Refresh-Token': token
+    },
   });
   return response.data;
 };
 
 export const selectAccount = async (accountId: string) => {
   const token = await AsyncStorage.getItem('token');
+  const sessionToken = await AsyncStorage.getItem('sessionToken');
   const response = await axios.post(`${apiUrl}/accounts/select/${accountId}`, {}, {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: {
+      'Authorization': `Bearer ${sessionToken}`,
+      'Refresh-Token': token
+    },
   });
   return response.data;
 };
 
 export const deleteAccount = async (accountId: string) => {
   const token = await AsyncStorage.getItem('token');
+  const sessionToken = await AsyncStorage.getItem('sessionToken');
   const response = await axios.delete(`${apiUrl}/accounts/delete/${accountId}`, {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: {
+      'Authorization': `Bearer ${sessionToken}`,
+      'Refresh-Token': token
+    },
   });
   return response.data;
 };
@@ -49,8 +60,12 @@ export const updateAccount = async (accountId: string, accountData: any) => {
     accountNumber: accountData.accountNumber
   }
   const token = await AsyncStorage.getItem('token');
+  const sessionToken = await AsyncStorage.getItem('sessionToken');
   const response = await axios.put(`${apiUrl}/accounts/update`, account, {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: {
+      'Authorization': `Bearer ${sessionToken}`,
+      'Refresh-Token': token
+    },
   });
   return response.data;
 };

@@ -52,8 +52,8 @@ export const updateUserProfile = async (userData: {
 
     const response = await axios.put(`${apiUrl}/users/update`, formData, {
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Refresh-Token': sessionToken,
+        'Authorization': `Bearer ${sessionToken}`,
+        'Refresh-Token': token,
         'Content-Type': 'multipart/form-data',
       },
     });

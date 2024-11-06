@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 16,
   },
   button: {
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   quoteButton: {
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 16,
     alignItems: 'center',
     marginBottom: 20,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    borderRadius: 10,
+    borderRadius: 16,
     padding: 15,
     alignItems: 'flex-start',
     marginHorizontal: 5,

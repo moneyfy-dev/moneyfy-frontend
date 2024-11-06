@@ -4,10 +4,15 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedInput } from "@/components/ThemedInput";
 import { ThemedButton } from "@/components/ThemedButton";
 import { Modal } from '@/components/Modal';
+import { ThemedLayout } from '@/components/ThemedLayout';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import Colors from '@/constants/Colors';
+import { Ionicons } from '@expo/vector-icons';
 // import { MotorcycleIcon } from '@/components/icons/MotorcycleIcon';
 // import { FilterIcon } from '@/components/icons/FilterIcon';
 
 export default function QuoteResults() {
+    const themeColors = useThemeColor();
     const [showFilters, setShowFilters] = useState(false);
     const [filters, setFilters] = useState({
         insuranceType: 'Seguro estándar',
@@ -16,18 +21,20 @@ export default function QuoteResults() {
         coverage: 'Cobertura Full',
         replacementCar: '10 - 30 días'
     });
-
+    const colors = useThemeColor();
+    
     const FiltersModal = () => (
-        <Modal 
-            visible={showFilters} 
+        <Modal
+            visible={showFilters}
             onClose={() => setShowFilters(false)}
-            title="Tipo de seguro"
+            title=""
         >
             <View style={styles.filterSection}>
                 <View style={styles.radioGroup}>
-                    <Pressable 
+                <ThemedText variant="subTitle">Tipo de Seguro</ThemedText>
+                    <Pressable
                         style={styles.radioOption}
-                        onPress={() => setFilters({...filters, insuranceType: 'Seguro por kilómetro'})}
+                        onPress={() => setFilters({ ...filters, insuranceType: 'Seguro por kilómetro' })}
                     >
                         <View style={[
                             styles.radio,
@@ -35,9 +42,9 @@ export default function QuoteResults() {
                         ]} />
                         <ThemedText>Seguro por kilómetro</ThemedText>
                     </Pressable>
-                    <Pressable 
+                    <Pressable
                         style={styles.radioOption}
-                        onPress={() => setFilters({...filters, insuranceType: 'Seguro estándar'})}
+                        onPress={() => setFilters({ ...filters, insuranceType: 'Seguro estándar' })}
                     >
                         <View style={[
                             styles.radio,
@@ -50,7 +57,7 @@ export default function QuoteResults() {
                 <ThemedInput
                     label="Deducible"
                     value={filters.deductible}
-                    onChangeText={(value) => setFilters({...filters, deductible: value})}
+                    onChangeText={(value) => setFilters({ ...filters, deductible: value })}
                     placeholder="0 UF"
                     isSelect={true}
                     options={['0 UF', '10 UF', '20 UF']}
@@ -59,7 +66,7 @@ export default function QuoteResults() {
                 <ThemedInput
                     label="Compañía"
                     value={filters.company}
-                    onChangeText={(value) => setFilters({...filters, company: value})}
+                    onChangeText={(value) => setFilters({ ...filters, company: value })}
                     placeholder="Seguros Falabella"
                     isSelect={true}
                     options={['Seguros Falabella', 'Otra Compañía']}
@@ -68,10 +75,10 @@ export default function QuoteResults() {
                 <View style={styles.radioGroup}>
                     <ThemedText variant="subTitle">Cobertura</ThemedText>
                     {['Cobertura Premium', 'Cobertura Full', 'Cobertura Básica'].map((option) => (
-                        <Pressable 
+                        <Pressable
                             key={option}
                             style={styles.radioOption}
-                            onPress={() => setFilters({...filters, coverage: option})}
+                            onPress={() => setFilters({ ...filters, coverage: option })}
                         >
                             <View style={[
                                 styles.radio,
@@ -85,10 +92,10 @@ export default function QuoteResults() {
                 <View style={styles.radioGroup}>
                     <ThemedText variant="subTitle">Auto de reemplazo</ThemedText>
                     {['No incluido', '10 - 30 días', '30 - 50 días', 'Ilimitado'].map((option) => (
-                        <Pressable 
+                        <Pressable
                             key={option}
                             style={styles.radioOption}
-                            onPress={() => setFilters({...filters, replacementCar: option})}
+                            onPress={() => setFilters({ ...filters, replacementCar: option })}
                         >
                             <View style={[
                                 styles.radio,
@@ -103,71 +110,75 @@ export default function QuoteResults() {
     );
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                {/* <MotorcycleIcon /> */}
-                <View style={styles.vehicleInfo}>
-                    <ThemedText variant="title">RZKT93</ThemedText>
-                    <ThemedText>2022 YAMAHA R1</ThemedText>
-                    <ThemedText variant="paragraph">N° Motor: 1NZ576966</ThemedText>
+        <ThemedLayout padding={[0, 24]}>
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    {/* <MotorcycleIcon /> */}
+                    <View style={styles.vehicleInfo}>
+                        <ThemedText variant="title">RZKT93</ThemedText>
+                        <ThemedText>2022 YAMAHA R1</ThemedText>
+                        <ThemedText variant="paragraph">N° Motor: 1NZ576966</ThemedText>
+                    </View>
                 </View>
-                <Pressable onPress={() => setShowFilters(true)}>
-                    {/* <FilterIcon /> */}
-                </Pressable>
+
+                <View style={styles.resultsHeader}>
+                    <ThemedText>16 resultados</ThemedText>
+                    <Pressable onPress={() => setShowFilters(true)}>
+                        <Ionicons name="filter-outline" size={24} color={themeColors.textColorAccent} />
+                    </Pressable>
+                </View>
+
+                <ScrollView style={styles.resultsList}>
+                    {/* Aquí irían los resultados de las cotizaciones */}
+                    <QuoteCard />
+                    <QuoteCard />
+                </ScrollView>
+
+                <FiltersModal />
             </View>
-
-            <View style={styles.resultsHeader}>
-                <ThemedText>16 resultados</ThemedText>
-            </View>
-
-            <ScrollView style={styles.resultsList}>
-                {/* Aquí irían los resultados de las cotizaciones */}
-                <QuoteCard />
-                <QuoteCard />
-            </ScrollView>
-
-            <FiltersModal />
-        </View>
+        </ThemedLayout>
     );
 }
 
-const QuoteCard = () => (
-    <View style={styles.card}>
-        <View style={styles.cardHeader}>
-            {/* <InsuranceCompanyIcon /> */}
-            <View>
-                <ThemedText>Seguro Motocicleta Full Falabella</ThemedText>
-                <ThemedText variant="subTitle">Deducible 10 UF</ThemedText>
-            </View>
-        </View>
-        
-        <Pressable style={styles.detailButton}>
-            <ThemedText>Abrir detalle</ThemedText>
-        </Pressable>
+const QuoteCard = () => {
 
-        <View style={styles.priceSection}>
-            <View style={styles.discount}>
-                <ThemedText>30%</ThemedText>
+    const themeColors = useThemeColor();
+    return (
+        <View style={[styles.card, { borderColor: themeColors.borderBackgroundColor }]}>
+            <View style={styles.cardHeader}>
+                <View>
+                    <ThemedText>Seguro Motocicleta Full Falabella</ThemedText>
+                    <ThemedText variant="subTitle">Deducible 10 UF</ThemedText>
+                </View>
             </View>
-            <ThemedText style={styles.originalPrice}>$26.957</ThemedText>
-            <ThemedText style={styles.finalPrice}>$18.870</ThemedText>
-            <ThemedText variant="paragraph">Cuota mensual 0.5 UF</ThemedText>
-        </View>
 
-        <ThemedButton text="Comprar" onPress={() => {}} />
-    </View>
-);
+            <Pressable style={[styles.detailButton, { borderBottomColor: themeColors.borderBackgroundColor }]}>
+                <ThemedText>Abrir detalle</ThemedText>
+            </Pressable>
+
+            <View style={styles.priceSection}>
+                <View style={[styles.discount, { backgroundColor: themeColors.status.error }]}>
+                    <ThemedText style={{ color: themeColors.white }}>30%</ThemedText>
+                </View>
+                <ThemedText style={[styles.originalPrice, { color: themeColors.textParagraph }]}>$26.957</ThemedText>
+                <ThemedText style={[styles.finalPrice, { color: themeColors.status.success }]}>$18.870</ThemedText>
+                <ThemedText variant="paragraph">Cuota mensual 0.5 UF</ThemedText>
+            </View>
+
+            <ThemedButton text="Comprar" onPress={() => { }} />
+        </View>
+    );
+};
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
     },
     header: {
         flexDirection: 'row',
-        padding: 16,
         alignItems: 'center',
         justifyContent: 'space-between',
+        marginBottom: 16,
     },
     vehicleInfo: {
         flex: 1,
@@ -176,23 +187,16 @@ const styles = StyleSheet.create({
     resultsHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E5E5',
+        marginBottom: 16,
     },
     resultsList: {
         flex: 1,
     },
     card: {
         padding: 16,
-        margin: 16,
-        borderRadius: 8,
-        backgroundColor: '#fff',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        borderRadius: 16,
+        borderWidth: 1,
+        marginBottom: 16,
     },
     cardHeader: {
         flexDirection: 'row',
@@ -202,25 +206,21 @@ const styles = StyleSheet.create({
     detailButton: {
         padding: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#E5E5E5',
     },
     priceSection: {
         marginVertical: 16,
         alignItems: 'flex-start',
     },
     discount: {
-        backgroundColor: '#FF0066',
         padding: 4,
         borderRadius: 4,
     },
     originalPrice: {
         textDecorationLine: 'line-through',
-        color: '#666',
     },
     finalPrice: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#00B833',
     },
     filterSection: {
         padding: 16,
@@ -238,10 +238,10 @@ const styles = StyleSheet.create({
         height: 20,
         borderRadius: 10,
         borderWidth: 2,
-        borderColor: '#00B833',
+        borderColor: Colors.status.success,
         marginRight: 8,
     },
     radioSelected: {
-        backgroundColor: '#00B833',
+        backgroundColor: Colors.status.success,
     },
 });

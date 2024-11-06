@@ -16,6 +16,10 @@ const headerInfo: Record<string, HeaderInfo> = {
     title: "Resultado de la búsqueda",
     subtitle: "Resultados de la búsqueda"
   },
+  'quote-results': {
+    title: "Resultado de la búsqueda",
+    subtitle: "Resultados de la búsqueda"
+  },
 };
 
 function getHeaderInfo(pathname: string): HeaderInfo {
@@ -36,7 +40,8 @@ export default function SettingsLayout() {
       }}
     >
       <Stack.Screen name="manual-search" />
-      <Stack.Screen name="search-result" />
+      <Stack.Screen name="search-results" />
+      <Stack.Screen name="quote-results" />
     </Stack>
   );
 }

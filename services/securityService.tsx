@@ -7,7 +7,8 @@ const { apiUrl } = getEnvVars();
 export const changePassword = async (oldPwd: string, newPwd: string) => {
   try {
     const token = await AsyncStorage.getItem('token');
-    if (!token) {
+    const sessionToken = await AsyncStorage.getItem('sessionToken');
+    if (!token || !sessionToken) {
       throw new Error('No se encontró el token de autenticación');
     }
 
@@ -16,7 +17,8 @@ export const changePassword = async (oldPwd: string, newPwd: string) => {
       { oldPwd, newPwd },
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${sessionToken}`,
+          'Refresh-Token': token
         },
       }
     );

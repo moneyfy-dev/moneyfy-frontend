@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { Ionicons } from '@expo/vector-icons';
+import { useThemeColor } from '../hooks/useThemeColor';
 
 interface ModalProps {
   visible: boolean;
@@ -17,6 +18,7 @@ interface ModalProps {
 }
 
 export const Modal = ({ visible, onClose, title, children }: ModalProps) => {
+  const themeColors = useThemeColor();
   return (
     <RNModal
       animationType="slide"
@@ -24,12 +26,12 @@ export const Modal = ({ visible, onClose, title, children }: ModalProps) => {
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
+      <View style={[styles.centeredView, { backgroundColor: themeColors.backgroundColor }]}>
+        <View style={[styles.modalView, { backgroundColor: themeColors.backgroundColor }]}>
           <View style={styles.header}>
             <ThemedText variant="title">{title}</ThemedText>
             <Pressable onPress={onClose}>
-              <Ionicons name="close" size={24} color="#000" />
+              <Ionicons name="close" size={24} color={themeColors.textColorAccent} />
             </Pressable>
           </View>
           <ScrollView style={styles.content}>
@@ -44,31 +46,19 @@ export const Modal = ({ visible, onClose, title, children }: ModalProps) => {
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalView: {
     marginTop: 'auto',
-    backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '90%',
-    width: '100%',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    width: '100%'
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
   },
   content: {
     padding: 16,
