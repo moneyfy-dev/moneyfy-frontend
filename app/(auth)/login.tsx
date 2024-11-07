@@ -89,11 +89,20 @@ export default function LoginScreen() {
 
         try {
             const userData = await loginContext(email, password);
-            // Asegúrate de que loginContext devuelva los datos del usuario
-            console.log('Datos del usuario después del login:', userData);
+            
+            // Si llegamos aquí, el login fue exitoso
             router.replace('/(tabs)');
         } catch (error: any) {
-            if (error.response && error.response.status === 403) {
+            if (error.response?.status === 226) {
+                // Caso de nuevo dispositivo
+                router.push({
+                    pathname: '/confirmation-code',
+                    params: { 
+                        email: email,
+                        flow: 'device-change'
+                    }
+                });
+            } else if (error.response?.status === 403) {
                 Alert.alert('Error', 'Credenciales incorrectas. Por favor, inténtalo de nuevo.');
             } else {
                 Alert.alert('Error', 'Hubo un problema con el inicio de sesión. Inténtalo de nuevo.');

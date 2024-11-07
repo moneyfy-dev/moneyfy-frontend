@@ -1,22 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput, ScrollView, Alert } from 'react-native';
-import { useRouter, Href } from 'expo-router';
+import { useRouter, Href, useLocalSearchParams } from 'expo-router';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useAuth } from '@/context/AuthContext';
 import { ThemedButton } from '@/components/ThemedButton';
-import { confirmRegistration, resendConfirmationCode } from '@/services/authService';
+import { confirmRegistration, resendConfirmationCode, confirmDeviceChange } from '@/services/authService';
 
 export default function ConfirmationCodeScreen() {
+    const route = useLocalSearchParams();
+    const { email, flow } = route;
+    const { updateUserData } = useAuth();
+    const router = useRouter();
     const [code, setCode] = useState(['', '', '', '', '', '']);
     const inputRefs = useRef<Array<React.RefObject<TextInput>>>([
         React.createRef(), React.createRef(), React.createRef(), React.createRef(), React.createRef(), React.createRef()
     ]);
     const themeColors = useThemeColor();
-    const router = useRouter();
-    const { login, userEmail } = useAuth();
     const [isResendDisabled, setIsResendDisabled] = useState(false);
     const [resendTimer, setResendTimer] = useState(0);
 
@@ -44,28 +46,22 @@ export default function ConfirmationCodeScreen() {
         }
     };
 
-    const handleContinue = async () => {
-        const fullCode = code.join('');
-        if (fullCode.length !== 6) {
-            Alert.alert('Error', 'Por favor, ingrese el código completo de 6 dígitos.');
-            return;
-        }
-
+    const handleConfirmCode = async (code: string) => {
         try {
-            const response = await confirmRegistration(userEmail, fullCode);
-            if (response.status === 200) {
-                try {
-                    await login(userEmail, ''); // Asumiendo que esta función devuelve una promesa
-                    router.replace('/(tabs)' as Href<string>);
-                } catch (loginError) {
-                    console.error('Error al iniciar sesión después de la confirmación:', loginError);
-                    Alert.alert('Error', 'La cuenta se activó correctamente, pero hubo un problema al iniciar sesión. Por favor, intente iniciar sesión manualmente.');
-                    router.replace('/login' as Href<string>);
-                }
+            let response;
+            
+            if (flow === 'device-change') {
+                response = await confirmDeviceChange(email as string, code);
+                await updateUserData(response.data);
+                router.replace('/(tabs)');
+            } else {
+                // Flujo original de registro
+                response = await confirmRegistration(email as string, code);
+                await updateUserData(response.data);
+                router.replace('/(tabs)');
             }
         } catch (error) {
-            console.error('Error al validar el código:', error);
-            Alert.alert('Error', 'No se pudo validar el código. Inténtalo de nuevo.');
+            Alert.alert('Error', 'Código inválido. Por favor intente nuevamente.');
         }
     };
 
@@ -76,9 +72,17 @@ export default function ConfirmationCodeScreen() {
         setResendTimer(60); // Deshabilita el botón por 60 segundos
 
         try {
-            const response = await resendConfirmationCode(userEmail);
-            if (response.status === 200) {
-                Alert.alert('Éxito', 'Se ha enviado un nuevo código de confirmación.');
+
+            if(flow === 'device-change') {
+                const response = await resendConfirmationCode(email as string, 'changeDevice');
+                if (response.status === 200) {
+                    Alert.alert('Éxito', 'Se ha enviado un nuevo código de confirmación.');
+                }
+            } else {
+                const response = await resendConfirmationCode(email as string, 'registerUser');
+                if (response.status === 200) {
+                    Alert.alert('Éxito', 'Se ha enviado un nuevo código de confirmación.');
+                }
             }
         } catch (error) {
             console.error('Error al reenviar el código:', error);
@@ -102,7 +106,7 @@ export default function ConfirmationCodeScreen() {
 
                 <ThemedText variant='title' textAlign='center' marginBottom={8}>Ingrese el código de confirmación</ThemedText>
                 <ThemedText variant='paragraph' textAlign='center' marginBottom={40}>
-                    Un código de 6 dígitos fue enviado a {userEmail}
+                    Un código de 6 dígitos fue enviado a {email}
                 </ThemedText>
 
                 <View style={styles.codeContainer}>
@@ -138,7 +142,7 @@ export default function ConfirmationCodeScreen() {
 
                 <ThemedButton
                     text="Continuar"
-                    onPress={handleContinue}
+                    onPress={() => handleConfirmCode(code.join(''))}
                 />
             </View>
         </ThemedLayout>

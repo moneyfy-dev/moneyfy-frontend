@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -9,6 +9,9 @@ import { ThemedInput } from '@/components/ThemedInput';
 import { ThemedButton } from '@/components/ThemedButton';
 import Colors from '@/constants/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
+import { searchVehicleByPPU, searchVehicleByUserId } from '@/services/quoteService';
+import { useAuth } from '@/context/AuthContext';
+import axios from 'axios';
 
 type SearchType = 'plate' | 'rut';
 
@@ -17,20 +20,45 @@ export default function QuoteScreen() {
   const themeColors = useThemeColor();
   const [searchValue, setSearchValue] = useState('');
   const [activeTab, setActiveTab] = useState<SearchType>('plate');
+  const { updateUserData } = useAuth();
 
-  const handleSearch = (type: SearchType, value: string) => {
-    console.log(`Buscando por ${type}:`, value);
-    // Aquí iría la lógica de búsqueda
-    if (type === 'plate') {
-      router.push({
-        pathname: '/(quote)/search-results',
-        params: { type: 'plate', value: value }
-      });
-    } else {
-      router.push({
-        pathname: '/(quote)/search-results',
-        params: { type: 'rut', value: value }
-      });
+  const handleSearch = async (type: SearchType, value: string) => {
+    if (!value.trim()) {
+      Alert.alert('Error', 'Por favor ingrese un valor para buscar');
+      return;
+    }
+
+    try {
+      let response;
+      
+      if (type === 'plate') {
+        response = await searchVehicleByPPU(value.toUpperCase());
+      } else {
+        response = await searchVehicleByUserId(value);
+      }
+
+      if (response && response.data && response.data.user) {
+        await updateUserData(response.data.user);
+        router.push({
+          pathname: '/(quote)/search-results',
+          params: { 
+            type: type, 
+            value: value,
+            // Puedes agregar más datos de la respuesta si los necesitas en la siguiente pantalla
+          }
+        });
+      } else {
+        throw new Error('No se encontraron resultados');
+      }
+
+    } catch (error) {
+      console.error('Error al buscar:', error);
+      if (axios.isAxiosError(error)) {
+        const errorMessage = error.response?.data?.message || 'Error al realizar la búsqueda';
+        Alert.alert('Error', errorMessage);
+      } else {
+        Alert.alert('Error', 'No se pudo realizar la búsqueda. Intente nuevamente.');
+      }
     }
   };
 

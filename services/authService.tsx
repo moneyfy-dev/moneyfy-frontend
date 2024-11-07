@@ -35,11 +35,23 @@ export const confirmRegistration = async (email: string, code: string) => {
   }
 };
 
-export const resendConfirmationCode = async (email: string) => {
+export const confirmDeviceChange = async (email: string, code: string) => {
   try {
-    const requestData = { email };
+    const response = await axios.post(`${apiUrl}/auth/confirm/device-change`, {
+      email,
+      code
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const resendConfirmationCode = async (email: string, type: string) => {
+  try {
     const response = await axios.put(`${apiUrl}/auth/resend/code`, {
-      email
+      email,
+      type
     });
     return response.data;
   } catch (error) {
@@ -56,7 +68,6 @@ export const login = async (email: string, password: string) => {
     });
     return response.data;
   } catch (error) {
-    console.log(error);
     throw error;
   }
 };

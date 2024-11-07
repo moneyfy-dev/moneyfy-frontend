@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -7,61 +7,32 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedInput } from '@/components/ThemedInput';
 import { ThemedButton } from '@/components/ThemedButton';
-import Colors from '@/constants/Colors';
 import { ThemedView } from '@/components/ThemedView';
-
-interface Vehicle {
-  brand: string;
-  model: string;
-  year: string;
-  plate: string;
-  type: string;
-  details: string;
-}
+import { Vehicle, OWNER_OPTIONS_MAP } from '@/types/quote';
+import { quoteVehicle } from '@/services/quoteService';
+import { useAuth } from '@/context/AuthContext';
 
 export default function SearchResultsScreen() {
-  const { type, value } = useLocalSearchParams();
+  const { type, value, vehicles: initialVehicles } = useLocalSearchParams();
   const themeColors = useThemeColor();
-  const [buyerRut, setBuyerRut] = useState('');
-  const [isOwner, setIsOwner] = useState('Si, soy el dueño del vehículo');
   const router = useRouter();
+  const { updateUserData } = useAuth();
 
-  // Simulación de datos
-  const vehicles: Vehicle[] = type === 'rut' ? [
-    {
-      brand: 'Toyota',
-      model: 'CTJZ47 - 2011',
-      plate: 'CTJZ47',
-      year: '2011',
-      type: 'Automóvil',
-      details: 'NEW YARIS SEDAN XLI'
-    },
-    {
-      brand: 'Yamaha',
-      model: 'RZKT93 - 2022',
-      plate: 'RZKT93',
-      year: '2022',
-      type: 'Motocicleta',
-      details: 'YAMAHA R1 1000CC'
-    },
-    {
-      brand: 'Toyota',
-      model: 'DFTE23 - 2018',
-      plate: 'DFTE23',
-      year: '2018',
-      type: 'Suv',
-      details: 'RAV4 2.0 4X2 CVT'
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [buyerRut, setBuyerRut] = useState('');
+  const [ownerOption, setOwnerOption] = useState(Object.keys(OWNER_OPTIONS_MAP)[0]);
+
+  useEffect(() => {
+    if (initialVehicles) {
+      const parsedVehicles = JSON.parse(decodeURIComponent(initialVehicles as string));
+      setVehicles(parsedVehicles);
+      // Si es búsqueda por patente, seleccionar automáticamente el único vehículo
+      if (type === 'plate' && parsedVehicles.length === 1) {
+        setSelectedVehicle(parsedVehicles[0]);
+      }
     }
-  ] : [
-    {
-      brand: 'Toyota',
-      model: 'CTJZ47 - 2011',
-      plate: value as string,
-      year: '2011',
-      type: 'Automóvil',
-      details: 'NEW YARIS SEDAN XLI'
-    }
-  ];
+  }, [initialVehicles, type]);
 
   const getVehicleIcon = (vehicleType: string) => {
     switch (vehicleType.toLowerCase()) {
@@ -74,46 +45,97 @@ export default function SearchResultsScreen() {
     }
   };
 
+  const handleVehicleSelect = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+  };
+
+  const handleQuote = async () => {
+    if (!selectedVehicle || !buyerRut || !ownerOption) {
+      Alert.alert('Error', 'Por favor complete todos los campos requeridos');
+      return;
+    }
+
+    try {
+      const quoteData = {
+        brand: selectedVehicle.brand,
+        model: selectedVehicle.model,
+        year: selectedVehicle.year,
+        purchaserId: buyerRut,
+        ownerOption: OWNER_OPTIONS_MAP[ownerOption as keyof typeof OWNER_OPTIONS_MAP]
+      };
+
+      const response = await quoteVehicle(quoteData);
+      
+      if (response.data.user) {
+        await updateUserData(response.data.user);
+        router.push('/(quote)/quote-results');
+      }
+    } catch (error) {
+      console.error('Error al cotizar:', error);
+      Alert.alert('Error', 'No se pudo realizar la cotización');
+    }
+  };
+
+  const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
+    const isSelected = selectedVehicle?.ppu === vehicle.ppu;
+    
+    return (
+      <TouchableOpacity
+        onPress={() => handleVehicleSelect(vehicle)}
+        style={[
+          styles.vehicleCard,
+          { 
+            borderColor: isSelected ? themeColors.textColorAccent : themeColors.borderBackgroundColor,
+            backgroundColor: isSelected ? themeColors.backgroundCardColor : 'transparent'
+          }
+        ]}
+      >
+        <View style={[styles.iconContainer, { backgroundColor: themeColors.textColorAccent }]}>
+          <Ionicons name={getVehicleIcon(vehicle.type)} size={24} color={themeColors.white} />
+        </View>
+        <View style={styles.vehicleInfo}>
+          <ThemedText variant="paragraph">{vehicle.brand}</ThemedText>
+          <ThemedText variant="subTitle">{vehicle.ppu} - {vehicle.year}</ThemedText>
+          <ThemedText variant="paragraph" color={themeColors.textColorAccent}>
+            {vehicle.model}
+          </ThemedText>
+        </View>
+        <Ionicons 
+          name={isSelected ? "checkmark-circle" : "chevron-forward"} 
+          size={24} 
+          color={isSelected ? themeColors.textColorAccent : themeColors.borderBackgroundColor} 
+        />
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <ThemedLayout padding={[0, 24]}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <ThemedText variant="superTitle" >
+          <ThemedText variant="superTitle">
             Resultados para {type === 'plate' ? 'la patente' : 'el RUT'}
           </ThemedText>
           <ThemedText variant="superTitle" color={themeColors.textColorAccent} marginBottom={8}>
             {value}
           </ThemedText>
           <ThemedText variant="paragraph" color={themeColors.textParagraph}>
-            Hemos encontrado los siguientes resultados para {type === 'plate' ? 'la patente ingresada' : 'el RUT ingresado'}, si no ves tu vehículo puedes buscarlo de forma manual.
+            {vehicles.length > 0 
+              ? `Hemos encontrado ${vehicles.length} resultado${vehicles.length !== 1 ? 's' : ''}`
+              : 'No se encontraron vehículos'}
           </ThemedText>
         </View>
 
-        {vehicles.map((vehicle, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[styles.vehicleCard, { borderColor: themeColors.borderBackgroundColor }]}
-          >
-            <View style={[styles.iconContainer, { backgroundColor: Colors.common.green2 }]}>
-              <Ionicons name={getVehicleIcon(vehicle.type)} size={24} color={themeColors.white} />
-            </View>
-            <View style={styles.vehicleInfo}>
-              <ThemedText variant="paragraph">{vehicle.brand}</ThemedText>
-              <ThemedText variant="subTitle">{vehicle.model}</ThemedText>
-              <ThemedText variant="paragraph" color={Colors.common.green2}>{vehicle.details}</ThemedText>
-            </View>
-            <Ionicons name="chevron-forward" size={24} color={themeColors.borderBackgroundColor} />
-          </TouchableOpacity>
-        ))}
+        <View>
+          {vehicles.map((vehicle, index) => (
+            <VehicleCard key={index} vehicle={vehicle} />
+          ))}
+        </View>
 
         <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
 
-        <ThemedText variant="subTitle" textAlign="center" style={{ marginTop: 4, marginBottom: 4 }}>
+        <ThemedText variant="subTitle" textAlign="center" style={{ marginVertical: 8 }}>
           Datos del comprador
-        </ThemedText>
-
-        <ThemedText variant="paragraph" textAlign="center" style={{ marginBottom: 16 }}>
-          Por favor complete la información del comprador
         </ThemedText>
 
         <ThemedInput
@@ -127,18 +149,18 @@ export default function SearchResultsScreen() {
         <ThemedInput
           label="¿Es el dueño del vehículo?"
           placeholder="Seleccione una opción"
-          value={isOwner}
-          onChangeText={setIsOwner}
+          value={ownerOption}
+          onChangeText={setOwnerOption}
           isSelect
-          options={['Si, soy el dueño del vehículo', 'No, no soy el dueño del vehículo']}
+          options={Object.keys(OWNER_OPTIONS_MAP)}
         />
       </View>
       
       <ThemedButton
         text="Siguiente"
-        onPress={() => router.push('/(quote)/quote-results')}
+        onPress={handleQuote}
         style={styles.nextButton}
-        backgroundColor={Colors.common.green2}
+        disabled={!selectedVehicle || !buyerRut || !ownerOption}
       />
     </ThemedLayout>
   );

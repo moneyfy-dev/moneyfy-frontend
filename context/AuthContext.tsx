@@ -173,6 +173,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response: LoginResponse = await login(email, password);
       console.log(response);
+
+      // Si es código 226 (nuevo dispositivo), propagamos la respuesta sin procesar tokens
+      if (response.status === 226) {
+        throw { response: { status: 226 } };
+      }
+
       if (response.data && response.data.tokens) {
         // Guardar ambos tokens
         await AsyncStorage.setItem('token', response.data.tokens.jwtRefresh);
@@ -189,10 +195,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         throw new Error('No se recibieron los tokens válidos');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error en login:', error);
-      setIsAuthenticated(false);
-      setUser(null);
+      // Solo limpiamos el estado si NO es el caso de nuevo dispositivo
+      if (!error.response || error.response.status !== 226) {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
       throw error;
     }
   };

@@ -142,7 +142,7 @@ export default function RegisterScreen() {
                 // Usuario existe pero no ha completado el registro
                 setTempEmail(email);
                 try {
-                    await resendConfirmationCode(email);
+                    await resendConfirmationCode(email, 'registerUser');
                     Alert.alert('Registro incompleto', 'Se ha enviado un nuevo código de verificación a su email. Por favor, complete el proceso de registro.');
                     router.replace('/confirmation-code' as Href<string>);
                 } catch (resendError) {
