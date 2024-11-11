@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, ScrollView, StyleSheet, Pressable, Alert } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { InsurancePlan, Vehicle } from '@/types/quote';
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedInput } from "@/components/ThemedInput";
 import { ThemedButton } from "@/components/ThemedButton";
@@ -8,60 +10,88 @@ import { ThemedLayout } from '@/components/ThemedLayout';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
-// import { MotorcycleIcon } from '@/components/icons/MotorcycleIcon';
-// import { FilterIcon } from '@/components/icons/FilterIcon';
+
+interface Filters {
+  insuranceType: string;
+  company: string;
+  coverage: string;
+  replacementCar: string;
+}
 
 export default function QuoteResults() {
     const themeColors = useThemeColor();
     const [showFilters, setShowFilters] = useState(false);
-    const [filters, setFilters] = useState({
-        insuranceType: 'Seguro estándar',
-        deductible: '0 UF',
-        company: 'Seguros Falabella',
-        coverage: 'Cobertura Full',
-        replacementCar: '10 - 30 días'
-    });
-    const colors = useThemeColor();
+    const { selectedVehicle: vehicleParam, plans: plansParam } = useLocalSearchParams();
     
+    const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+    const [plans, setPlans] = useState<InsurancePlan[]>([]);
+    const [filteredPlans, setFilteredPlans] = useState<InsurancePlan[]>([]);
+    const [filters, setFilters] = useState<Filters>({
+        insuranceType: 'Seguro por kilómetro',
+        company: '',
+        coverage: '',
+        replacementCar: ''
+    });
+
+    useEffect(() => {
+        try {
+            if (vehicleParam && plansParam) {
+                const parsedVehicle = JSON.parse(decodeURIComponent(vehicleParam as string));
+                const parsedPlans = JSON.parse(decodeURIComponent(plansParam as string));
+                
+                setSelectedVehicle(parsedVehicle);
+                setPlans(parsedPlans);
+                setFilteredPlans(parsedPlans);
+            }
+        } catch (error) {
+            console.error('Error al procesar los datos:', error);
+            Alert.alert('Error', 'Hubo un problema al cargar los resultados');
+        }
+    }, [vehicleParam, plansParam]);
+
+    useEffect(() => {
+        let result = [...plans];
+
+        if (filters.company) {
+            result = result.filter(plan => 
+                plan.insuranceCompany.toLowerCase().includes(filters.company.toLowerCase())
+            );
+        }
+
+        // Aquí podrías agregar más filtros según los campos que vengan en los planes
+        // Por ejemplo, si los planes tuvieran un campo coverage:
+        if (filters.coverage) {
+            result = result.filter(plan => 
+                plan.planName.toLowerCase().includes(filters.coverage.toLowerCase())
+            );
+        }
+
+        setFilteredPlans(result);
+    }, [filters, plans]);
+
     const FiltersModal = () => (
         <Modal
             visible={showFilters}
             onClose={() => setShowFilters(false)}
-            title=""
+            title="Filtros"
         >
             <View style={styles.filterSection}>
                 <View style={styles.radioGroup}>
-                <ThemedText variant="subTitle">Tipo de Seguro</ThemedText>
-                    <Pressable
-                        style={styles.radioOption}
-                        onPress={() => setFilters({ ...filters, insuranceType: 'Seguro por kilómetro' })}
-                    >
-                        <View style={[
-                            styles.radio,
-                            filters.insuranceType === 'Seguro por kilómetro' && styles.radioSelected
-                        ]} />
-                        <ThemedText>Seguro por kilómetro</ThemedText>
-                    </Pressable>
-                    <Pressable
-                        style={styles.radioOption}
-                        onPress={() => setFilters({ ...filters, insuranceType: 'Seguro estándar' })}
-                    >
-                        <View style={[
-                            styles.radio,
-                            filters.insuranceType === 'Seguro estándar' && styles.radioSelected
-                        ]} />
-                        <ThemedText>Seguro estándar</ThemedText>
-                    </Pressable>
+                    <ThemedText variant="subTitle">Tipo de Seguro</ThemedText>
+                    {['Seguro por kilómetro', 'Seguro tradicional'].map((option) => (
+                        <Pressable
+                            key={option}
+                            style={styles.radioOption}
+                            onPress={() => setFilters({ ...filters, insuranceType: option })}
+                        >
+                            <View style={[
+                                styles.radio,
+                                filters.insuranceType === option && styles.radioSelected
+                            ]} />
+                            <ThemedText>{option}</ThemedText>
+                        </Pressable>
+                    ))}
                 </View>
-
-                <ThemedInput
-                    label="Deducible"
-                    value={filters.deductible}
-                    onChangeText={(value) => setFilters({ ...filters, deductible: value })}
-                    placeholder="0 UF"
-                    isSelect={true}
-                    options={['0 UF', '10 UF', '20 UF']}
-                />
 
                 <ThemedInput
                     label="Compañía"
@@ -69,7 +99,7 @@ export default function QuoteResults() {
                     onChangeText={(value) => setFilters({ ...filters, company: value })}
                     placeholder="Seguros Falabella"
                     isSelect={true}
-                    options={['Seguros Falabella', 'Otra Compañía']}
+                    options={Array.from(new Set(plans.map(plan => plan.insuranceCompany)))}
                 />
 
                 <View style={styles.radioGroup}>
@@ -88,23 +118,6 @@ export default function QuoteResults() {
                         </Pressable>
                     ))}
                 </View>
-
-                <View style={styles.radioGroup}>
-                    <ThemedText variant="subTitle">Auto de reemplazo</ThemedText>
-                    {['No incluido', '10 - 30 días', '30 - 50 días', 'Ilimitado'].map((option) => (
-                        <Pressable
-                            key={option}
-                            style={styles.radioOption}
-                            onPress={() => setFilters({ ...filters, replacementCar: option })}
-                        >
-                            <View style={[
-                                styles.radio,
-                                filters.replacementCar === option && styles.radioSelected
-                            ]} />
-                            <ThemedText>{option}</ThemedText>
-                        </Pressable>
-                    ))}
-                </View>
             </View>
         </Modal>
     );
@@ -112,26 +125,26 @@ export default function QuoteResults() {
     return (
         <ThemedLayout padding={[0, 24]}>
             <View style={styles.container}>
-                <View style={styles.header}>
-                    {/* <MotorcycleIcon /> */}
-                    <View style={styles.vehicleInfo}>
-                        <ThemedText variant="title">RZKT93</ThemedText>
-                        <ThemedText>2022 YAMAHA R1</ThemedText>
-                        <ThemedText variant="paragraph">N° Motor: 1NZ576966</ThemedText>
+                {selectedVehicle && (
+                    <View style={styles.header}>
+                        <View style={styles.vehicleInfo}>
+                            <ThemedText variant="title">{selectedVehicle.ppu}</ThemedText>
+                            <ThemedText>{selectedVehicle.year} {selectedVehicle.brand} {selectedVehicle.model}</ThemedText>
+                        </View>
                     </View>
-                </View>
+                )}
 
                 <View style={styles.resultsHeader}>
-                    <ThemedText>16 resultados</ThemedText>
+                    <ThemedText>{filteredPlans.length} resultados</ThemedText>
                     <Pressable onPress={() => setShowFilters(true)}>
                         <Ionicons name="filter-outline" size={24} color={themeColors.textColorAccent} />
                     </Pressable>
                 </View>
 
                 <ScrollView style={styles.resultsList}>
-                    {/* Aquí irían los resultados de las cotizaciones */}
-                    <QuoteCard />
-                    <QuoteCard />
+                    {filteredPlans.map((plan, index) => (
+                        <QuoteCard key={index} plan={plan} />
+                    ))}
                 </ScrollView>
 
                 <FiltersModal />
@@ -140,15 +153,21 @@ export default function QuoteResults() {
     );
 }
 
-const QuoteCard = () => {
-
+const QuoteCard = ({ plan }: { plan: InsurancePlan }) => {
     const themeColors = useThemeColor();
+    
+    // Calcular el precio con descuento
+    const discountPercent = parseFloat(plan.discount) * 100;
+    const finalPrice = plan.price * (1 - parseFloat(plan.discount));
+
     return (
         <View style={[styles.card, { borderColor: themeColors.borderBackgroundColor }]}>
             <View style={styles.cardHeader}>
                 <View>
-                    <ThemedText>Seguro Motocicleta Full Falabella</ThemedText>
-                    <ThemedText variant="subTitle">Deducible 10 UF</ThemedText>
+                    <ThemedText>{plan.planName}</ThemedText>
+                    <ThemedText variant="subTitle">
+                        {plan.insuranceCompany} - Deducible {plan.deductible} UF
+                    </ThemedText>
                 </View>
             </View>
 
@@ -157,12 +176,22 @@ const QuoteCard = () => {
             </Pressable>
 
             <View style={styles.priceSection}>
-                <View style={[styles.discount, { backgroundColor: themeColors.status.error }]}>
-                    <ThemedText style={{ color: themeColors.white }}>30%</ThemedText>
-                </View>
-                <ThemedText style={[styles.originalPrice, { color: themeColors.textParagraph }]}>$26.957</ThemedText>
-                <ThemedText style={[styles.finalPrice, { color: themeColors.status.success }]}>$18.870</ThemedText>
-                <ThemedText variant="paragraph">Cuota mensual 0.5 UF</ThemedText>
+                {parseFloat(plan.discount) > 0 && (
+                    <View style={[styles.discount, { backgroundColor: themeColors.status.error }]}>
+                        <ThemedText style={{ color: themeColors.white }}>{discountPercent}%</ThemedText>
+                    </View>
+                )}
+                {parseFloat(plan.discount) > 0 && (
+                    <ThemedText style={[styles.originalPrice, { color: themeColors.textParagraph }]}>
+                        ${plan.price.toLocaleString('es-CL')}
+                    </ThemedText>
+                )}
+                <ThemedText style={[styles.finalPrice, { color: themeColors.status.success }]}>
+                    ${finalPrice.toLocaleString('es-CL')}
+                </ThemedText>
+                <ThemedText variant="paragraph">
+                    Cuota mensual {plan.priceUf} UF
+                </ThemedText>
             </View>
 
             <ThemedButton text="Comprar" onPress={() => { }} />

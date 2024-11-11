@@ -24,13 +24,21 @@ export default function SearchResultsScreen() {
   const [ownerOption, setOwnerOption] = useState(Object.keys(OWNER_OPTIONS_MAP)[0]);
 
   useEffect(() => {
-    if (initialVehicles) {
-      const parsedVehicles = JSON.parse(decodeURIComponent(initialVehicles as string));
-      setVehicles(parsedVehicles);
-      // Si es búsqueda por patente, seleccionar automáticamente el único vehículo
-      if (type === 'plate' && parsedVehicles.length === 1) {
-        setSelectedVehicle(parsedVehicles[0]);
+    try {
+      if (initialVehicles) {
+        const vehiclesString = decodeURIComponent(initialVehicles as string);
+        const parsedVehicles = JSON.parse(vehiclesString);
+        
+        setVehicles(parsedVehicles);
+        
+        // Si es búsqueda por patente y hay un solo vehículo, seleccionarlo automáticamente
+        if (type === 'plate' && parsedVehicles.length === 1) {
+          setSelectedVehicle(parsedVehicles[0]);
+        }
       }
+    } catch (error) {
+      console.error('Error al procesar los vehículos:', error);
+      Alert.alert('Error', 'Hubo un problema al cargar los resultados');
     }
   }, [initialVehicles, type]);
 
@@ -57,18 +65,25 @@ export default function SearchResultsScreen() {
 
     try {
       const quoteData = {
-        brand: selectedVehicle.brand,
-        model: selectedVehicle.model,
-        year: selectedVehicle.year,
-        purchaserId: buyerRut,
-        ownerOption: OWNER_OPTIONS_MAP[ownerOption as keyof typeof OWNER_OPTIONS_MAP]
+        brand: 'toyota',
+        model: 'corolla',
+        year: '2019',
+        purchaserId: '88.888.888-8',
+        ownerOption: '0'
       };
+      console.log('quoteData', quoteData);
 
       const response = await quoteVehicle(quoteData);
       
       if (response.data.user) {
         await updateUserData(response.data.user);
-        router.push('/(quote)/quote-results');
+        router.push({
+          pathname: '/(quote)/quote-results',
+          params: {
+            selectedVehicle: JSON.stringify(selectedVehicle),
+            plans: JSON.stringify(response.data.plans)
+          }
+        });
       }
     } catch (error) {
       console.error('Error al cotizar:', error);

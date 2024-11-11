@@ -30,6 +30,16 @@ interface User {
   referredPeople: any[];
 }
 
+interface Vehicle {
+  // Define la estructura de un vehículo
+  id: string;
+  ppu: string;
+  marca: string;
+  modelo: string;
+  año: number;
+  // ... otros campos necesarios
+}
+
 interface AuthContextProps {
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -55,6 +65,7 @@ interface LoginResponse {
       jwtSession: string;
     };
     user: User;
+    vehicles?: Vehicle[];
   };
   message: string;
   status: number;

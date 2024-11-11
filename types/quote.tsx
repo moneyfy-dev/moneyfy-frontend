@@ -20,11 +20,29 @@ export interface SearchResponse {
       jwtSession: string;
       jwtRefresh: string;
     };
-    user: any; // Podemos definir la estructura completa si es necesario
+    user: any;
   };
 }
 
-export interface QuoteResponse {
+export interface QuoteVehicleParams {
+  brand: string;
+  model: string;
+  year: string;
+  purchaserId: string;
+  ownerOption: string;
+}
+
+export interface InsurancePlan {
+  priceId: string;
+  insuranceCompany: string;
+  planName: string;
+  price: number;
+  priceUf: number;
+  deductible: number;
+  discount: string;
+}
+
+export interface QuoteVehicleResponse {
   message: string;
   status: number;
   data: {
@@ -33,15 +51,7 @@ export interface QuoteResponse {
       jwtRefresh: string;
     };
     user: any;
-    plans: Array<{
-      priceId: string;
-      insuranceCompany: string;
-      planName: string;
-      price: number;
-      priceUf: number;
-      deductible: number;
-      discount: string;
-    }>;
+    plans: InsurancePlan[];
   };
 }
 

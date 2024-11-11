@@ -148,11 +148,12 @@ export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
         >
           <View style={[styles.modalContainer, { backgroundColor: themeColors.backgroundColor }]}>
             <FlatList
+              style={{ width: '100%' }}
               data={options}
               keyExtractor={(item) => item}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={styles.optionItem}
+                  style={[styles.optionItem, { borderBottomColor: themeColors.borderBackgroundColor }]}
                   onPress={() => handleSelectOption(item)}
                 >
                   <ThemedText>{item}</ThemedText>
@@ -201,6 +202,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   modalContainer: {
+    width: '100%',
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -209,7 +211,6 @@ const styles = StyleSheet.create({
   optionItem: {
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
     width: '100%',
   },
   closeButton: {

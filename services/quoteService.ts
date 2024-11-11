@@ -1,36 +1,12 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import getEnvVars from '../config';
+import { SearchResponse, QuoteVehicleParams, QuoteVehicleResponse } from '@/types/quote';
 
 const { apiUrl } = getEnvVars();
 
-// Tipos para las respuestas
-interface VehicleSearchResponse {
-  data: {
-    user: any; // Ajusta según la estructura real de la respuesta
-    tokens?: {
-      jwtRefresh: string;
-      jwtSession: string;
-    };
-  };
-  message: string;
-  status: number;
-}
-
-interface QuoteResponse {
-  data: {
-    user: any; // Ajusta según la estructura real de la respuesta
-    tokens?: {
-      jwtRefresh: string;
-      jwtSession: string;
-    };
-  };
-  message: string;
-  status: number;
-}
-
 // Búsqueda por patente
-export const searchVehicleByPPU = async (ppu: string): Promise<VehicleSearchResponse> => {
+export const searchVehicleByPPU = async (ppu: string): Promise<SearchResponse> => {
   const token = await AsyncStorage.getItem('token');
   const sessionToken = await AsyncStorage.getItem('sessionToken');
   
@@ -52,7 +28,7 @@ export const searchVehicleByPPU = async (ppu: string): Promise<VehicleSearchResp
 };
 
 // Búsqueda por ID de usuario
-export const searchVehicleByUserId = async (userId: string): Promise<VehicleSearchResponse> => {
+export const searchVehicleByUserId = async (userId: string): Promise<SearchResponse> => {
   const token = await AsyncStorage.getItem('token');
   const sessionToken = await AsyncStorage.getItem('sessionToken');
   
@@ -73,21 +49,12 @@ export const searchVehicleByUserId = async (userId: string): Promise<VehicleSear
   return response.data;
 };
 
-// Cotización del vehículo
-interface QuoteVehicleParams {
-  brand: string;
-  model: string;
-  year: string;
-  purchaserId: string;
-  ownerOption: string;
-}
-
-export const quoteVehicle = async (quoteData: QuoteVehicleParams): Promise<QuoteResponse> => {
+export const quoteVehicle = async (quoteData: QuoteVehicleParams): Promise<QuoteVehicleResponse> => {
   const token = await AsyncStorage.getItem('token');
   const sessionToken = await AsyncStorage.getItem('sessionToken');
   
-  const response = await axios.post<QuoteResponse>(
-    `${apiUrl}/segurosref/referred/vehicle/quote`,
+  const response = await axios.post<QuoteVehicleResponse>(
+    `${apiUrl}/referred/vehicle/quote`,
     quoteData,
     {
       headers: {
@@ -96,6 +63,7 @@ export const quoteVehicle = async (quoteData: QuoteVehicleParams): Promise<Quote
       },
     }
   );
+  console.log('response', response.data);
   
   return response.data;
 }; 

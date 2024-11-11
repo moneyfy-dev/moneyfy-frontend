@@ -6,7 +6,6 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedInput } from '@/components/ThemedInput';
-import { ThemedButton } from '@/components/ThemedButton';
 import Colors from '@/constants/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { searchVehicleByPPU, searchVehicleByUserId } from '@/services/quoteService';
@@ -24,7 +23,11 @@ export default function QuoteScreen() {
 
   const handleSearch = async (type: SearchType, value: string) => {
     if (!value.trim()) {
-      Alert.alert('Error', 'Por favor ingrese un valor para buscar');
+      if (type === 'plate') {
+        Alert.alert('Error', 'Por favor ingrese la patente del vehículo');
+      } else {
+        Alert.alert('Error', 'Por favor ingrese el RUT del propietario');
+      }
       return;
     }
 
@@ -37,20 +40,25 @@ export default function QuoteScreen() {
         response = await searchVehicleByUserId(value);
       }
 
-      if (response && response.data && response.data.user) {
+      if (response?.data?.user) {
         await updateUserData(response.data.user);
+        
+        // Unificar el formato para manejar tanto vehicle como vehicles
+        const vehiclesData = response.data.vehicle 
+          ? [response.data.vehicle]  // Si es búsqueda por patente, convertir el objeto en array
+          : response.data.vehicles || []; // Si es búsqueda por RUT, usar el array directamente
+
         router.push({
           pathname: '/(quote)/search-results',
           params: { 
-            type: type, 
-            value: value,
-            // Puedes agregar más datos de la respuesta si los necesitas en la siguiente pantalla
+            type, 
+            value,
+            vehicles: encodeURIComponent(JSON.stringify(vehiclesData))
           }
         });
       } else {
         throw new Error('No se encontraron resultados');
       }
-
     } catch (error) {
       console.error('Error al buscar:', error);
       if (axios.isAxiosError(error)) {

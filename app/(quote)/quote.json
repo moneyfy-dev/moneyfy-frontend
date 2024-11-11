@@ -1,0 +1,129 @@
+{
+    "message": "Solicitud aceptada: se ha podido realizar una cotización exitosamente al vehículo",
+    "status": 200,
+    "data": {
+        "tokens": {
+            "jwtSession": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbGVqYW5kcm8ub3NzZXNAY29ubmVjdDM2MC5jbCIsImF1dGhvcml0aWVzIjoiW3tcImF1dGhvcml0eVwiOlwiUk9MRV9VU0VSXCJ9XSIsImlhdCI6MTczMTM2NTg0MSwiZXhwIjoxNzMxMzY2NzQxfQ.YXPn1969f9nbp7HERajRGkBFEXrq6sPYFMJeI1f2m3I",
+            "jwtRefresh": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyM2YzcjFkMHMwcHAiLCJyZWZyZXNoVmFsdWUiOiJyM2YzcjFkMHMwcHA6MTczMDgzNTUxNTA2OTozeDF0MCIsInVzZXIiOiJhbGVqYW5kcm8ub3NzZXNAY29ubmVjdDM2MC5jbCIsImlhdCI6MTczMDgzNTUxNSwiZXhwIjoxNzMwODQ5OTE1fQ.XabB8gejBnAgvp3W5nY3Mx3XcYYdo69Uqxikj0j8NIY"
+        },
+        "user": {
+            "userId": "672a74064ebd44619600113d",
+            "personalData": {
+                "name": "Aejan",
+                "surname": "Dro",
+                "email": "alejandro.osses@connect360.cl",
+                "profilePicture": "",
+                "phone": "",
+                "dateOfBirth": "1900-01-01",
+                "address": "",
+                "enable": true
+            },
+            "wallet": {
+                "totalBalance": 0,
+                "outstandingBalance": 0,
+                "availableBalance": 0,
+                "paymentBalance": 0,
+                "history": []
+            },
+            "notifs": {
+                "byEmail": false,
+                "byPush": true,
+                "commissionUpdate": true,
+                "saleState": false,
+                "withdrawalAvailability": false,
+                "referredAccepted": false,
+                "withdrawalReminder": false,
+                "specialOffers": false,
+                "paymentProblems": false
+            },
+            "accounts": [
+                {
+                    "accountId": "67328c464ebd446196001154",
+                    "personalId": "11.111.111-1",
+                    "holderName": "User Random",
+                    "alias": "Random01",
+                    "email": "user01@gmail.com",
+                    "bank": "banco santander",
+                    "accountType": "vista",
+                    "accountNumber": "123123123",
+                    "selected": true,
+                    "createdDate": "2024-11-11T19:59:18.21",
+                    "updatedDate": "2024-11-11T19:59:18.21"
+                }
+            ],
+            "referredPeople": [
+                {
+                    "referredId": "67328c714ebd446196001155",
+                    "referredStatus": "Quoting",
+                    "createdDate": "2024-11-11T20:00:01.853760476",
+                    "updatedDate": "2024-11-11T20:00:01.853760476",
+                    "approvalDate": "1900-01-01T00:00:00",
+                    "referredPersonalData": {
+                        "id": "88.888.888-8",
+                        "name": "",
+                        "surname": "",
+                        "phone": "",
+                        "email": "",
+                        "ownerOption": "si, soy el dueno del vehiculo",
+                        "birthOfDate": "1900-01-01"
+                    },
+                    "referredCarData": {
+                        "ppu": "AB1234",
+                        "type": "Vehiculo",
+                        "brand": "Toyota",
+                        "model": "Corolla",
+                        "year": "2019",
+                        "colour": "Blanco",
+                        "engineNum": "123ABC456DEF",
+                        "chassisNum": "789GHI012JKL",
+                        "manufacturer": "Toyota Motor Corporation"
+                    },
+                    "referredPlanData": {
+                        "priceId": "",
+                        "insuranceCompany": "",
+                        "planName": "",
+                        "price": 0,
+                        "priceUf": 0.0,
+                        "deductible": 0,
+                        "discount": "0.0"
+                    },
+                    "referredPaymentModel": {
+                        "holderName": "",
+                        "type": "",
+                        "cardNumber": "",
+                        "dueDate": ""
+                    }
+                }
+            ]
+        },
+        "plans": [
+            {
+                "priceId": "SEGUROSSURA12345678",
+                "insuranceCompany": "Seguros Sura",
+                "planName": "Seguro auto premium",
+                "price": 40000,
+                "priceUf": 1.5,
+                "deductible": 1,
+                "discount": "0.3"
+            },
+            {
+                "priceId": "LIBERTY045678987",
+                "insuranceCompany": "Liberty",
+                "planName": "Plan protector de auto",
+                "price": 35000,
+                "priceUf": 1.2,
+                "deductible": 2,
+                "discount": "0.3"
+            },
+            {
+                "priceId": "SEGUROSSURA98765432",
+                "insuranceCompany": "Seguros Sura",
+                "planName": "Proteción ultra automóvil",
+                "price": 26000,
+                "priceUf": 0.7,
+                "deductible": 4,
+                "discount": "0.0"
+            }
+        ]
+    }
+}

@@ -7,7 +7,6 @@ import { ThemedInput } from '@/components/ThemedInput';
 import { useAuth } from '@/context/AuthContext';
 import { BackgroundCircles } from '@/components/images/BackgroundCircles';
 import { Logo } from '@/components/Logo';
-import { login } from '@/services/authService';
 import { validateEmail, validatePassword } from '@/utils/validations';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
@@ -117,7 +116,7 @@ export default function LoginScreen() {
                 onPress={hideLoginForm}
                 activeOpacity={1}
             >
-                <BackgroundCircles style={styles.backgroundImage} />
+                <BackgroundCircles style={styles.backgroundImage}/>
             </TouchableOpacity>
 
             <ThemedView style={styles.logoContainer}>

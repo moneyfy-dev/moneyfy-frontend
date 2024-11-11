@@ -22,6 +22,11 @@ export function useThemeColor() {
       unfocusedBorderColor: Colors.common.gray4,
       placeholderColor: Colors.common.gray3,
 
+      green1to2: currentTheme === 'dark' ? Colors.common.green1 : Colors.common.green2,
+      green2to3: currentTheme === 'dark' ? Colors.common.green2 : Colors.common.green3,
+      green3to4: currentTheme === 'dark' ? Colors.common.green3 : Colors.common.green4,
+      green4to5: currentTheme === 'dark' ? Colors.common.green4 : Colors.common.green5,
+
       white: Colors.common.white,
       extremeContrastGray: currentTheme === 'dark' ? Colors.common.gray0 : Colors.common.gray6,
       gray1Gray04: currentTheme === 'dark' ? Colors.common.gray1 : Colors.common.gray4,
