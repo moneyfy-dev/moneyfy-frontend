@@ -11,6 +11,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { Vehicle, OWNER_OPTIONS_MAP } from '@/types/quote';
 import { quoteVehicle } from '@/services/quoteService';
 import { useAuth } from '@/context/AuthContext';
+import { searchCompanies } from '@/services/quoteService';
 
 export default function SearchResultsScreen() {
   const { type, value, vehicles: initialVehicles } = useLocalSearchParams();
@@ -42,16 +43,17 @@ export default function SearchResultsScreen() {
     }
   }, [initialVehicles, type]);
 
-  const getVehicleIcon = (vehicleType: string) => {
-    switch (vehicleType.toLowerCase()) {
-      case 'motocicleta':
-        return 'bicycle-outline';
-      case 'suv':
-        return 'car-sport-outline';
-      default:
-        return 'car-outline';
-    }
-  };
+  // funcion para cuando lleguen los tipos de vehiculos
+  //const getVehicleIcon = (vehicleType: string) => {
+  //  switch (vehicleType.toLowerCase()) {
+  //    case 'motocicleta':
+  //      return 'bicycle-outline';
+  //    case 'suv':
+  //      return 'car-sport-outline';
+  //    default:
+  //      return 'car-outline';
+  //  }
+  //};
 
   const handleVehicleSelect = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
@@ -64,27 +66,54 @@ export default function SearchResultsScreen() {
     }
 
     try {
-      const quoteData = {
-        brand: 'toyota',
-        model: 'corolla',
-        year: '2019',
-        purchaserId: '88.888.888-8',
-        ownerOption: '0'
-      };
-      console.log('quoteData', quoteData);
-
-      const response = await quoteVehicle(quoteData);
-      
-      if (response.data.user) {
-        await updateUserData(response.data.user);
-        router.push({
-          pathname: '/(quote)/quote-results',
-          params: {
-            selectedVehicle: JSON.stringify(selectedVehicle),
-            plans: JSON.stringify(response.data.plans)
-          }
-        });
+      // 1. Primero obtenemos las compañías
+      const companiesResponse = await searchCompanies();
+      const companies = companiesResponse.data.companies || [];
+      console.log(companies);
+      if (companies.length === 0) {
+        throw new Error('No hay compañías disponibles para cotizar');
       }
+
+      // 2. Preparar los datos base para la cotización
+      const baseQuoteData = {
+        ppu: selectedVehicle.ppu,
+        brand: selectedVehicle.brand,
+        model: selectedVehicle.model,
+        year: selectedVehicle.year,
+        purchaserId: buyerRut,
+        ownerOption: OWNER_OPTIONS_MAP[ownerOption as keyof typeof OWNER_OPTIONS_MAP],
+      };
+
+      // 3. Crear las promesas de cotización para cada compañía
+      const quotePromises = companies.map(company => 
+        quoteVehicle({
+          ...baseQuoteData,
+          companyAlias: company.alias
+        })
+      );
+
+      // 4. Ejecutar todas las cotizaciones en paralelo
+      const results = await Promise.all(quotePromises);
+      
+      // 5. Combinar todos los planes de las diferentes compañías
+      const allPlans = results
+        .filter(response => response.status === 200)
+        .map(response => response.data.plans)
+        .flat();
+
+      if (allPlans.length === 0) {
+        throw new Error('No se encontraron planes disponibles');
+      }
+
+      // 6. Navegar a la pantalla de resultados
+      router.push({
+        pathname: '/(quote)/quote-results',
+        params: {
+          selectedVehicle: encodeURIComponent(JSON.stringify(selectedVehicle)),
+          plans: encodeURIComponent(JSON.stringify(allPlans))
+        }
+      });
+
     } catch (error) {
       console.error('Error al cotizar:', error);
       Alert.alert('Error', 'No se pudo realizar la cotización');
@@ -106,7 +135,7 @@ export default function SearchResultsScreen() {
         ]}
       >
         <View style={[styles.iconContainer, { backgroundColor: themeColors.textColorAccent }]}>
-          <Ionicons name={getVehicleIcon(vehicle.type)} size={24} color={themeColors.white} />
+          <Ionicons name='car-outline' size={24} color={themeColors.white} />
         </View>
         <View style={styles.vehicleInfo}>
           <ThemedText variant="paragraph">{vehicle.brand}</ThemedText>

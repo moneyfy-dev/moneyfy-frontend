@@ -10,11 +10,16 @@ export interface Vehicle {
   manufacturer: string;
 }
 
+export interface Company {
+  name: string;
+  alias: string;
+}
+
 export interface SearchResponse {
   message: string;
   status: number;
   data: {
-    vehicle?: Vehicle;
+    companies?: Company[];
     vehicles?: Vehicle[];
     tokens: {
       jwtSession: string;
@@ -25,11 +30,13 @@ export interface SearchResponse {
 }
 
 export interface QuoteVehicleParams {
+  ppu: string;
   brand: string;
   model: string;
   year: string;
   purchaserId: string;
   ownerOption: string;
+  companyAlias: string;
 }
 
 export interface InsurancePlan {

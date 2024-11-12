@@ -2,74 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { login, getUserData, verifyToken } from '@/services/authService';
 import { differenceInMinutes } from 'date-fns';
-import { Notifications } from '@/types/useNotifications';
-
-interface Wallet {
-  totalBalance: number;
-  outstandingBalance: number;
-  availableBalance: number;
-  paymentBalance: number;
-  history: any[];
-}
-
-interface User {
-  userId: string;
-  personalData: {
-    name: string;
-    surname: string;
-    email: string;
-    phone: string;
-    address: string;
-    dateOfBirth: string;
-    profilePicture: string;
-    enable: boolean;
-  };
-  notifs: Notifications;
-  wallet: Wallet;
-  accounts: any[];
-  referredPeople: any[];
-}
-
-interface Vehicle {
-  // Define la estructura de un vehículo
-  id: string;
-  ppu: string;
-  marca: string;
-  modelo: string;
-  año: number;
-  // ... otros campos necesarios
-}
-
-interface AuthContextProps {
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<User>;  // Cambiado de Promise<void> a Promise<User>
-  logout: () => Promise<void>;
-  user: User | null;
-  setTempEmail: (email: string) => void;
-  refreshUserSession: () => Promise<void>;
-  updateUserData: (updatedData: any) => Promise<void>;
-  isPersistentAuthRequired: boolean;
-  handlePersistentAuthSuccess: () => Promise<void>;
-  userEmail: string;
-  isPersistentAuthConfigured: boolean;
-  checkPersistentAuth: () => Promise<boolean>;
-  checkAuthStatus: () => Promise<void>;
-  hydrateUserData: (force?: boolean) => Promise<void>;
-}
-
-interface LoginResponse {
-  data: {
-    tokens: {
-      jwtRefresh: string;
-      jwtSession: string;
-    };
-    user: User;
-    vehicles?: Vehicle[];
-  };
-  message: string;
-  status: number;
-}
+import { AuthContextProps, User, LoginResponse } from '@/types/auth';
 
 const AuthContext = createContext<AuthContextProps>({
   isAuthenticated: false,
@@ -79,7 +12,6 @@ const AuthContext = createContext<AuthContextProps>({
   },
   logout: async () => {},
   user: null,
-  setTempEmail: () => {},
   refreshUserSession: async () => {},
   updateUserData: async () => {},
   isPersistentAuthRequired: false,
@@ -185,7 +117,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response: LoginResponse = await login(email, password);
       console.log(response);
 
-      // Si es código 226 (nuevo dispositivo), propagamos la respuesta sin procesar tokens
       if (response.status === 226) {
         throw { response: { status: 226 } };
       }
@@ -234,16 +165,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const setTempEmail = (email: string) => {
-    setUserEmail(email);
-    if (user) {
-      setUser({
-        ...user,
-        personalData: { ...user.personalData, email }
-      });
-    }
-  };
-
   const refreshUserSession = async () => {
     await hydrateUserData();
   };
@@ -276,8 +197,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isLoading, 
       login: loginContext, 
       logout, 
-      user, 
-      setTempEmail,
+      user,
       refreshUserSession,
       updateUserData,
       isPersistentAuthRequired,

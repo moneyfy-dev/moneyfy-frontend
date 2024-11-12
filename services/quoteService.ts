@@ -27,7 +27,7 @@ export const searchVehicleByPPU = async (ppu: string): Promise<SearchResponse> =
   return response.data;
 };
 
-// Búsqueda por ID de usuario
+// Búsqueda por RUT de usuario
 export const searchVehicleByUserId = async (userId: string): Promise<SearchResponse> => {
   const token = await AsyncStorage.getItem('token');
   const sessionToken = await AsyncStorage.getItem('sessionToken');
@@ -49,6 +49,26 @@ export const searchVehicleByUserId = async (userId: string): Promise<SearchRespo
   return response.data;
 };
 
+// Búsqueda de compañias aseguradoras
+export const searchCompanies = async (): Promise<SearchResponse> => {
+  const token = await AsyncStorage.getItem('token');
+  const sessionToken = await AsyncStorage.getItem('sessionToken');
+  
+  const response = await axios.get(
+    `${apiUrl}/referred/search/companies`,
+    {
+      headers: {
+        'Authorization': `Bearer ${sessionToken}`,
+        'Refresh-Token': token
+      },
+    }
+  );
+  console.log('response', response.data);
+  
+  return response.data;
+};
+
+// Cotización de vehículo
 export const quoteVehicle = async (quoteData: QuoteVehicleParams): Promise<QuoteVehicleResponse> => {
   const token = await AsyncStorage.getItem('token');
   const sessionToken = await AsyncStorage.getItem('sessionToken');

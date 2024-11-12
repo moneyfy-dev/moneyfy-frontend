@@ -9,10 +9,12 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AvatarIcon } from '@/components/images/AvatarIcon';
+import { User, Wallet } from '@/types/auth';
 
 export default function HomeScreen() {
   const themeColors = useThemeColor();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const typedUser = user as User;
   const [showBalance, setShowBalance] = useState(true);
   const [personalInfo, setPersonalInfo] = useState({
     nombre: '',
@@ -74,7 +76,7 @@ export default function HomeScreen() {
               $ {' '}
             </ThemedText>
             <ThemedText variant="superTitle" color={themeColors.textColor}>
-              {showBalance ? `${user.wallet.totalBalance.toFixed(0)}` : '******'}
+              {showBalance ? `${typedUser.wallet.totalBalance.toFixed(0)}` : '******'}
             </ThemedText>
           </View>
 
@@ -138,12 +140,12 @@ export default function HomeScreen() {
         >
           <Ionicons name="cash-outline" style={{ marginBottom: 10 }} size={24} color={themeColors.white} />
           <ThemedText variant="paragraph" color={themeColors.white}>Saldo Disponible</ThemedText>
-          <ThemedText variant="title" color={themeColors.textColorAccent}>${' '}{user?.wallet.availableBalance.toFixed(0)}</ThemedText>
+          <ThemedText variant="title" color={themeColors.textColorAccent}>${' '}{typedUser?.wallet.availableBalance.toFixed(0)}</ThemedText>
         </LinearGradient>
         <View style={[styles.card, { backgroundColor: themeColors.backgroundCardColor, flex: 1 }]}>
           <Ionicons name="lock-closed-outline" style={{ marginBottom: 10 }} size={24} color={themeColors.white} />
           <ThemedText variant="paragraph">Saldo Retenido</ThemedText>
-          <ThemedText variant="title">${user?.wallet.outstandingBalance.toFixed(0)}</ThemedText>
+          <ThemedText variant="title">${typedUser?.wallet.outstandingBalance.toFixed(0)}</ThemedText>
         </View>
       </View>
 

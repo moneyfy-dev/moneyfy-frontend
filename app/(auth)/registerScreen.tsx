@@ -27,7 +27,6 @@ export default function RegisterScreen() {
     const [termsAccepted, setTermsAccepted] = useState(false);
     const themeColors = useThemeColor();
     const router = useRouter();
-    const { login: loginContext, setTempEmail } = useAuth();
     const [touchedFields, setTouchedFields] = useState({
         nombre: false,
         apellido: false,
@@ -129,26 +128,21 @@ export default function RegisterScreen() {
 
         try {
             const response = await register(sanitizedNombre, sanitizedApellido, email.trim(), password);
-            setTempEmail(email);
+            
             if (response.status === 200) {
                 Alert.alert('Éxito', response.message);
-                router.replace('/confirmation-code' as Href<string>);
+                router.push({
+                    pathname: '/confirmation-code',
+                    params: { 
+                        email: email,
+                        flow: 'regular-register'
+                    }
+                });
             }
         } catch (error: any) {
             console.error('Error en el registro:', error);
             if (error instanceof Error && error.message === "The user is already registered") {
                 Alert.alert('Error', error.message);
-            } else if (error.response && error.response.status === 409) {
-                // Usuario existe pero no ha completado el registro
-                setTempEmail(email);
-                try {
-                    await resendConfirmationCode(email, 'registerUser');
-                    Alert.alert('Registro incompleto', 'Se ha enviado un nuevo código de verificación a su email. Por favor, complete el proceso de registro.');
-                    router.replace('/confirmation-code' as Href<string>);
-                } catch (resendError) {
-                    console.error('Error al reenviar el código:', resendError);
-                    Alert.alert('Error', 'No se pudo reenviar el código de verificación. Por favor, intente nuevamente.');
-                }
             } else if (error.response && error.response.status === 406) {
                 Alert.alert('Error', error.message);
             } else {

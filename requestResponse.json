@@ -1,0 +1,119 @@
+{
+  "registration": {
+    "register1": {
+      "request": {
+        "method": "POST",
+        "endpoint": "/api/auth/register",
+        "headers": {},
+        "body": {
+            "name": "user",
+            "surname": "random",
+            "pwd": "12345678",
+            "email": "alejandro.osses@connect360.cl"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "message": "Solicitud aceptada: el código de confirmación para finalizar el proceso de registro, ha sido enviado al email: alejandro.osses@connect360.cl",
+          "data": {
+            "info": "ok"
+          }
+        }
+      }
+    },
+    "register2": {
+      "request": {
+        "method": "POST",
+        "endpoint": "/api/auth/register",
+        "headers": {},
+        "body": {
+            "email": "alejandro.osses@connect360.cl",
+            "code": "480109"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+            "message": "Recurso creado: usuario registrado exitosamente",
+            "status": 201,
+            "data": {
+                "user": {
+                    "userId": "67338f0905869615b4ead8ad",
+                    "personalData": {
+                        "name": "user",
+                        "surname": "random",
+                        "email": "alejandro.osses@connect360.cl",
+                        "profilePicture": "",
+                        "phone": "",
+                        "dateOfBirth": "1900-01-01",
+                        "address": "",
+                        "enable": true
+                    },
+                    "wallet": {
+                        "totalBalance": 0,
+                        "outstandingBalance": 0,
+                        "availableBalance": 0,
+                        "paymentBalance": 0,
+                        "history": []
+                    },
+                    "notifs": {
+                        "byEmail": false,
+                        "byPush": true,
+                        "commissionUpdate": true,
+                        "saleState": false,
+                        "withdrawalAvailability": false,
+                        "referredAccepted": false,
+                        "withdrawalReminder": false,
+                        "specialOffers": false,
+                        "paymentProblems": false
+                    },
+                    "accounts": [],
+                    "referredPeople": []
+                },
+                "tokens": {
+                    "jwtSession": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbGVqYW5kcm8ub3NzZXNAY29ubmVjdDM2MC5jbCIsImF1dGhvcml0aWVzIjoiW3tcImF1dGhvcml0eVwiOlwiUk9MRV9VU0VSXCJ9XSIsImlhdCI6MTczMTQzMjIzMCwiZXhwIjoxNzMxNDMzMTMwfQ.pQo4DwpAKcoIn0wIa98QSUE8vtig76iA2tsyR_Y2Bwo",
+                    "jwtRefresh": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyM2YzcjFkMHMwcHAiLCJyZWZyZXNoVmFsdWUiOiJyM2YzcjFkMHMwcHA6MTczMTQzMjIzMDcxODozeDF0MCIsInVzZXIiOiJhbGVqYW5kcm8ub3NzZXNAY29ubmVjdDM2MC5jbCIsImlhdCI6MTczMTQzMjIzMCwiZXhwIjoxNzMxNDQ2NjMwfQ.fAKckSc0w4cTuqyPvtnVpZKOfyUFyUG0vPL8QoUP1hQ"
+                }
+            }
+        }
+      }
+    },
+    "login": {
+      "request": {
+        "method": "POST",
+        "endpoint": "/api/auth/login",
+        "headers": {},
+        "body": {
+          "email": "alejandro.osses@connect360.cl",
+          "pwd": "12345678"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "token": "eyJhbGciOiJ...",
+          "message": "Login exitoso"
+        }
+      }
+    }
+  },
+  "protectedEndpoints": {
+    "ejemplo": {
+      "request": {
+        "method": "GET",
+        "endpoint": "/api/protected/resource",
+        "headers": {
+          "Authorization": "Bearer eyJhbGciOiJ..."
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "data": "ejemplo de respuesta"
+        }
+      }
+    }
+  }
+}

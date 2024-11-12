@@ -51,7 +51,7 @@ export default function TabLayout() {
         options={{
           title: 'Cotizar',
           tabBarIcon: ({ color, size }) => (
-            <TabBarIcon name="time-outline" color={color} size={size} />
+            <TabBarIcon name="calculator-outline" color={color} size={size} />
           ),
         }}
       />

@@ -52,12 +52,11 @@ export default function ConfirmationCodeScreen() {
             
             if (flow === 'device-change') {
                 response = await confirmDeviceChange(email as string, code);
-                await updateUserData(response.data);
+                await updateUserData(response.data.user);
                 router.replace('/(tabs)');
             } else {
-                // Flujo original de registro
                 response = await confirmRegistration(email as string, code);
-                await updateUserData(response.data);
+                await updateUserData(response.data.user);
                 router.replace('/(tabs)');
             }
         } catch (error) {

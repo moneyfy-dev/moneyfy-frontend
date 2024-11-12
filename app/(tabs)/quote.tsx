@@ -43,10 +43,7 @@ export default function QuoteScreen() {
       if (response?.data?.user) {
         await updateUserData(response.data.user);
         
-        // Unificar el formato para manejar tanto vehicle como vehicles
-        const vehiclesData = response.data.vehicle 
-          ? [response.data.vehicle]  // Si es búsqueda por patente, convertir el objeto en array
-          : response.data.vehicles || []; // Si es búsqueda por RUT, usar el array directamente
+        const vehiclesData = response.data.vehicles
 
         router.push({
           pathname: '/(quote)/search-results',
