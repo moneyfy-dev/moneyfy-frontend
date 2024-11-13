@@ -70,3 +70,21 @@ export const updateUserProfile = async (userData: {
     throw error;
   }
 };
+
+export const hydrateUserData = async () => {
+  const token = await AsyncStorage.getItem('token');
+  const sessionToken = await AsyncStorage.getItem('sessionToken');
+  
+  const response = await axios.post(
+    `${apiUrl}/users/hydration/data`,
+    {},
+    {
+      headers: {
+        'Authorization': `Bearer ${sessionToken}`,
+        'Refresh-Token': token
+      },
+    }
+  );
+  console.log('response', response.data);
+  return response.data;
+};

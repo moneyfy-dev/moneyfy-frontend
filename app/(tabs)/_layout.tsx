@@ -3,9 +3,11 @@ import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { StyleSheet, View } from 'react-native';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 export default function TabLayout() {
   const themeColors = useThemeColor();
+  const { shouldShowOnboarding } = useOnboarding();
 
   return (
     <Tabs
@@ -18,6 +20,7 @@ export default function TabLayout() {
           paddingBottom: 20,
           borderTopWidth: 0,
           borderTopColor: themeColors.unfocusedBorderColor,
+          display: shouldShowOnboarding ? 'none' : 'flex',
         },
         tabBarLabelStyle: {
           fontSize: 12,

@@ -7,6 +7,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { PersistentAuthWrapper } from '@/components/PersistentAuthWrapper';
+import { OnboardingProvider } from '@/context/OnboardingContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -33,14 +34,16 @@ export default function RootLayout() {
       <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <SafeAreaProvider>
           <AuthProvider>
-            <PersistentAuthWrapper>
-              <Stack>
+            <OnboardingProvider>
+              <PersistentAuthWrapper>
+                <Stack>
                 <Stack.Screen name="(auth)" options={{ headerShown: false }} />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="(settings)" options={{ headerShown: false }} />
                 <Stack.Screen name="(quote)" options={{ headerShown: false }} />
-              </Stack>
-            </PersistentAuthWrapper>
+                </Stack>
+              </PersistentAuthWrapper>
+            </OnboardingProvider>
           </AuthProvider>
         </SafeAreaProvider>
       </NavigationThemeProvider> 

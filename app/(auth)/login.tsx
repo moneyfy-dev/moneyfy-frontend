@@ -11,10 +11,12 @@ import { validateEmail, validatePassword } from '@/utils/validations';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
 import { ThemedButton } from '@/components/ThemedButton';
+import { MessageModal } from '@/components/MessageModal';
 
 const { height } = Dimensions.get('window');
 
 export default function LoginScreen() {
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -26,6 +28,7 @@ export default function LoginScreen() {
     const themeColors = useThemeColor();
     const router = useRouter();
     const [touchedFields, setTouchedFields] = useState({ email: false, password: false });
+    const [errorMessage, setErrorMessage] = useState('');
 
     const showLoginForm = () => {
         setIsFormVisible(true);
@@ -82,29 +85,29 @@ export default function LoginScreen() {
         validateField('password');
 
         if (!validateEmail(email) || !validatePassword(password)) {
-            Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
+            setErrorMessage('Por favor, corrija los errores en el formulario.');
+            setIsErrorModalVisible(true);
             return;
         }
 
         try {
             const userData = await loginContext(email, password);
-            
-            // Si llegamos aquí, el login fue exitoso
             router.replace('/(tabs)');
         } catch (error: any) {
             if (error.response?.status === 226) {
-                // Caso de nuevo dispositivo
                 router.push({
                     pathname: '/confirmation-code',
-                    params: { 
+                    params: {
                         email: email,
                         flow: 'device-change'
                     }
                 });
             } else if (error.response?.status === 403) {
-                Alert.alert('Error', 'Credenciales incorrectas. Por favor, inténtalo de nuevo.');
+                setErrorMessage('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
+                setIsErrorModalVisible(true);
             } else {
-                Alert.alert('Error', 'Hubo un problema con el inicio de sesión. Inténtalo de nuevo.');
+                setErrorMessage('Hubo un problema con el inicio de sesión. Inténtalo de nuevo.');
+                setIsErrorModalVisible(true);
             }
         }
     };
@@ -116,7 +119,7 @@ export default function LoginScreen() {
                 onPress={hideLoginForm}
                 activeOpacity={1}
             >
-                <BackgroundCircles style={styles.backgroundImage}/>
+                <BackgroundCircles style={styles.backgroundImage} />
             </TouchableOpacity>
 
             <ThemedView style={styles.logoContainer}>
@@ -211,6 +214,21 @@ export default function LoginScreen() {
                 </ThemedView>
             </Animated.View>
 
+            <MessageModal
+                isVisible={isErrorModalVisible}
+                onClose={() => setIsErrorModalVisible(false)}
+                title="Error de inicio de sesión"
+                message={errorMessage}
+                icon={{
+                    name: "alert-circle-outline",
+                    color: themeColors.status.error
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsErrorModalVisible(false)
+                }}
+            />
+
         </ThemedView>
     );
 }
@@ -279,6 +297,12 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 60,
         left: -60,
+        bottom: 0,
+    },
+    backgroundImageTest: {
+        position: 'absolute',
+        top: 60,
+        left: 60,
         bottom: 0,
     },
     logoContainer: {

@@ -34,6 +34,9 @@ export default {
     green4: '#055903',
     green5: '#022602',
   },
+  special: {
+    skinIcons: '#FBD2CF',
+  },
   status: {
     success: '#00BE41',
     error: '#E0003E',

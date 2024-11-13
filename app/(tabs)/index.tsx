@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, Dimensions, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import Colors from '@/constants/Colors';
@@ -10,10 +10,16 @@ import { ThemedLayout } from '@/components/ThemedLayout';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AvatarIcon } from '@/components/images/AvatarIcon';
 import { User, Wallet } from '@/types/auth';
+import { useOnboarding } from '@/context/OnboardingContext';
+import { Onboarding } from '@/components/Onboarding';
+import { useLocalSearchParams } from 'expo-router';
+import { hydrateUserData } from '@/services/userService';
+
+const FORCE_SHOW_ONBOARDING = true; // Mantenemos esto para desarrollo
 
 export default function HomeScreen() {
   const themeColors = useThemeColor();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, updateUserData } = useAuth();
   const typedUser = user as User;
   const [showBalance, setShowBalance] = useState(true);
   const [personalInfo, setPersonalInfo] = useState({
@@ -26,6 +32,10 @@ export default function HomeScreen() {
   });
   const screenWidth = Dimensions.get("window").width;
   const toggleBalance = () => setShowBalance(!showBalance);
+  const { shouldShowOnboarding, setShouldShowOnboarding } = useOnboarding();
+  const route = useLocalSearchParams();
+  const { fromConfirmation } = route;
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -40,6 +50,30 @@ export default function HomeScreen() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (FORCE_SHOW_ONBOARDING || fromConfirmation === 'true') {
+      setShouldShowOnboarding(true);
+    }
+  }, []);
+
+  const onRefresh = React.useCallback(async () => {
+    try {
+      setRefreshing(true);
+      const response = await hydrateUserData();
+      if (response.data && response.data.user) {
+        await updateUserData(response.data.user);
+      }
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [updateUserData]);
+
+  if (shouldShowOnboarding) {
+    return <Onboarding />;
+  }
+
   if (!user) {
     return (
       <ThemedLayout>
@@ -49,7 +83,19 @@ export default function HomeScreen() {
   }
 
   return (
-    <ThemedLayout>
+    <ThemedLayout
+      padding={[24, 24]}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={themeColors.textColorAccent}
+          colors={[themeColors.textColorAccent]}
+          progressBackgroundColor={themeColors.backgroundCardColor}
+          style={{ backgroundColor: themeColors.backgroundCardColor }}
+        />
+      }
+    >
       <View style={styles.header}>
         <View style={styles.profileImageContainer}>
           {personalInfo.profilePicture ? (
@@ -143,7 +189,7 @@ export default function HomeScreen() {
           <ThemedText variant="title" color={themeColors.textColorAccent}>${' '}{typedUser?.wallet.availableBalance.toFixed(0)}</ThemedText>
         </LinearGradient>
         <View style={[styles.card, { backgroundColor: themeColors.backgroundCardColor, flex: 1 }]}>
-          <Ionicons name="lock-closed-outline" style={{ marginBottom: 10 }} size={24} color={themeColors.white} />
+          <Ionicons name="lock-closed-outline" style={{ marginBottom: 10 }} size={24} color={themeColors.textColor} />
           <ThemedText variant="paragraph">Saldo Retenido</ThemedText>
           <ThemedText variant="title">${typedUser?.wallet.outstandingBalance.toFixed(0)}</ThemedText>
         </View>

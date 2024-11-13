@@ -7,7 +7,7 @@ export function useThemeColor() {
   const getThemeColors = () => {
     return {
       backgroundColor: currentTheme === 'dark' ? Colors.common.black : Colors.common.white,
-      backgroundCardColor: currentTheme === 'dark' ? Colors.common.gray0 : Colors.common.white,
+      backgroundCardColor: currentTheme === 'dark' ? Colors.common.gray0 : Colors.common.gray6,
       buttonBackgroundColor: currentTheme === 'dark' ? Colors.common.green2 : Colors.common.green2,
       buttonTextColor: Colors.common.white,
       inputBackground: Colors.common.transparent,
@@ -37,7 +37,16 @@ export function useThemeColor() {
         error: Colors.status.error,
         warning: Colors.status.warning,
         info: Colors.status.info,
-      }
+      },
+
+      // Onboarding específicos
+      onboardingBackground: currentTheme === 'dark' ? Colors.common.gray1 : Colors.common.gray0,
+      onboardingGreen1: Colors.common.green1,
+      onboardingGreen2: Colors.common.green2,
+      onboardingGreen3: Colors.common.green3,
+      onboardingGray: currentTheme === 'dark' ? Colors.common.gray1 : Colors.common.black,
+      onboardingDetails: Colors.common.white,
+      onboardingCircle: Colors.common.black,
     };
   };
 
