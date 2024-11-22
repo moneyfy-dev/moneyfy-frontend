@@ -6,7 +6,7 @@ import { useThemeColor } from '../hooks/useThemeColor';
 import { useTheme } from '../context/ThemeContext';
 
 interface ThemedDatePickerProps {
-  value: Date;
+  value: Date | null;
   onChange: (date: Date) => void;
   label?: string;
   placeholder?: string;
@@ -51,7 +51,7 @@ export const ThemedDatePicker: React.FC<ThemedDatePickerProps> = ({
         mode="date"
         onConfirm={handleConfirm}
         onCancel={hideDatePicker}
-        date={value}
+        date={value || new Date()}
         // Configuración común para iOS y Android
         isDarkModeEnabled={currentTheme === 'dark'}
         themeVariant={currentTheme === 'dark' ? 'dark' : 'light'}

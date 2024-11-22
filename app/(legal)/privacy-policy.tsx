@@ -45,7 +45,7 @@ export default function PrivacyPolicy() {
   );
 
   return (
-    <ThemedLayout>
+    <ThemedLayout padding={[20, 40]}>
       <View style={styles.header}>
         <ThemedText variant="superTitle" marginBottom={8} textAlign="center">
           Política de Privacidad

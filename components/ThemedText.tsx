@@ -118,7 +118,7 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
   if (variant === 'textLink' && linkConfig) {
     return (
       <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
-        <Text style={[combinedStyle, { lineHeight: 12, paddingTop: 28, height: 50 }]}>
+        <Text style={combinedStyle}>
           {children}
         </Text>
       </TouchableOpacity>

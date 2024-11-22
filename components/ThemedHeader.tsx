@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 24,
-        paddingTop: 20,
+        paddingVertical: 20,
     },
     titleContainer: {
         paddingRight: 24,

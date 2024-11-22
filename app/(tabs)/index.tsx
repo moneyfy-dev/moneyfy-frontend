@@ -216,7 +216,7 @@ export default function HomeScreen() {
           <View style={styles.actionButtonIcon}>
             <Ionicons name="people-outline" size={20} color={themeColors.white} />
           </View>
-          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Mis referidos</ThemedText>
+          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Referidos</ThemedText>
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
@@ -230,7 +230,7 @@ export default function HomeScreen() {
           <View style={styles.actionButtonIcon}>
             <Ionicons name="time-outline" size={20} color={themeColors.white} />
           </View>
-          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Historial de referidos</ThemedText>
+          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Historial de retiros</ThemedText>
         </TouchableOpacity>
 
       </View>

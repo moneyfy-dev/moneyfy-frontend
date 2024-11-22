@@ -40,6 +40,7 @@ export interface QuoteVehicleParams {
 }
 
 export interface InsurancePlan {
+  id: string;
   priceId: string;
   insuranceCompany: string;
   planName: string;

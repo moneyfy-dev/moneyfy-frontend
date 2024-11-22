@@ -221,11 +221,11 @@ export default function RegisterScreen() {
                     </TouchableOpacity>
                     <ThemedText variant='paragraph' style={styles.termsText}>
                         He leído y estoy de acuerdo con los{'\n'}
-                        <ThemedText variant='textLink' linkConfig={{ route: '/(legal)/terms-and-conditions' }}>
+                        <ThemedText variant='textLink' style={{ lineHeight: 12, paddingTop: 28, height: 50 }} linkConfig={{ route: '/(legal)/terms-and-conditions' }}>
                             Términos y condiciones
                         </ThemedText>{' '}
                         y la{' '}
-                        <ThemedText variant='textLink' linkConfig={{ route: '/(legal)/privacy-policy' }}>
+                        <ThemedText variant='textLink' style={{ lineHeight: 12, paddingTop: 28, height: 50 }} linkConfig={{ route: '/(legal)/privacy-policy' }}>
                             Política de privacidad
                         </ThemedText>
                         .
