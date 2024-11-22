@@ -1,0 +1,16 @@
+export type Route = 
+  | "/"
+  | "/(auth)"
+  | "/(auth)/confirmation-code"
+  | "/(auth)/login"
+  | "/(auth)/persistent-auth"
+  | "/(auth)/registerScreen"
+  | "/(quote)"
+  | "/(quote)/manual-search"
+  | "/(quote)/quote-results"
+  | "/(tabs)"
+  | "/(tabs)/config"
+  | "/(tabs)/index"
+  | "/(tabs)/referidos"
+  | "/(legal)/terms-and-conditions"
+  | "/(legal)/privacy-policy";

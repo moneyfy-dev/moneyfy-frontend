@@ -24,7 +24,7 @@ export default function TabLayout() {
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: 'semibold',
+          fontWeight: '600',
         },
         tabBarIconStyle: {
           marginTop: 12,

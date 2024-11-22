@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { searchVehicleByPPU, searchVehicleByUserId } from '@/services/quoteService';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
+import { NoAccountWarning } from '@/components/NoAccountWarning';
 
 type SearchType = 'plate' | 'rut';
 
@@ -19,7 +20,13 @@ export default function QuoteScreen() {
   const themeColors = useThemeColor();
   const [searchValue, setSearchValue] = useState('');
   const [activeTab, setActiveTab] = useState<SearchType>('plate');
-  const { updateUserData } = useAuth();
+  const { user, updateUserData } = useAuth();
+
+  const hasAccounts = user?.accounts && user.accounts.length > 0;
+
+  if (!hasAccounts) {
+    return <NoAccountWarning />;
+  }
 
   const handleSearch = async (type: SearchType, value: string) => {
     if (!value.trim()) {

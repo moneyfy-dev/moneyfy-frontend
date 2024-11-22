@@ -42,7 +42,7 @@ export const Onboarding = () => {
     slides.forEach((_, index) => {
       Animated.timing(dotWidths[index], {
         toValue: index === activeSlide ? 24 : 8,
-        duration: 300,
+        duration: 100,
         useNativeDriver: false,
       }).start();
     });

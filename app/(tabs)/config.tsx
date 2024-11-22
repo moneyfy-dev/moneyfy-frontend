@@ -30,12 +30,12 @@ const ConfigScreen = () => {
   };
 
   const menuItems = [
-    { title: 'Información personal', icon: 'person-outline', route: '/(settings)/personal-info' as Href<string> },
-    { title: 'Configuración de pago', icon: 'card-outline', route: '/(settings)/payment-config' as Href<string> },
-    { title: 'Apariencia', icon: 'color-palette-outline', route: '/(settings)/appearance' as Href<string> },
-    { title: 'Código de referido', icon: 'qr-code-outline', route: '/(settings)/referral-code' as Href<string> },
-    { title: 'Privacidad y seguridad', icon: 'lock-closed-outline', route: '/(settings)/privacy-security' as Href<string> },
-    { title: 'Notificaciones', icon: 'notifications-outline', route: '/(settings)/notifications' as Href<string> },
+    { title: 'Información personal', icon: 'person-outline', route: '/(settings)/personal-info' },
+    { title: 'Configuración de pago', icon: 'card-outline', route: '/(settings)/payment-config' },
+    { title: 'Apariencia', icon: 'color-palette-outline', route: '/(settings)/appearance' },
+    { title: 'Código de referido', icon: 'qr-code-outline', route: '/(settings)/referral-code' },
+    { title: 'Privacidad y seguridad', icon: 'lock-closed-outline', route: '/(settings)/privacy-security' },
+    { title: 'Notificaciones', icon: 'notifications-outline', route: '/(settings)/notifications' },
     { title: 'Cerrar sesión', icon: 'log-out-outline', onPress: handleLogout },
   ];
 
@@ -49,13 +49,50 @@ const ConfigScreen = () => {
         <TouchableOpacity
           key={index}
           style={[styles.menuItem, { borderBottomWidth: index === menuItems.length - 1 ? 0 : 1, borderColor: themeColors.borderBackgroundColor }]}
-          onPress={item.onPress || (() => router.push(item.route))}
+          onPress={item.onPress || (() => router.push(item.route as Href))}
         >
           <Ionicons name={item.icon as any} size={20} color={themeColors.textColorAccent} />
           <ThemedText variant="subTitle" style={styles.menuItemText}>{item.title}</ThemedText>
           <Ionicons name="chevron-forward" size={16} color={themeColors.textParagraph} />
         </TouchableOpacity>
       ))}
+
+      <View style={styles.legalLinksContainer}>
+        <View style={styles.legalLinksRow}>
+          <TouchableOpacity 
+            onPress={() => router.push('/(legal)/terms-and-conditions')}
+            style={styles.legalLink}
+          >
+            <ThemedText 
+              variant="textLink" 
+              textAlign="center"
+            >
+              Términos y condiciones
+            </ThemedText>
+          </TouchableOpacity>
+
+          <ThemedText variant="paragraph">•</ThemedText>
+
+          <TouchableOpacity 
+            onPress={() => router.push('/(legal)/privacy-policy')}
+            style={styles.legalLink}
+          >
+            <ThemedText 
+              variant="textLink" 
+              textAlign="center"
+            >
+              Política de privacidad
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
+        <ThemedText 
+          variant="paragraph" 
+          textAlign="center" 
+          style={styles.versionText}
+        >
+          Versión 1.0.0
+        </ThemedText>
+      </View>
 
       <LogoutModal
         isVisible={isLogoutModalVisible}
@@ -90,6 +127,23 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     flex: 1,
   },
+  legalLinksContainer: {
+    marginTop: 'auto',
+    paddingVertical: 24,
+  },
+  legalLinksRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  legalLink: {
+    paddingVertical: 4,
+  },
+  versionText: {
+    opacity: 0.5,
+  }
 });
 
 export default ConfigScreen;

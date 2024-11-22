@@ -74,12 +74,12 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
   };
 
   const handleAuthSuccess = async () => {
-    console.log('Autenticación persistente exitosa, llamando a handlePersistentAuthSuccess');
-    await handlePersistentAuthSuccess();
-    console.log('Navegando a (tabs) desde PersistentAuth');
-    setTimeout(() => {
-      router.replace('/(tabs)');
-    }, 100);
+    try {
+      await handlePersistentAuthSuccess();
+    } catch (error) {
+      console.error('Error en handleAuthSuccess:', error);
+      showAlert('Error', 'Hubo un problema con la autenticación');
+    }
   };
 
   const handleBiometricAuth = async () => {
@@ -87,7 +87,7 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
       const success = await authenticateBiometric();
       if (success) {
         console.log('Autenticación biométrica exitosa');
-        handleAuthSuccess();
+        await handleAuthSuccess();
       }
     } catch (error) {
       console.error('Error during biometric authentication:', error);
@@ -99,7 +99,7 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
     try {
       const storedPin = await AsyncStorage.getItem('user_pin');
       if (pin === storedPin) {
-        handleAuthSuccess();
+        await handleAuthSuccess();
       } else {
         showAlert('Error', 'PIN incorrecto');
       }

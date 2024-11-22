@@ -1,8 +1,15 @@
 import React from 'react';
-import { Text, TextStyle, StyleSheet } from 'react-native';
+import { Text, TextStyle, StyleSheet, TouchableOpacity } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { Href, Link, useRouter } from 'expo-router';
 
 type TextVariant = 'jumboTitle' | 'superTitle' | 'title' | 'jumboSubTitle' | 'subTitleBold' | 'subTitle' | 'paragraph' | 'textLink' | 'default';
+
+interface LinkConfig {
+  route?: Href;
+  params?: Record<string, string | number>;
+  onPress?: () => void;
+}
 
 interface ThemedTextProps {
   children: React.ReactNode;
@@ -10,7 +17,8 @@ interface ThemedTextProps {
   style?: TextStyle | TextStyle[];
   textAlign?: 'auto' | 'left' | 'right' | 'center' | 'justify';
   marginBottom?: number;
-  color?: string; // Nueva prop para color personalizado
+  color?: string;
+  linkConfig?: LinkConfig;
 }
 
 export const ThemedText: React.FC<ThemedTextProps> = ({
@@ -19,9 +27,11 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
   style,
   textAlign,
   marginBottom,
-  color, // Nueva prop
+  color,
+  linkConfig,
 }) => {
   const themeColors = useThemeColor();
+  const router = useRouter();
 
   const variantStyles: Record<TextVariant, TextStyle> = {
     jumboTitle: {
@@ -82,9 +92,38 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
     variantStyles[variant],
     textAlign && { textAlign },
     marginBottom !== undefined && { marginBottom },
-    color && { color }, // Aplicar color personalizado si se proporciona
+    color && { color },
     style,
   ];
+
+  const handlePress = () => {
+    if (linkConfig?.onPress) {
+      linkConfig.onPress();
+    } else if (linkConfig?.route) {
+      try {
+        if (linkConfig.params) {
+          router.push({
+            pathname: linkConfig.route,
+            params: linkConfig.params
+          } as any);
+        } else {
+          router.push(linkConfig.route);
+        }
+      } catch (error) {
+        console.error('Error en la navegación:', error);
+      }
+    }
+  };
+
+  if (variant === 'textLink' && linkConfig) {
+    return (
+      <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
+        <Text style={[combinedStyle, { lineHeight: 12, paddingTop: 28, height: 50 }]}>
+          {children}
+        </Text>
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <Text style={combinedStyle}>
@@ -98,3 +137,5 @@ const styles = StyleSheet.create({
     // Estilos base comunes a todos los textos
   },
 });
+export { Text };
+

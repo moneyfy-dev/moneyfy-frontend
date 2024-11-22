@@ -220,12 +220,12 @@ export default function RegisterScreen() {
                         />
                     </TouchableOpacity>
                     <ThemedText variant='paragraph' style={styles.termsText}>
-                        He leído y estoy de acuerdo con los{' '}
-                        <ThemedText variant='textLink'>
+                        He leído y estoy de acuerdo con los{'\n'}
+                        <ThemedText variant='textLink' linkConfig={{ route: '/(legal)/terms-and-conditions' }}>
                             Términos y condiciones
                         </ThemedText>{' '}
                         y la{' '}
-                        <ThemedText variant='textLink'>
+                        <ThemedText variant='textLink' linkConfig={{ route: '/(legal)/privacy-policy' }}>
                             Política de privacidad
                         </ThemedText>
                         .
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
         marginVertical: 20,
     },
     termsText: {
-        flex: 1,
+        lineHeight: 18,
         marginLeft: 12,
     },
     loginContainer: {

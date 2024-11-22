@@ -180,7 +180,7 @@ export default function LoginScreen() {
                     />
 
                     <TouchableOpacity style={styles.forgotPasswordContainer}>
-                        <ThemedText variant='textLink' marginBottom={16}>¿Olvidaste tu contraseña?</ThemedText>
+                        <ThemedText variant='textLink' marginBottom={16} linkConfig={{ route: '/forgot-password' }}>¿Olvidaste tu contraseña?</ThemedText>
                     </TouchableOpacity>
 
                     <ThemedButton

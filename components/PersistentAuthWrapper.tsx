@@ -4,6 +4,15 @@ import { useAuth } from '@/context/AuthContext';
 import PersistentAuth from '@/app/(auth)/persistent-auth';
 import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
 
+const PUBLIC_ROUTES = ['(legal)'];
+const PUBLIC_AUTH_ROUTES = [
+  'login', 
+  'registerScreen', 
+  'forgot-password', 
+  'confirmation-code', 
+  'persistent-auth'
+];
+
 export function PersistentAuthWrapper({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isPersistentAuthRequired, isLoading, handlePersistentAuthSuccess, checkAuthStatus } = useAuth();
   const [isReady, setIsReady] = useState(false);
@@ -13,8 +22,13 @@ export function PersistentAuthWrapper({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     const prepare = async () => {
-      await checkAuthStatus();
-      setIsReady(true);
+      try {
+        await checkAuthStatus();
+        setIsReady(true);
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        setIsReady(true);
+      }
     };
     prepare();
   }, []);
@@ -24,14 +38,30 @@ export function PersistentAuthWrapper({ children }: { children: React.ReactNode 
 
     const inAuthGroup = segments[0] === '(auth)';
     const inPersistentAuth = segments[1] === 'persistent-auth';
+    const isPublicRoute = PUBLIC_ROUTES.includes(segments[0]);
+    const isPublicAuthRoute = inAuthGroup && PUBLIC_AUTH_ROUTES.includes(segments[1] || '');
 
-    if (isAuthenticated && !isPersistentAuthRequired && (inAuthGroup || inPersistentAuth)) {
-      router.replace('/(tabs)');
-    } else if (!isAuthenticated && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (isAuthenticated && isPersistentAuthRequired && !inPersistentAuth) {
-      router.replace('/(auth)/persistent-auth');
-    }
+    console.log('Current segments:', segments);
+    console.log('Is public route:', isPublicRoute);
+    console.log('Is public auth route:', isPublicAuthRoute);
+
+    setTimeout(() => {
+      if (isPublicRoute || isPublicAuthRoute) {
+        return;
+      }
+
+      try {
+        if (isAuthenticated && !isPersistentAuthRequired && (inAuthGroup || inPersistentAuth)) {
+          router.replace('/(tabs)');
+        } else if (!isAuthenticated && !inAuthGroup) {
+          router.replace('/(auth)/login');
+        } else if (isAuthenticated && isPersistentAuthRequired && !inPersistentAuth) {
+          router.replace('/(auth)/persistent-auth');
+        }
+      } catch (error) {
+        console.error('Navigation error:', error);
+      }
+    }, 0);
   }, [isReady, isAuthenticated, isPersistentAuthRequired, segments, rootNavigationState?.key]);
 
   if (!isReady || isLoading) {
