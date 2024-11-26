@@ -90,8 +90,7 @@ export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
             {
               backgroundColor: themeColors.inputBackground,
               borderColor: isFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor
-            },
-            style
+            }
           ]}
         >
           {isSelect ? renderSelectInput() : (

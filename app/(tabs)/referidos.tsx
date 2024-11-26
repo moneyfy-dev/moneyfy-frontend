@@ -13,7 +13,7 @@ import { ThemedDatePicker } from '@/components/ThemedDatePicker';
 import { mockReferrals } from '@/mocks/referrals';
 import { Referral } from '@/types/referral';
 
-type ReferralStatus = 'cotizando' | 'inspeccion' | 'aprovado';
+type ReferralStatus = 'cotizando' | 'inspeccion' | 'aprobado';
 
 export default function ReferidosScreen() {
   const router = useRouter();
@@ -33,7 +33,7 @@ export default function ReferidosScreen() {
     const colors: Record<ReferralStatus, string> = {
       cotizando: themeColors.status.warning,
       inspeccion: themeColors.status.info,
-      aprovado: themeColors.status.success,
+      aprobado: themeColors.status.success,
     };
     return colors[status];
   };
@@ -147,7 +147,7 @@ export default function ReferidosScreen() {
           <View>
             <ThemedText variant="subTitle">Estado</ThemedText>
             <View style={styles.statusOptions}>
-              {['cotizando', 'inspeccion', 'aprovado'].map((status) => (
+              {['cotizando', 'inspeccion', 'aprobado'].map((status) => (
                 <Pressable
                   key={status}
                   style={[
@@ -206,6 +206,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   searchContainer: {
+    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
@@ -213,7 +214,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   searchInput: {
-    flex: 1,
     marginBottom: 0,
   },
   filterButton: {
