@@ -4,6 +4,9 @@ export const animations = {
   noAccountWarning: require('./NoAccountWarning.json'),
   loading: require('./NoAccountWarning.json'),
   success: require('./NoAccountWarning.json'),
+  onboarding1: require('./Onboarding1.json'),
+  onboarding2: require('./Onboarding2.json'),
+  onboarding3: require('./Onboarding3.json'),
   // ... otras animaciones
 };
 

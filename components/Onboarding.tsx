@@ -1,31 +1,30 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, FlatList, TouchableOpacity, Animated } from 'react-native';
+import { View, StyleSheet, Dimensions, FlatList, Animated } from 'react-native';
 import { useOnboarding } from '@/context/OnboardingContext';
 import { ThemedText } from './ThemedText';
 import { ThemedButton } from './ThemedButton';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { Onboarding1Icon } from './images/onboarding/Onboarding1Icon';
-import { Onboarding2Icon } from './images/onboarding/Onboarding2Icon';
-import { Onboarding3Icon } from './images/onboarding/Onboarding3Icon';
+import { LottieAnimation } from './LottieAnimation';
+import { animations } from '@/assets/animations';
 
 const { width } = Dimensions.get('window');
 
 const slides = [
   {
     id: '1',
-    icon: Onboarding1Icon,
+    animation: 'onboarding1',
     title: 'Gestiona tus comisiones fácilmente',
     description: 'Monitorea tus comisiones y saldo en tiempo real desde tu billetera virtual. Retira tus ganancias o úsalas para futuros pagos sin complicaciones.'
   },
   {
     id: '2',
-    icon: Onboarding2Icon,
+    animation: 'onboarding2',
     title: 'Cotiza seguros de forma rápida',
     description: 'Cotiza diferentes planes de seguros ingresando la información de tu vehículo. Obtén estimaciones y comparte enlaces o códigos QR para facilitar el proceso de pago.'
   },
   {
     id: '3',
-    icon: Onboarding3Icon,
+    animation: 'onboarding3',
     title: 'Gana con referidos',
     description: 'Comparte tu código de referido y gana comisiones. Sigue el rendimiento de tus referidos y maximiza tus ganancias con el programa de comisiones multinivel.'
   }
@@ -40,61 +39,72 @@ export const Onboarding = () => {
 
   useEffect(() => {
     slides.forEach((_, index) => {
-      Animated.timing(dotWidths[index], {
+      Animated.spring(dotWidths[index], {
         toValue: index === activeSlide ? 24 : 8,
-        duration: 100,
         useNativeDriver: false,
+        tension: 50,
+        friction: 7
       }).start();
     });
   }, [activeSlide]);
-
-  const renderItem = ({ item }: { item: typeof slides[0] }) => {
-    const Icon = item.icon;
-    return (
-      <View style={styles.slide}>
-        <View style={styles.imageContainer}>
-          <Icon style={styles.image} />
-          <View style={styles.pagination}>
-            {slides.map((_, index) => (
-              <Animated.View
-                key={index}
-                style={[
-                  styles.dot,
-                  {
-                    width: dotWidths[index],
-                    backgroundColor: index === activeSlide ? themeColors.textColorAccent : themeColors.disabledColor
-                  }
-                ]}
-              />
-            ))}
-          </View>
-        </View>
-        <View style={styles.textContainer}>
-          <ThemedText variant="superTitle" textAlign="center" marginBottom={16}>
-            {item.title}
-          </ThemedText>
-          <ThemedText variant="paragraph" textAlign="center">
-            {item.description}
-          </ThemedText>
-        </View>
-      </View>
-    );
-  };
 
   const handleNext = () => {
     if (activeSlide === slides.length - 1) {
       handleFinish();
     } else {
       const nextSlide = activeSlide + 1;
-      if (nextSlide < slides.length) {
-        flatListRef.current?.scrollToIndex({
-          index: nextSlide,
-          animated: true
-        });
-        setActiveSlide(nextSlide);
-      }
+      flatListRef.current?.scrollToIndex({
+        index: nextSlide,
+        animated: true
+      });
+      setActiveSlide(nextSlide);
     }
   };
+
+  const renderDots = () => (
+    <View style={styles.pagination}>
+      {slides.map((_, index) => {
+        const isActive = index === activeSlide;
+        
+        return (
+          <Animated.View
+            key={index}
+            style={[
+              styles.dot,
+              {
+                width: dotWidths[index],
+                backgroundColor: isActive 
+                  ? themeColors.textColorAccent 
+                  : themeColors.disabledColor
+              }
+            ]}
+          />
+        );
+      })}
+    </View>
+  );
+
+  const renderItem = ({ item }: { item: typeof slides[0] }) => (
+    <View style={styles.slide}>
+      <View style={styles.imageContainer}>
+        <LottieAnimation 
+          name={item.animation as keyof typeof animations}
+          style={styles.image}
+          autoPlay
+          loop
+        />
+      </View>
+      {renderDots()}
+      <View style={styles.textContainer}>
+        <ThemedText variant="superTitle" textAlign="center" marginBottom={16}>
+          {item.title}
+        </ThemedText>
+        <ThemedText variant="paragraph" textAlign="center">
+          {item.description}
+        </ThemedText>
+      </View>
+    </View>
+  );
 
   const handleFinish = async () => {
     try {
@@ -105,22 +115,9 @@ export const Onboarding = () => {
     }
   };
 
-  const onScrollToIndexFailed = (info: {
-    index: number;
-    highestMeasuredFrameIndex: number;
-    averageItemLength: number;
-  }) => {
-    const wait = new Promise(resolve => setTimeout(resolve, 500));
-    wait.then(() => {
-      flatListRef.current?.scrollToIndex({
-        index: info.index,
-        animated: true
-      });
-    });
-  };
-
   return (
     <View style={[styles.container, { backgroundColor: themeColors.backgroundColor }]}>
+      
       <FlatList
         ref={flatListRef}
         data={slides}
@@ -128,12 +125,9 @@ export const Onboarding = () => {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onScrollToIndexFailed={onScrollToIndexFailed}
-        onMomentumScrollEnd={(event) => {
-          const slideIndex = Math.round(
-            event.nativeEvent.contentOffset.x / event.nativeEvent.layoutMeasurement.width
-          );
-          setActiveSlide(slideIndex);
+        onMomentumScrollEnd={(e) => {
+          const newIndex = Math.round(e.nativeEvent.contentOffset.x / width);
+          setActiveSlide(newIndex);
         }}
         keyExtractor={(item) => item.id}
         getItemLayout={(data, index) => ({
@@ -142,7 +136,6 @@ export const Onboarding = () => {
           index,
         })}
       />
-
       <View style={styles.buttonContainer}>
         <ThemedButton
           text={activeSlide === slides.length - 1 ? "Comenzar" : "Siguiente"}
@@ -170,6 +163,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   image: {
+    width: 340,
+    height: 340,
     marginVertical: 72,
   },
   textContainer: {
@@ -179,6 +174,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%'
   },
   dot: {
     height: 8,
