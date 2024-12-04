@@ -95,10 +95,10 @@ export const mockReferrals: Referral[] = [
   },
   {
     referredId: "6740cb0b2b5209007c527422",
-    referredStatus: "aprovado",
-    createdDate: "2024-11-22T15:18:51.714",
-    updatedDate: "2024-11-22T15:23:00.806",
-    approvalDate: "2024-11-23T00:00:00",
+    referredStatus: "aprobado",
+    createdDate: "2024-01-22T15:18:51.714",
+    updatedDate: "2024-01-22T15:23:00.806",
+    approvalDate: "2024-01-23T00:00:00",
     referredPersonalData: {
       purchaserId: "77.777.777-7",
       name: "Carlos",
@@ -137,6 +137,52 @@ export const mockReferrals: Referral[] = [
       type: "debit",
       cardNumber: "**** **** **** 5678",
       dueDate: ""
+    }
+  },
+  {
+    referredId: "6740cb0b2b5209007c527423",
+    referredStatus: "rechazado",
+    createdDate: "2024-01-20T10:15:23.456",
+    updatedDate: "2024-01-20T11:30:45.789",
+    approvalDate: "1900-01-01T00:00:00",
+    referredPersonalData: {
+      purchaserId: "88.888.888-8",
+      name: "Ana",
+      surname: "Martínez",
+      phone: "+56934567890",
+      email: "ana.martinez@gmail.com",
+      ownerOption: "0"
+    },
+    referredCarData: {
+      ppu: "BCDE56",
+      brand: "Toyota",
+      model: "Corolla",
+      year: "2020",
+      colour: "Plata",
+      engineNum: "789012",
+      chassisNum: "345678",
+      manufacturer: "Toyota"
+    },
+    referredPlanData: {
+      id: "SEGUROSVAL045678987",
+      insuranceCompany: "Seguros Valparaíso",
+      planName: "Cobertura Total Plus",
+      price: 45000,
+      priceUf: 1.2,
+      deductible: 5,
+      discount: "0"
+    },
+    referredAddressData: {
+      street: "Los Almendros",
+      streetNumber: 1234,
+      department: "502",
+      inspection: "domicilio"
+    },
+    referredPayment: {
+      holderName: "Ana Martínez",
+      type: "credit",
+      cardNumber: "**** **** **** 9012",
+      dueDate: "2026-03"
     }
   }
 ]; 

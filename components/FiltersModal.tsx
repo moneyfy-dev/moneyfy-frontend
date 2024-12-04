@@ -14,21 +14,14 @@ interface FiltersModalProps {
 export const FiltersModal = ({
   visible,
   onClose,
-  title = "Filtros",
+  title = "",
   children
 }: FiltersModalProps) => {
   return (
     <Modal visible={visible} onClose={onClose} title={title}>
-      <View style={styles.container}>
+      <View>
         {children}
       </View>
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    gap: 24,
-  },
-});

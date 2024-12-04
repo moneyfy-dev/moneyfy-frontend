@@ -10,6 +10,7 @@ import { addAccount, updateAccount } from '@/services/accountService';
 import { useAuth } from '@/context/AuthContext';
 import { validateName, validateEmail, validateRUT } from '@/utils/validations';
 import axios from 'axios';
+import { ThemedCheckGroup } from '@/components/ThemedCheckGroup';
 
 const BANKS = [
   "Banco Scotiabank", "Banco BBVA", "Banco Itau", "Banco BICE", "Banco HSBC",
@@ -121,6 +122,12 @@ export default function AddAccountScreen() {
         }
     };
 
+    const accountTypeOptions = [
+        { key: 'CORRIENTE', label: 'CORRIENTE' },
+        { key: 'AHORRO', label: 'AHORRO' },
+        { key: 'VISTA', label: 'VISTA' }
+    ];
+
     return (
         <ThemedLayout padding={[0 ,40]}>
             <ThemedInput
@@ -169,31 +176,12 @@ export default function AddAccountScreen() {
 
             <ThemedText variant="title" marginBottom={16}>Tipo de cuenta</ThemedText>
 
-            <View style={styles.accountTypeContainer}>
-                {[
-                    { key: 'CORRIENTE', label: 'CORRIENTE' },
-                    { key: 'AHORRO', label: 'AHORRO' },
-                    { key: 'VISTA', label: 'VISTA' }
-                ].map(({ key, label }) => (
-                    <TouchableOpacity
-                        key={key}
-                        style={[
-                            styles.accountTypeButton,
-                            { backgroundColor: themeColors.extremeContrastGray },
-                            accountType === key && { backgroundColor: themeColors.buttonBackgroundColor }
-                        ]}
-                        onPress={() => setAccountType(key)}
-                    >
-                        <ThemedText
-                            variant="textLink"
-                            textAlign="center"
-                            color={accountType === key ? themeColors.backgroundColor : themeColors.textColorAccent}
-                        >
-                            {label}
-                        </ThemedText>
-                    </TouchableOpacity>
-                ))}
-            </View>
+            <ThemedCheckGroup
+                options={accountTypeOptions}
+                selectedValue={accountType}
+                onSelect={setAccountType}
+                containerStyle={styles.accountTypeContainer}
+            />
 
             <ThemedInput
                 label="Número de cuenta"
@@ -217,13 +205,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         gap: 16,
         marginBottom: 20,
-    },
-    accountTypeButton: {
-        flex: 1,
-        paddingVertical: 8,
-        paddingHorizontal: 10,
-        borderRadius: 16,
-        borderWidth: 1,
     },
     Button: {
         marginTop: 24,

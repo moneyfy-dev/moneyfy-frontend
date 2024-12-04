@@ -20,6 +20,8 @@ export default {
     transparent: 'transparent',
     white25: 'rgba(255, 255, 255, 0.25)',
     black: '#111111',
+    black2: '#171717',
+    black75: 'rgba(17, 17, 17, 0.75)',
     white: '#FFFFFF',
     gray0: '#222222',
     gray1: '#575756',

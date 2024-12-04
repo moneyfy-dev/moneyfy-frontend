@@ -3,7 +3,7 @@ import { Text, TextStyle, StyleSheet, TouchableOpacity } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Href, Link, useRouter } from 'expo-router';
 
-type TextVariant = 'jumboTitle' | 'superTitle' | 'title' | 'jumboSubTitle' | 'subTitleBold' | 'subTitle' | 'paragraph' | 'textLink' | 'default';
+type TextVariant = 'jumboTitle' | 'superTitle' | 'title' | 'jumboSubTitle' | 'subTitleBold' | 'subTitle' | 'paragraph' | 'paragraphBold' | 'textLink' | 'notes' | 'default';
 
 interface LinkConfig {
   route?: Href;
@@ -19,6 +19,7 @@ interface ThemedTextProps {
   marginBottom?: number;
   color?: string;
   linkConfig?: LinkConfig;
+  numberOfLines?: number;
 }
 
 export const ThemedText: React.FC<ThemedTextProps> = ({
@@ -29,6 +30,7 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
   marginBottom,
   color,
   linkConfig,
+  numberOfLines,
 }) => {
   const themeColors = useThemeColor();
   const router = useRouter();
@@ -76,11 +78,23 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
       color: themeColors.textParagraph,
       fontWeight: '400', // normal
     },
+    paragraphBold: {
+      fontSize: 12,
+      lineHeight: 16,
+      color: themeColors.textColor,
+      fontWeight: '700', // bold
+    },
     textLink: {
       fontSize: 12,
       lineHeight: 16,
       color: themeColors.textColorAccent,
       fontWeight: '600', // semibold
+    },
+    notes: {
+      fontSize: 10,
+      lineHeight: 14,
+      color: themeColors.textParagraph,
+      fontWeight: '400', // semibold
     },
     default: {
       color: themeColors.textColor,
@@ -118,7 +132,7 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
   if (variant === 'textLink' && linkConfig) {
     return (
       <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
-        <Text style={combinedStyle}>
+        <Text style={combinedStyle} numberOfLines={numberOfLines}>
           {children}
         </Text>
       </TouchableOpacity>
@@ -126,7 +140,7 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
   }
 
   return (
-    <Text style={combinedStyle}>
+    <Text style={combinedStyle} numberOfLines={numberOfLines}>
       {children}
     </Text>
   );

@@ -1,4 +1,4 @@
-export type ReferralStatus = 'cotizando' | 'inspeccion' | 'aprovado';
+export type ReferralStatus = 'cotizando' | 'inspeccion' | 'aprobado' | 'rechazado';
 
 export interface ReferredPersonalData {
   purchaserId: string;

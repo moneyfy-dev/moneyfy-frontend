@@ -9,7 +9,7 @@ import {
 import { ThemedText } from './ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '../hooks/useThemeColor';
-
+import Colors from '../constants/Colors';
 interface ModalProps {
   visible: boolean;
   onClose: () => void;
@@ -26,8 +26,8 @@ export const Modal = ({ visible, onClose, title, children }: ModalProps) => {
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={[styles.centeredView, { backgroundColor: themeColors.backgroundColor }]}>
-        <View style={[styles.modalView, { backgroundColor: themeColors.backgroundColor }]}>
+      <View style={[styles.centeredView, { backgroundColor: Colors.common.black75 }]}>
+        <View style={[styles.modalView, { backgroundColor: themeColors.backgroundCardColor }]}>
           <View style={styles.header}>
             <ThemedText variant="title">{title}</ThemedText>
             <Pressable onPress={onClose}>
@@ -51,16 +51,16 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: '90%',
     width: '100%'
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    paddingTop: 24,
+    paddingHorizontal: 24,
   },
   content: {
-    padding: 16,
+    padding: 24,
   },
 });

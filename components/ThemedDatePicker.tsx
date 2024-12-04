@@ -43,7 +43,7 @@ export const ThemedDatePicker: React.FC<ThemedDatePickerProps> = ({
         onChangeText={() => {}}
         editable={false}
         placeholder={placeholder}
-        icon="calendar"
+        icon="calendar-outline"
         onIconPress={showDatePicker}
       />
       <DateTimePickerModal
@@ -81,7 +81,6 @@ export const ThemedDatePicker: React.FC<ThemedDatePickerProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
     width: '100%',
   },
 });

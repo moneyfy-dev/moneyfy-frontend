@@ -157,18 +157,19 @@ export default function LoginScreen() {
                         <ThemedText variant='superTitle' textAlign='left' marginBottom={24}>Bienvenido</ThemedText>
                     </ThemedView>
 
-                    <ThemedInput
-                        placeholder="Usuario o email"
+                    <ThemedView style={styles.inputContainer}>
+                        <ThemedInput
+                            placeholder="Usuario o email"
                         value={email}
                         onChangeText={handleEmailChange}
                         onBlur={() => {
                             setTouchedFields(prev => ({ ...prev, email: true }));
                             validateField('email');
                         }}
-                        error={emailError}
-                    />
-                    <ThemedInput
-                        placeholder="Contraseña"
+                            error={emailError}
+                        />
+                        <ThemedInput
+                            placeholder="Contraseña"
                         value={password}
                         onChangeText={handlePasswordChange}
                         onBlur={() => {
@@ -176,8 +177,9 @@ export default function LoginScreen() {
                             validateField('password');
                         }}
                         secureTextEntry
-                        error={passwordError}
-                    />
+                            error={passwordError}
+                        />
+                    </ThemedView>
 
                     <TouchableOpacity style={styles.forgotPasswordContainer}>
                         <ThemedText variant='textLink' marginBottom={16} linkConfig={{ route: '/forgot-password' }}>¿Olvidaste tu contraseña?</ThemedText>
@@ -252,6 +254,7 @@ const styles = StyleSheet.create({
         bottom: 0,
     },
     card: {
+        flex: 1,
         paddingVertical: 40,
         paddingHorizontal: 24,
         borderTopLeftRadius: 30,
@@ -262,13 +265,8 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
         width: '100%',
-        marginTop: 16,
-        borderWidth: 1,
-        borderRadius: 12,
-        paddingHorizontal: 16,
+        backgroundColor: 'transparent',
     },
     input: {
         flex: 1,
