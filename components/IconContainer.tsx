@@ -1,31 +1,35 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '@/constants/Colors';
 
 interface IconContainerProps {
   icon: keyof typeof Ionicons.glyphMap;
   size?: number;
   style?: any;
+  backgroundColor?: string;
 }
 
 export const IconContainer: React.FC<IconContainerProps> = ({
   icon,
   size = 24,
-  style
+  style,
+  backgroundColor = Colors.common.green2
 }) => {
   return (
-    <LinearGradient
-      colors={[Colors.common.green2, Colors.common.green2]}
-      style={[styles.container, style]}
+    <View
+      style={[
+        styles.container,
+        { backgroundColor },
+        style
+      ]}
     >
       <Ionicons 
         name={icon} 
         size={size} 
         color={Colors.common.white} 
       />
-    </LinearGradient>
+    </View>
   );
 };
 

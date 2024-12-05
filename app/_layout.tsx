@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
@@ -8,9 +8,12 @@ import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { PersistentAuthWrapper } from '@/components/PersistentAuthWrapper';
 import { OnboardingProvider } from '@/context/OnboardingContext';
+import { SplashScreenMoneyfy } from './splash-screen';
+
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [isLoading, setIsLoading] = useState(true);
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -21,12 +24,15 @@ export default function RootLayout() {
 
   React.useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync();
+      setTimeout(() => {
+        SplashScreen.hideAsync();
+        setIsLoading(false);
+      }, 5000);
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
+  if (!loaded || isLoading) {
+    return <SplashScreenMoneyfy />;
   }
 
   return (
@@ -41,8 +47,9 @@ export default function RootLayout() {
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="(settings)" options={{ headerShown: false }} />
                 <Stack.Screen name="(quote)" options={{ headerShown: false }} />
-                <Stack.Screen name="(legal)" options={{ headerShown: false }} />
                 <Stack.Screen name="(referrals)" options={{ headerShown: false }} />
+                <Stack.Screen name="(withdrawal)" options={{ headerShown: false }} />
+                <Stack.Screen name="(legal)" options={{ headerShown: false }} />
                 </Stack>
               </PersistentAuthWrapper>
             </OnboardingProvider>

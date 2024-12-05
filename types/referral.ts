@@ -22,12 +22,20 @@ export interface ReferredCarData {
 
 export interface ReferredPlanData {
   id: string;
-  insuranceCompany: string;
   planName: string;
+  insuranceCompany: string;
+  deductible: number;
   price: number;
   priceUf: number;
-  deductible: number;
   discount: string;
+  logos: {
+    light: string;
+    dark: string;
+  };
+  coverages: {
+    title: string;
+    description: string;
+  }[];
 }
 
 export interface ReferredAddressData {

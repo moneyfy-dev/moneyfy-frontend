@@ -12,13 +12,13 @@ import { Referral, ReferralStatus } from '@/types/referral';
 import { VehicleCard } from '@/components/VehicleCard';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
+import { IconContainer } from '@/components/IconContainer';
 
 export default function ReferralDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const themeColors = useThemeColor();
   const [referral, setReferral] = useState<Referral | null>(null);
-  const [showCoverages, setShowCoverages] = useState(false);
 
   useEffect(() => {
     // Simulamos la carga de datos
@@ -54,24 +54,40 @@ export default function ReferralDetailScreen() {
     <ThemedLayout padding={[0, 24]}>
       <View style={styles.content}>
         {/* Header con avatar y estado */}
-        <View style={styles.header}>
-          <View style={[styles.avatar, { backgroundColor: getStatusColor(referral.referredStatus as ReferralStatus) }]}>
-            <Ionicons name="person-outline" size={24} color={themeColors.white} />
-          </View>
-          <View style={styles.headerInfo}>
-            <ThemedText variant="title">
-              {referral.referredPersonalData.name} {referral.referredPersonalData.surname}
-            </ThemedText>
-            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(referral.referredStatus as ReferralStatus) }]}>
-              <ThemedText style={{ color: getTextColor(referral.referredStatus as ReferralStatus) }}>
-                {referral.referredStatus}
+        <View style={styles.referralHeader}>
+          <IconContainer
+            icon="person-outline"
+            size={24}
+            style={[{ backgroundColor: getStatusColor(referral.referredStatus as ReferralStatus) }]}
+          />
+          <View style={styles.referralInfo}>
+
+            <View style={styles.nameContainer}>
+              <ThemedText variant="subTitleBold">
+                {referral.referredPersonalData.name} {referral.referredPersonalData.surname}
+              </ThemedText>
+
+              <ThemedText variant="notes">
+                Actualización: {format(new Date(referral.updatedDate), 'dd/MM/yyyy')}
               </ThemedText>
             </View>
-            <ThemedText variant="paragraph" color={themeColors.textColorAccent}>
-              Actualización: {format(new Date(referral.updatedDate), 'dd/MM/yyyy', { locale: es })}
-            </ThemedText>
-            <ThemedText variant="paragraph" color={themeColors.textColorAccent}>
-              Fecha de cotización: {format(new Date(referral.createdDate), 'dd/MM/yyyy', { locale: es })}
+
+            <View style={styles.statusContainer}>
+              <View style={[
+                styles.statusBadge,
+                { backgroundColor: getStatusColor(referral.referredStatus as ReferralStatus) }
+              ]}>
+                <ThemedText
+                  variant="paragraph"
+                  style={{ color: getTextColor(referral.referredStatus as ReferralStatus) }}
+                >
+                  {referral.referredStatus}
+                </ThemedText>
+              </View>
+            </View>
+
+            <ThemedText variant="notes">
+              Cotizado el: {format(new Date(referral.createdDate), 'dd/MM/yyyy')}
             </ThemedText>
           </View>
         </View>
@@ -90,18 +106,8 @@ export default function ReferralDetailScreen() {
           <View style={styles.section}>
             <QuoteCard
               plan={referral.referredPlanData}
-              onPress={() => setShowCoverages(!showCoverages)}
               showButton={false}
             />
-            {showCoverages && (
-              <View style={styles.coverages}>
-                <ThemedText variant="subTitle">Coberturas incluidas:</ThemedText>
-                {/* Aquí irían las coberturas cuando tengamos los datos */}
-                <ThemedText>• Cobertura 1</ThemedText>
-                <ThemedText>• Cobertura 2</ThemedText>
-                <ThemedText>• Cobertura 3</ThemedText>
-              </View>
-            )}
           </View>
         )}
       </View>
@@ -113,21 +119,24 @@ const styles = StyleSheet.create({
   content: {
     gap: 24,
   },
-  header: {
+  referralHeader: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 24,
+    gap: 10,
   },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerInfo: {
+  referralInfo: {
     flex: 1,
-    gap: 8,
+  },
+  nameContainer: {
+    maxWidth: '99%',
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
+  statusContainer: {
+    gap: 10,
+    marginBottom: 5,
   },
   section: {
     gap: 16,
@@ -136,6 +145,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingVertical: 3,
     borderRadius: 3,
+    alignSelf: 'flex-start',
+  },
+  carInfo: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   coverages: {
     padding: 16,

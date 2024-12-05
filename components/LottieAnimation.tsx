@@ -83,6 +83,14 @@ export const LottieAnimation: React.FC<LottieAnimationProps> = ({
       keypath: "cabeza contornos 3.Grupo 3",
       color: themeColors.iconRefBorder,
     },
+    {
+      keypath: "f1 contornos 2, f2 contornos 2, f3 contornos 2, y1 contornos 2, y2 contornos 2",
+      color: themeColors.textColorAccent,
+    },
+    {
+      keypath: "M contornos, O contornos, N contornos, E contornos, Y contornos, Capa de formas 1, Capa de formas 2, Capa de formas 3",
+      color: themeColors.textColor,
+    },
   ];
 
   return (

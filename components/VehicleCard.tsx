@@ -3,6 +3,8 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from './ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { LinearGradient } from 'expo-linear-gradient';
+import Colors from '@/constants/Colors';
 
 interface VehicleCardProps {
   brand: string;
@@ -32,15 +34,19 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
       onPress={onPress}
       style={[
         styles.vehicleCard,
-        { 
+        {
           borderColor: isSelected ? themeColors.textColorAccent : themeColors.borderBackgroundColor,
           backgroundColor: isSelected ? themeColors.backgroundCardColor : 'transparent'
         }
       ]}
     >
-      <View style={[styles.iconContainer, { backgroundColor: themeColors.textColorAccent }]}>
-        <Ionicons name='car-outline' size={24} color={themeColors.white} />
-      </View>
+      <LinearGradient
+        colors={[Colors.common.green2, Colors.common.green2]}
+        style={[styles.iconContainer]}
+      >
+        {[<Ionicons key="car-icon" name='car-outline' size={24} color={themeColors.white} />]}
+      </LinearGradient>
+      
       <View style={styles.vehicleInfo}>
         <ThemedText variant="paragraph">{brand}</ThemedText>
         <ThemedText variant="subTitle">{ppu} - {year}</ThemedText>
@@ -49,10 +55,10 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
         </ThemedText>
       </View>
       {showRightIcon && (
-        <Ionicons 
-          name={isSelected ? "checkmark-circle" : "chevron-forward"} 
-          size={24} 
-          color={isSelected ? themeColors.textColorAccent : themeColors.borderBackgroundColor} 
+        <Ionicons
+          name={isSelected ? "checkmark-circle" : "chevron-forward"}
+          size={24}
+          color={isSelected ? themeColors.textColorAccent : themeColors.borderBackgroundColor}
         />
       )}
     </Container>
@@ -63,6 +69,7 @@ const styles = StyleSheet.create({
   vehicleCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
     padding: 16,
     borderWidth: 1,
     borderRadius: 12,
@@ -70,11 +77,10 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     width: 40,
-    height: 40,
-    borderRadius: 20,
+    alignSelf: 'stretch',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    borderRadius: 10,
   },
   vehicleInfo: {
     flex: 1,

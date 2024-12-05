@@ -12,13 +12,14 @@ import { AvatarIcon } from '@/components/images/AvatarIcon';
 import { User, Wallet } from '@/types/auth';
 import { useOnboarding } from '@/context/OnboardingContext';
 import { Onboarding } from '@/components/Onboarding';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { hydrateUserData } from '@/services/userService';
 
-const FORCE_SHOW_ONBOARDING = true; // Mantenemos esto para desarrollo
+const FORCE_SHOW_ONBOARDING = false; // Mantenemos esto para desarrollo
 
 export default function HomeScreen() {
   const themeColors = useThemeColor();
+  const router = useRouter();
   const { user, isLoading, updateUserData } = useAuth();
   const typedUser = user as User;
   const [showBalance, setShowBalance] = useState(true);
@@ -85,6 +86,7 @@ export default function HomeScreen() {
   return (
     <ThemedLayout
       padding={[24, 24]}
+      showBgSection={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -140,7 +142,7 @@ export default function HomeScreen() {
             datasets: [{ data: [70000, 60000, 80000, 70000, 65000] }]
           }}
           width={screenWidth + 70} // Ajusta según tus necesidades
-          height={245}
+          height={200}
           yAxisLabel=""
           yAxisSuffix=""
           withVerticalLines={true}
@@ -184,14 +186,18 @@ export default function HomeScreen() {
           colors={[Colors.common.green2, Colors.common.green4]}
           style={[styles.card, { flex: 1 }]}
         >
-          <Ionicons name="cash-outline" style={{ marginBottom: 10 }} size={24} color={themeColors.white} />
-          <ThemedText variant="paragraph" color={themeColors.white}>Saldo Disponible</ThemedText>
-          <ThemedText variant="title" color={themeColors.textColorAccent}>${' '}{typedUser?.wallet.availableBalance.toFixed(0)}</ThemedText>
+          <Ionicons style={{ width: 24, height: 24 }} name="cash-outline" size={24} color={themeColors.white} />
+          <View>
+            <ThemedText variant="paragraph" color={themeColors.white}>Saldo Disponible</ThemedText>
+            <ThemedText variant="title" color={themeColors.textColorAccent}>${' '}{showBalance ? `${typedUser.wallet.availableBalance.toFixed(0)}` : '******'}</ThemedText>
+          </View>
         </LinearGradient>
         <View style={[styles.card, { backgroundColor: themeColors.backgroundCardColor, flex: 1 }]}>
-          <Ionicons name="lock-closed-outline" style={{ marginBottom: 10 }} size={24} color={themeColors.textColor} />
-          <ThemedText variant="paragraph">Saldo Retenido</ThemedText>
-          <ThemedText variant="title">${typedUser?.wallet.outstandingBalance.toFixed(0)}</ThemedText>
+          <Ionicons style={{ width: 24, height: 24 }} name="lock-closed-outline" size={24} color={themeColors.textColor} />
+          <View>
+            <ThemedText variant="paragraph">Saldo Retenido</ThemedText>
+            <ThemedText variant="title">${' '}{showBalance ? `${typedUser.wallet.outstandingBalance.toFixed(0)}` : '******'}</ThemedText>
+          </View>
         </View>
       </View>
 
@@ -212,21 +218,27 @@ export default function HomeScreen() {
 
       <View style={styles.actionContainer}>
 
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
+        <TouchableOpacity
+        onPress={() => router.push('/(tabs)/referidos')}
+        style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
           <View style={styles.actionButtonIcon}>
             <Ionicons name="people-outline" size={20} color={themeColors.white} />
           </View>
           <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Referidos</ThemedText>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
+        <TouchableOpacity
+          onPress={() => router.push('/(withdrawal)/withdrawal')}
+          style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
           <View style={styles.actionButtonIcon}>
             <Ionicons name="cash-outline" size={20} color={themeColors.white} />
           </View>
           <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Retirar Saldo</ThemedText>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
+        <TouchableOpacity
+          onPress={() => router.push('/(withdrawal)/withdrawal-history')}
+        style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
           <View style={styles.actionButtonIcon}>
             <Ionicons name="time-outline" size={20} color={themeColors.white} />
           </View>
@@ -292,8 +304,12 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
     borderRadius: 16,
     padding: 16,
+    gap: 10,
   },
   button: {
     borderRadius: 8,
@@ -308,7 +324,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     display: 'flex',
     flexDirection: 'row',
-    gap: 16,
+    gap: 10,
   },
   quoteIcon: {
     backgroundColor: Colors.common.white25,
@@ -338,6 +354,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 32,
     height: 32,
-    marginBottom: 10,
   },
 });

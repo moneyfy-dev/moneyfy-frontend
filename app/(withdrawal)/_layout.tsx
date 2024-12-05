@@ -8,13 +8,13 @@ interface HeaderInfo {
 }
 
 const headerInfo: Record<string, HeaderInfo> = {
-  'terms-and-conditions': {
-    title: "Términos y condiciones",
-    subtitle: "Lee nuestros términos y condiciones"
+  'withdrawal': {
+    title: "Retiro",
+    subtitle: "Seleccionar cuenta"
   },
-  'privacy-policy': {
-    title: "Política de privacidad",
-    subtitle: "Lee nuestra política de privacidad"
+  'withdrawal-history': {
+    title: "Historial de retiros",
+    subtitle: "Historial de retiros"
   }
 };
 
@@ -25,18 +25,22 @@ function getHeaderInfo(pathname: string): HeaderInfo {
 
 export default function SettingsLayout() {
   const pathname = usePathname();
+  const route = pathname.split('/').pop() || '';
 
   return (
     <Stack
       screenOptions={{
         header: () => {
-          const { title, subtitle } = getHeaderInfo(pathname);
-          return <ThemedHeader title={title} subtitle={subtitle} />;
+          if (route === 'withdrawal-history') {
+            const { title, subtitle } = getHeaderInfo(pathname);
+            return <ThemedHeader title={title} subtitle={subtitle} />;
+          }
+          return null;
         },
       }}
     >
-      <Stack.Screen name="terms-and-conditions" />
-      <Stack.Screen name="privacy-policy" />
+      <Stack.Screen name="withdrawal" />
+      <Stack.Screen name="withdrawal-history" />
     </Stack>
   );
 }

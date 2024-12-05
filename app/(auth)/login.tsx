@@ -123,9 +123,14 @@ export default function LoginScreen() {
             </TouchableOpacity>
 
             <ThemedView style={styles.logoContainer}>
-                <Logo style={styles.loginLogo} />
-                <ThemedText variant='jumboTitle' textAlign='center' marginBottom={16}>Lorem Ipsum Nesum magiore</ThemedText>
-                <ThemedText variant='jumboSubTitle' textAlign='center'>Lorem Ipsum Nesum magiore</ThemedText>
+                <Logo style={styles.loginLogo} width={280} height={60} />
+                <ThemedText variant='jumboTitle' textAlign='center' marginBottom={16}>
+                    Transforma tus redes en ingresos
+                </ThemedText>
+                <ThemedText variant='jumboSubTitle' textAlign='center'>
+                    Comparte, recomienda y genera lucas con
+                    <ThemedText variant='jumboSubTitle' style={{ color: themeColors.textColorAccent }}> MoneyFy </ThemedText>
+                </ThemedText>
             </ThemedView>
 
             <ThemedView style={[styles.initialContainer, { backgroundColor: themeColors.backgroundCardColor }]}>
@@ -153,30 +158,33 @@ export default function LoginScreen() {
             >
                 <ThemedView style={[styles.card, { backgroundColor: themeColors.backgroundCardColor }]}>
                     <ThemedView style={styles.logoContainerCard}>
-                        <Logo />
-                        <ThemedText variant='superTitle' textAlign='left' marginBottom={24}>Bienvenido</ThemedText>
+                        <ThemedText variant='superTitle' textAlign='left'>
+                            <ThemedText variant='superTitle' style={{ color: themeColors.textColorAccent }}>B</ThemedText>
+                            ienvenido a
+                        </ThemedText>
+                        <Logo width={200} height={48} />
                     </ThemedView>
 
                     <ThemedView style={styles.inputContainer}>
                         <ThemedInput
                             placeholder="Usuario o email"
-                        value={email}
-                        onChangeText={handleEmailChange}
-                        onBlur={() => {
-                            setTouchedFields(prev => ({ ...prev, email: true }));
-                            validateField('email');
-                        }}
+                            value={email}
+                            onChangeText={handleEmailChange}
+                            onBlur={() => {
+                                setTouchedFields(prev => ({ ...prev, email: true }));
+                                validateField('email');
+                            }}
                             error={emailError}
                         />
                         <ThemedInput
                             placeholder="Contraseña"
-                        value={password}
-                        onChangeText={handlePasswordChange}
-                        onBlur={() => {
-                            setTouchedFields(prev => ({ ...prev, password: true }));
-                            validateField('password');
-                        }}
-                        secureTextEntry
+                            value={password}
+                            onChangeText={handlePasswordChange}
+                            onBlur={() => {
+                                setTouchedFields(prev => ({ ...prev, password: true }));
+                                validateField('password');
+                            }}
+                            secureTextEntry
                             error={passwordError}
                         />
                     </ThemedView>
@@ -293,8 +301,8 @@ const styles = StyleSheet.create({
     },
     backgroundImage: {
         position: 'absolute',
-        top: 60,
-        left: -60,
+        top: -93,
+        left: -93,
         bottom: 0,
     },
     backgroundImageTest: {
@@ -309,13 +317,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'transparent',
         marginBottom: 24,
+        paddingHorizontal: 24,
     },
     logoContainerCard: {
         width: '100%',
-        gap: 16,
         flexDirection: 'column',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         backgroundColor: 'transparent',
+        marginBottom: 40,
     },
     initialLoginButton: {
         padding: 15,
@@ -331,6 +340,6 @@ const styles = StyleSheet.create({
         bottom: 0,
     },
     loginLogo: {
-        marginBottom: 24,
+        marginBottom: 64,
     },
 });

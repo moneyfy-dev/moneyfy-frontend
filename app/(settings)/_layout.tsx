@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stack, usePathname } from 'expo-router';
-import { CustomHeader } from '@/components/ThemedHeader';
+import { ThemedHeader } from '@/components/ThemedHeader';
 
 interface HeaderInfo {
   title: string;
@@ -63,7 +63,7 @@ export default function SettingsLayout() {
       screenOptions={{
         header: () => {
           const { title, subtitle } = getHeaderInfo(pathname);
-          return <CustomHeader title={title} subtitle={subtitle} />;
+          return <ThemedHeader title={title} subtitle={subtitle} />;
         },
       }}
     >

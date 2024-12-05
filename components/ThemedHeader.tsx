@@ -6,13 +6,13 @@ import { ThemedText } from './ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
 
-interface CustomHeaderProps {
+interface ThemedHeaderProps {
     title: string;
     subtitle?: string;
     showBackButton?: boolean;
 }
 
-export function CustomHeader({ title, subtitle, showBackButton = true }: CustomHeaderProps) {
+export function ThemedHeader({ title, subtitle, showBackButton = true }: ThemedHeaderProps) {
     const themeColors = useThemeColor();
     const router = useRouter();
 

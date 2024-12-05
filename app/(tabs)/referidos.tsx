@@ -132,15 +132,18 @@ export default function ReferidosScreen() {
         style={styles.referralContent}
       >
         <View style={styles.referralHeader}>
+
           <IconContainer
             icon="person-outline"
             size={24}
           />
           <View style={styles.referralInfo}>
+            
             <View style={styles.nameContainer}>
               <ThemedText variant="subTitleBold">
                 {item.referredPersonalData.name} {item.referredPersonalData.surname}
               </ThemedText>
+
               <ThemedText variant="notes">
                 Actualización: {format(new Date(item.updatedDate), 'dd/MM/yyyy')}
               </ThemedText>
@@ -171,9 +174,11 @@ export default function ReferidosScreen() {
                 </ThemedText>
               </View>
             </View>
+
             <ThemedText variant="notes">
               Cotizado el: {format(new Date(item.createdDate), 'dd/MM/yyyy')}
             </ThemedText>
+
           </View>
         </View>
       </Pressable>
