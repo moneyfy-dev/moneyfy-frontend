@@ -2,18 +2,20 @@ import React, { useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
-import { SplashScreen, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { PersistentAuthWrapper } from '@/components/PersistentAuthWrapper';
 import { OnboardingProvider } from '@/context/OnboardingContext';
 import { SplashScreenMoneyfy } from './splash-screen';
-
+import { ConfirmAddressScreen } from '../app/(quote)/confirm-address';
+import { PaymentQRScreen } from '../app/(quote)/payment-qr';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [isLoading, setIsLoading] = useState(true);
+  const [currentScreen, setCurrentScreen] = useState(0);
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -24,15 +26,20 @@ export default function RootLayout() {
 
   React.useEffect(() => {
     if (loaded) {
-      setTimeout(() => {
-        SplashScreen.hideAsync();
-        setIsLoading(false);
+      const interval = setInterval(() => {
+        setCurrentScreen((prev) => (prev === 0 ? 1 : 0));
       }, 5000);
+
+      return () => clearInterval(interval);
     }
   }, [loaded]);
 
   if (!loaded || isLoading) {
-    return <SplashScreenMoneyfy />;
+    return currentScreen === 0 ? (
+      <ConfirmAddressScreen />
+    ) : (
+      <PaymentQRScreen />
+    );
   }
 
   return (
@@ -48,7 +55,7 @@ export default function RootLayout() {
                 <Stack.Screen name="(settings)" options={{ headerShown: false }} />
                 <Stack.Screen name="(quote)" options={{ headerShown: false }} />
                 <Stack.Screen name="(referrals)" options={{ headerShown: false }} />
-                <Stack.Screen name="(withdrawal)" options={{ headerShown: false }} />
+                <Stack.Screen name="(wallet)" options={{ headerShown: false }} />
                 <Stack.Screen name="(legal)" options={{ headerShown: false }} />
                 </Stack>
               </PersistentAuthWrapper>

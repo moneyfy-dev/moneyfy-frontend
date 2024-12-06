@@ -11,12 +11,12 @@ import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { TabSelector } from '@/components/TabSelector';
-import WithdrawalHistory from '@/app/(withdrawal)/withdrawal-history';
+import WithdrawalHistory  from '@/app/(wallet)/withdrawal-history';
 import { ThemedButton } from '@/components/ThemedButton';
 
 type TabType = 'account' | 'history';
 
-export default function WithdrawalScreen() {
+export default function WithdrawalTest() {
     const [amount, setAmount] = useState('40.000');
     const [activeTab, setActiveTab] = useState<TabType>('account');
     const themeColors = useThemeColor();

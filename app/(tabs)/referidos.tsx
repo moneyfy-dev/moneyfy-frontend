@@ -200,7 +200,6 @@ export default function ReferidosScreen() {
           onChangeText={handleSearch}
           placeholder="Buscar por nombre"
           onIconPress={() => console.log('Buscar:', searchQuery)}
-          style={styles.searchInput}
         />
       </View>
 

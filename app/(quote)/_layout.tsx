@@ -20,6 +20,15 @@ const headerInfo: Record<string, HeaderInfo> = {
     title: "Resultado de la búsqueda",
     subtitle: "Resultados de la búsqueda"
   },
+  'confirm-address': {
+    title: "Confirmación de dirección",
+    subtitle: "Confirmación de dirección"
+  },
+  'payment-qr': {
+    title: "Código de pago",
+    subtitle: "Comparte el código para que el cliente realice el pago"
+  },
+
 };
 
 function getHeaderInfo(pathname: string): HeaderInfo {
@@ -42,6 +51,8 @@ export default function SettingsLayout() {
       <Stack.Screen name="manual-search" />
       <Stack.Screen name="search-results" />
       <Stack.Screen name="quote-results" />
+      <Stack.Screen name="confirm-address" />
+      <Stack.Screen name="payment-qr" />
     </Stack>
   );
 }

@@ -22,7 +22,12 @@ export const ThemedTextInput = forwardRef<TextInput, ThemedInputCommonProps>(
       >
         <TextInput
           ref={ref}
-          style={[styles.input, { color: themeColors.inputColor }]}
+          style={[
+            styles.input, 
+            { 
+              color: themeColors.textColor,
+            }
+          ]}
           placeholder={placeholder}
           value={value}
           onChangeText={onChangeText}

@@ -57,3 +57,8 @@ export const validateRUT = (rut: string): boolean => {
     // Comparar dígito verificador calculado con el proporcionado
     return calculatedDV === dv;
 };
+
+export const validatePPU = (ppu: string): boolean => {
+    const ppuRegex = /^[a-zA-Z0-9]{6}$/;
+    return ppuRegex.test(ppu.trim());
+};

@@ -12,19 +12,19 @@ const { width } = Dimensions.get('window');
 const slides = [
   {
     id: '1',
-    animation: 'onboarding1',
+    animation: 'Onboarding1',
     title: 'Gestiona tus comisiones fácilmente',
     description: 'Monitorea tus comisiones y saldo en tiempo real desde tu billetera virtual. Retira tus ganancias o úsalas para futuros pagos sin complicaciones.'
   },
   {
     id: '2',
-    animation: 'onboarding2',
+    animation: 'Onboarding2',
     title: 'Cotiza seguros de forma rápida',
     description: 'Cotiza diferentes planes de seguros ingresando la información de tu vehículo. Obtén estimaciones y comparte enlaces o códigos QR para facilitar el proceso de pago.'
   },
   {
     id: '3',
-    animation: 'onboarding3',
+    animation: 'Onboarding3',
     title: 'Gana con referidos',
     description: 'Comparte tu código de referido y gana comisiones. Sigue el rendimiento de tus referidos y maximiza tus ganancias con el programa de comisiones multinivel.'
   }

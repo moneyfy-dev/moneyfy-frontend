@@ -27,6 +27,12 @@ export function useThemeColor() {
       green3to4: currentTheme === 'dark' ? Colors.common.green3 : Colors.common.green4,
       green4to5: currentTheme === 'dark' ? Colors.common.green4 : Colors.common.green5,
 
+      gray1to2: currentTheme === 'dark' ? Colors.common.gray1 : Colors.common.gray2,
+      gray2to3: currentTheme === 'dark' ? Colors.common.gray2 : Colors.common.gray3,
+      gray3to4: currentTheme === 'dark' ? Colors.common.gray3 : Colors.common.gray4,
+      gray4to5: currentTheme === 'dark' ? Colors.common.gray4 : Colors.common.gray5,
+      gray5to6: currentTheme === 'dark' ? Colors.common.gray5 : Colors.common.gray6,
+
       white: Colors.common.white,
       extremeContrastGray: currentTheme === 'dark' ? Colors.common.gray0 : Colors.common.gray6,
       gray1Gray04: currentTheme === 'dark' ? Colors.common.gray1 : Colors.common.gray4,

@@ -5,50 +5,6 @@ import { SearchResponse, QuoteVehicleParams, QuoteVehicleResponse } from '@/type
 
 const { apiUrl } = getEnvVars();
 
-// Búsqueda por patente
-export const searchVehicleByPPU = async (ppu: string): Promise<SearchResponse> => {
-  const token = await AsyncStorage.getItem('token');
-  const sessionToken = await AsyncStorage.getItem('sessionToken');
-  
-  const response = await axios.post(
-    `${apiUrl}/referred/search/vehicle/ppu`,
-    {
-      data: ppu,
-      searchType: "PPU"
-    },
-    {
-      headers: {
-        'Authorization': `Bearer ${sessionToken}`,
-        'Refresh-Token': token
-      },
-    }
-  );
-  
-  return response.data;
-};
-
-// Búsqueda por RUT de usuario
-export const searchVehicleByUserId = async (userId: string): Promise<SearchResponse> => {
-  const token = await AsyncStorage.getItem('token');
-  const sessionToken = await AsyncStorage.getItem('sessionToken');
-  
-  const response = await axios.post(
-    `${apiUrl}/referred/search/vehicle/user-id`,
-    {
-      data: userId,
-      searchType: "USER_ID"
-    },
-    {
-      headers: {
-        'Authorization': `Bearer ${sessionToken}`,
-        'Refresh-Token': token
-      },
-    }
-  );
-  
-  return response.data;
-};
-
 // Búsqueda de compañias aseguradoras
 export const searchCompanies = async (): Promise<SearchResponse> => {
   const token = await AsyncStorage.getItem('token');
@@ -76,6 +32,30 @@ export const quoteVehicle = async (quoteData: QuoteVehicleParams): Promise<Quote
   const response = await axios.post<QuoteVehicleResponse>(
     `${apiUrl}/referred/vehicle/quote`,
     quoteData,
+    {
+      headers: {
+        'Authorization': `Bearer ${sessionToken}`,
+        'Refresh-Token': token
+      },
+    }
+  );
+  console.log('response', response.data);
+  
+  return response.data;
+};
+
+// Nueva función para buscar vehículo
+export const searchVehicle = async (ownerId: string, ppu: string): Promise<SearchResponse> => {
+  const token = await AsyncStorage.getItem('token');
+  const sessionToken = await AsyncStorage.getItem('sessionToken');
+  console.log('ppu', ppu);
+  console.log('ownerId', ownerId);
+  const response = await axios.post(
+    `${apiUrl}/referred/search/vehicle`,
+    {
+      ownerId,
+      ppu
+    },
     {
       headers: {
         'Authorization': `Bearer ${sessionToken}`,

@@ -201,7 +201,9 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => router.push('/(tabs)/quote')}
+      >
         <LinearGradient
           colors={[Colors.common.green2, Colors.common.green4]}
           style={styles.quoteButton}
@@ -219,8 +221,8 @@ export default function HomeScreen() {
       <View style={styles.actionContainer}>
 
         <TouchableOpacity
-        onPress={() => router.push('/(tabs)/referidos')}
-        style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
+          onPress={() => router.push('/(tabs)/referidos')}
+          style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
           <View style={styles.actionButtonIcon}>
             <Ionicons name="people-outline" size={20} color={themeColors.white} />
           </View>
@@ -228,7 +230,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.push('/(withdrawal)/withdrawal')}
+          onPress={() => router.push('/(wallet)/wallet')}
           style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
           <View style={styles.actionButtonIcon}>
             <Ionicons name="cash-outline" size={20} color={themeColors.white} />
@@ -237,8 +239,8 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.push('/(withdrawal)/withdrawal-history')}
-        style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
+          onPress={() => router.push('/(wallet)/withdrawal-history')}
+          style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
           <View style={styles.actionButtonIcon}>
             <Ionicons name="time-outline" size={20} color={themeColors.white} />
           </View>

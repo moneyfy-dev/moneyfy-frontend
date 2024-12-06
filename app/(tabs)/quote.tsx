@@ -8,56 +8,83 @@ import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedInput } from '@/components/ThemedInput';
 import Colors from '@/constants/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
-import { searchVehicleByPPU, searchVehicleByUserId } from '@/services/quoteService';
+import { searchVehicle } from '@/services/quoteService';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import { NoAccountWarning } from '@/components/NoAccountWarning';
+import { ThemedButton } from '@/components/ThemedButton';
+import { validateRUT } from '@/utils/validations';
 
 type SearchType = 'plate' | 'rut';
 
 export default function QuoteScreen() {
   const router = useRouter();
   const themeColors = useThemeColor();
-  const [searchValue, setSearchValue] = useState('');
-  const [activeTab, setActiveTab] = useState<SearchType>('plate');
+  const [searchValue, setSearchValue] = useState({
+      ownerId: '',
+      ppu: '',
+    });
+  const [errors, setErrors] = useState({
+    ownerId: '',
+    ppu: '',
+  });
   const { user, updateUserData } = useAuth();
-
   const hasAccounts = user?.accounts && user.accounts.length > 0;
 
   if (!hasAccounts) {
     return <NoAccountWarning />;
   }
 
-  const handleSearch = async (type: SearchType, value: string) => {
-    if (!value.trim()) {
-      if (type === 'plate') {
-        Alert.alert('Error', 'Por favor ingrese la patente del vehículo');
-      } else {
-        Alert.alert('Error', 'Por favor ingrese el RUT del propietario');
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      ownerId: '',
+      ppu: '',
+    };
+
+    if (searchValue.ownerId && !validateRUT(searchValue.ownerId)) {
+      newErrors.ownerId = 'RUT inválido';
+      isValid = false;
+    }
+
+    if (searchValue.ppu) {
+      const ppuRegex = /^[a-zA-Z0-9]{6}$/;
+      if (!ppuRegex.test(searchValue.ppu)) {
+        newErrors.ppu = 'La patente debe tener exactamente 6 caracteres alfanuméricos';
+        isValid = false;
       }
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleSearch = async (value: { ownerId: string, ppu: string }) => {
+    if (!validateForm()) {
+      return;
+    }
+
+    if (!value.ownerId.trim() && !value.ppu.trim()) {
+      setErrors({
+        ownerId: 'Ingrese el RUT del propietario',
+        ppu: 'Ingrese la patente del vehículo'
+      });
       return;
     }
 
     try {
-      let response;
-      
-      if (type === 'plate') {
-        response = await searchVehicleByPPU(value.toUpperCase());
-      } else {
-        response = await searchVehicleByUserId(value);
-      }
+      const response = await searchVehicle(value.ownerId, value.ppu.toUpperCase());
 
       if (response?.data?.user) {
         await updateUserData(response.data.user);
         
-        const vehiclesData = response.data.vehicles
+        const vehiclesData = response.data.vehicle;
 
         router.push({
           pathname: '/(quote)/search-results',
-          params: { 
-            type, 
-            value,
-            vehicles: encodeURIComponent(JSON.stringify(vehiclesData))
+          params: {
+            value: JSON.stringify(value),
+            vehicle: encodeURIComponent(JSON.stringify(vehiclesData))
           }
         });
       } else {
@@ -74,42 +101,6 @@ export default function QuoteScreen() {
     }
   };
 
-  const TabButton = ({ type, label, icon, text }: { type: SearchType, label: string, icon: string, text: string }) => (
-    <TouchableOpacity
-      style={styles.tabButton}
-      onPress={() => {
-        setActiveTab(type);
-        setSearchValue('');
-      }}
-    >
-      {activeTab === type ? (
-        <LinearGradient
-          colors={[Colors.common.green2, Colors.common.green4]}
-          style={styles.tabButtonGradient}
-        >
-          <View style={[styles.tabIcon, { backgroundColor: Colors.common.white25 }]}>
-            <Ionicons name={icon as any} size={20} color={themeColors.white} />
-          </View>
-          <View style={styles.tabButtonText}>
-            <ThemedText variant="paragraph" color={themeColors.white}>{label}</ThemedText>
-            <ThemedText variant="subTitleBold" color={themeColors.white}>{text}</ThemedText>
-          </View>
-        </LinearGradient>
-      ) : (
-        <View style={[styles.tabButtonContent, { backgroundColor: themeColors.extremeContrastGray }]}>
-          <View style={[styles.tabIcon, { backgroundColor: Colors.common.green2 }]}>
-            <Ionicons name={icon as any} size={20} color={Colors.common.white} />
-          </View>
-          <View style={styles.tabButtonText}>
-
-            <ThemedText variant="paragraph">{label}</ThemedText>
-            <ThemedText variant="subTitleBold">{text}</ThemedText>
-          </View>
-        </View>
-      )}
-    </TouchableOpacity>
-  );
-
   return (
     <ThemedLayout padding={[48, 24]}>
       <View style={styles.header}>
@@ -121,23 +112,37 @@ export default function QuoteScreen() {
         </ThemedText>
       </View>
 
-      <View style={styles.tabContainer}>
-        <TabButton type="plate" label="Buscar" text="Patente" icon="car-outline" />
-        <TabButton type="rut" label="Buscar" text="RUT" icon="person-outline" />
-      </View>
-
       <View style={styles.searchSection}>
         <ThemedInput
-          label={activeTab === 'plate' ? 'Patente' : 'RUT'}
-          placeholder={`Ingresa ${activeTab === 'plate' ? 'la patente del vehículo' : 'el RUT del propietario'}`}
-          value={searchValue}
-          onChangeText={setSearchValue}
-          icon="search-outline"
-          onIconPress={() => handleSearch(activeTab, searchValue)}
-          isRUT={activeTab === 'rut'}
-          style={styles.searchInput}
+          label='RUT'
+          value={searchValue.ownerId}
+          onChangeText={(text) => {
+            setSearchValue({ ...searchValue, ownerId: text });
+            setErrors(prev => ({ ...prev, ownerId: '' }));
+          }}
+          placeholder='Ingresa el RUT del propietario'
+          error={errors.ownerId}
+          isRUT={true}
+          icon="person-outline"
+        />
+        <ThemedInput
+          label='Patente'
+          value={searchValue.ppu}
+          onChangeText={(text) => {
+            setSearchValue({ ...searchValue, ppu: text.toUpperCase() });
+            setErrors(prev => ({ ...prev, ppu: '' }));
+          }}
+          placeholder='Ingresa la patente del vehículo'
+          error={errors.ppu}
+          icon="car-outline"
         />
       </View>
+
+      <ThemedButton
+        style={styles.searchButton}
+        text="Buscar"
+        onPress={() => handleSearch(searchValue)}
+      />
 
       <TouchableOpacity
         style={styles.manualEntryButton}
@@ -164,47 +169,14 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 48,
   },
-  tabContainer: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 32,
-  },
-  tabButton: {
-    flex: 1,
-  },
-  tabButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    gap: 18,
-    padding: 16,
-    borderRadius: 16,
-  },
-  tabButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    gap: 18,
-    padding: 16,
-    borderRadius: 16,
-  },
-  tabIcon: {
-    borderRadius: 8,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 40,
-    height: 40,
-  },
-  tabButtonText: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
   searchSection: {
     marginBottom: 16,
   },
   searchInput: {
     marginBottom: 0,
+  },
+  searchButton: {
+    marginBottom: 16,
   },
   manualEntryButton: {
     flexDirection: 'row',

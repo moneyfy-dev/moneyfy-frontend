@@ -38,7 +38,12 @@ export const RutInput = forwardRef<TextInput, ThemedInputCommonProps>(
       >
         <TextInput
           ref={ref}
-          style={[styles.input, { color: themeColors.inputColor }]}
+          style={[
+            styles.input, 
+            { 
+              color: themeColors.textColor,
+            }
+          ]}
           value={formatRUT(value)}
           onChangeText={handleRUTChange}
           keyboardType="numeric"

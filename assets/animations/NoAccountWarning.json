@@ -13,7 +13,7 @@
             "ddd": 0,
             "ind": 1,
             "ty": 4,
-            "nm": "Capa 9 contornos",
+            "nm": "brazo-izq contornos",
             "sr": 1,
             "ks": {
                 "o": {
@@ -2612,7 +2612,7 @@
             "ddd": 0,
             "ind": 2,
             "ty": 4,
-            "nm": "Capa 8 contornos",
+            "nm": "tarjeta contornos",
             "sr": 1,
             "ks": {
                 "o": {
@@ -8119,7 +8119,7 @@
             "ddd": 0,
             "ind": 3,
             "ty": 4,
-            "nm": "Capa 7 contornos 2",
+            "nm": "billete-1 contornos",
             "sr": 1,
             "ks": {
                 "o": {
@@ -10021,7 +10021,7 @@
             "ddd": 0,
             "ind": 4,
             "ty": 4,
-            "nm": "Capa 7 contornos",
+            "nm": "billete-2 contornos",
             "sr": 1,
             "ks": {
                 "o": {
@@ -10488,7 +10488,7 @@
                             "nm": "Transformar"
                         }
                     ],
-                    "nm": "Grupo 6",
+                    "nm": "Grupo 1",
                     "np": 4,
                     "cix": 2,
                     "bm": 0,
@@ -10800,7 +10800,7 @@
                             "nm": "Transformar"
                         }
                     ],
-                    "nm": "Grupo 7",
+                    "nm": "Grupo 2",
                     "np": 4,
                     "cix": 2,
                     "bm": 0,
@@ -11241,7 +11241,7 @@
                             "nm": "Transformar"
                         }
                     ],
-                    "nm": "Grupo 8",
+                    "nm": "Grupo 3",
                     "np": 5,
                     "cix": 2,
                     "bm": 0,
@@ -11721,7 +11721,7 @@
                             "nm": "Transformar"
                         }
                     ],
-                    "nm": "Grupo 9",
+                    "nm": "Grupo 4",
                     "np": 4,
                     "cix": 2,
                     "bm": 0,
@@ -11873,7 +11873,7 @@
                             "nm": "Transformar"
                         }
                     ],
-                    "nm": "Grupo 10",
+                    "nm": "Grupo 5",
                     "np": 2,
                     "cix": 2,
                     "bm": 0,
@@ -11891,7 +11891,7 @@
             "ddd": 0,
             "ind": 5,
             "ty": 4,
-            "nm": "Capa de formas 1",
+            "nm": "cuello",
             "sr": 1,
             "ks": {
                 "o": {
@@ -12099,7 +12099,7 @@
             "ddd": 0,
             "ind": 6,
             "ty": 4,
-            "nm": "Capa 5 contornos",
+            "nm": "tronco",
             "sr": 1,
             "ks": {
                 "o": {
@@ -12447,7 +12447,7 @@
             "ddd": 0,
             "ind": 7,
             "ty": 4,
-            "nm": "Capa 4 contornos",
+            "nm": "pierna-der contornos",
             "sr": 1,
             "ks": {
                 "o": {
@@ -12951,7 +12951,7 @@
             "ddd": 0,
             "ind": 8,
             "ty": 4,
-            "nm": "Capa 3 contornos",
+            "nm": "pierna-izq contornos",
             "sr": 1,
             "ks": {
                 "o": {
@@ -13503,7 +13503,7 @@
             "ddd": 0,
             "ind": 9,
             "ty": 4,
-            "nm": "Capa 2 contornos",
+            "nm": "cabeza contornos 3",
             "sr": 1,
             "ks": {
                 "o": {
@@ -14206,7 +14206,7 @@
             "ddd": 0,
             "ind": 10,
             "ty": 4,
-            "nm": "Capa 1 contornos",
+            "nm": "bg contornos",
             "sr": 1,
             "ks": {
                 "o": {

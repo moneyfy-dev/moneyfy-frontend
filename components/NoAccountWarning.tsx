@@ -21,7 +21,7 @@ export const NoAccountWarning = () => {
       <View style={styles.slide}>
         <View style={styles.imageContainer}>
           <LottieAnimation 
-            name="noAccountWarning"
+            name="NoAccountWarning"
             style={styles.animation}
             loop={true}
           />

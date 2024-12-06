@@ -20,7 +20,7 @@ export interface SearchResponse {
   status: number;
   data: {
     companies?: Company[];
-    vehicles?: Vehicle[];
+    vehicle?: Vehicle[];
     tokens: {
       jwtSession: string;
       jwtRefresh: string;
