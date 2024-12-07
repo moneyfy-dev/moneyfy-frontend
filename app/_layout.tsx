@@ -26,21 +26,34 @@ export default function RootLayout() {
 
   React.useEffect(() => {
     if (loaded) {
-      const interval = setInterval(() => {
-        setCurrentScreen((prev) => (prev === 0 ? 1 : 0));
+      const interval = setTimeout(() => {
+        setIsLoading(false);
       }, 5000);
 
-      return () => clearInterval(interval);
+      return () => clearTimeout(interval);
     }
   }, [loaded]);
 
   if (!loaded || isLoading) {
-    return currentScreen === 0 ? (
-      <ConfirmAddressScreen />
-    ) : (
-      <PaymentQRScreen />
-    );
+    return <SplashScreenMoneyfy />;
   }
+
+//    if (loaded) {
+//      const interval = setInterval(() => {
+//        setCurrentScreen((prev) => (prev === 0 ? 1 : 0));
+//      }, 5000);
+//
+//      return () => clearInterval(interval);
+//    }
+//  }, [loaded]);
+//
+//  if (!loaded || isLoading) {
+//    return currentScreen === 0 ? (
+//      <ConfirmAddressScreen />
+//    ) : (
+//      <PaymentQRScreen />
+//    );
+//  }
 
   return (
     <ThemeProvider>

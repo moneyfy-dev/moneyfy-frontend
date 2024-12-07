@@ -12,40 +12,24 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
 import { ThemedButton } from '@/components/ThemedButton';
 import { MessageModal } from '@/components/MessageModal';
+import { useCardVisibility } from '@/hooks/useCardVisibility';
+import { AnimatedCard } from '@/components/AnimatedCard';
 
 const { height } = Dimensions.get('window');
 
 export default function LoginScreen() {
+    const { isVisible, showCard, hideCard } = useCardVisibility();
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
-    const [isFormVisible, setIsFormVisible] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { login: loginContext } = useAuth();
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [isFormValid, setIsFormValid] = useState(false);
-    const formAnimation = useRef(new Animated.Value(height)).current;
     const themeColors = useThemeColor();
     const router = useRouter();
     const [touchedFields, setTouchedFields] = useState({ email: false, password: false });
     const [errorMessage, setErrorMessage] = useState('');
-
-    const showLoginForm = () => {
-        setIsFormVisible(true);
-        Animated.spring(formAnimation, {
-            toValue: 0,
-            useNativeDriver: true,
-        }).start();
-    };
-
-    const hideLoginForm = () => {
-        Animated.spring(formAnimation, {
-            toValue: height,
-            useNativeDriver: true,
-        }).start(() => {
-            setIsFormVisible(false);
-        });
-    };
 
     useEffect(() => {
         const isValid = validateEmail(email) && validatePassword(password);
@@ -114,13 +98,11 @@ export default function LoginScreen() {
 
     return (
         <ThemedView darkColor={themeColors.backgroundColor} lightColor={themeColors.backgroundColor} style={styles.container}>
-            <TouchableOpacity
+            <ThemedView
                 style={styles.backgroundTouchable}
-                onPress={hideLoginForm}
-                activeOpacity={1}
             >
                 <BackgroundCircles style={styles.backgroundImage} />
-            </TouchableOpacity>
+            </ThemedView>
 
             <ThemedView style={styles.logoContainer}>
                 <Logo style={styles.loginLogo} width={280} height={60} />
@@ -136,7 +118,7 @@ export default function LoginScreen() {
             <ThemedView style={[styles.initialContainer, { backgroundColor: themeColors.backgroundCardColor }]}>
                 <ThemedButton
                     text="Ingresar"
-                    onPress={showLoginForm}
+                    onPress={showCard}
                 />
                 <ThemedView style={styles.registerContainer}>
                     <ThemedText variant='paragraph'>¿No estás registrado? </ThemedText>
@@ -148,15 +130,12 @@ export default function LoginScreen() {
                 </ThemedView>
             </ThemedView>
 
-            <Animated.View
-                style={[
-                    styles.formContainer,
-                    {
-                        transform: [{ translateY: formAnimation }]
-                    }
-                ]}
+            <AnimatedCard 
+                isVisible={isVisible}
+                hideCard={hideCard}
+                style={styles.formContainer}
             >
-                <ThemedView style={[styles.card, { backgroundColor: themeColors.backgroundCardColor }]}>
+                
                     <ThemedView style={styles.logoContainerCard}>
                         <ThemedText variant='superTitle' textAlign='left'>
                             <ThemedText variant='superTitle' style={{ color: themeColors.textColorAccent }}>B</ThemedText>
@@ -220,9 +199,7 @@ export default function LoginScreen() {
                         onPress={handleLogin}
                         backgroundColor={themeColors.status.error}
                     />
-
-                </ThemedView>
-            </Animated.View>
+            </AnimatedCard>
 
             <MessageModal
                 isVisible={isErrorModalVisible}
@@ -242,7 +219,6 @@ export default function LoginScreen() {
         </ThemedView>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -260,14 +236,6 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-    },
-    card: {
-        flex: 1,
-        paddingVertical: 40,
-        paddingHorizontal: 24,
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
-        alignItems: 'center'
     },
     cardTitle: {
         marginBottom: 20,
