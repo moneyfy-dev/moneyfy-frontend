@@ -5,7 +5,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } fro
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ThemeProvider } from '@/context/ThemeContext';
 
-export function SplashScreenMoneyfy() {
+export default function SplashScreenMoneyfy() {
     const colorScheme = useColorScheme();
     
     return (

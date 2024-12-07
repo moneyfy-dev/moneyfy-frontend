@@ -221,7 +221,7 @@ export default function HomeScreen() {
       <View style={styles.actionContainer}>
 
         <TouchableOpacity
-          onPress={() => router.push('/(tabs)/referidos')}
+          onPress={() => router.push('/(tabs)/referrals')}
           style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
           <View style={styles.actionButtonIcon}>
             <Ionicons name="people-outline" size={20} color={themeColors.white} />

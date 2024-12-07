@@ -454,6 +454,28 @@ export const getLottieColorFilters = (themeColors: ReturnType<typeof useThemeCol
             color: themeColors.extremeContrastGray,
         },
     ],
+    Loading: [
+        {
+            keypath: "Loading.nube 1",
+            color: Colors.common.gray6,
+        },
+        {
+            keypath: "Loading.paperplane.Group 1",
+            color: Colors.common.green3,
+        },
+        {
+            keypath: "Loading.paperplane.Group 2",
+            color: Colors.common.green2,
+        },
+        {
+            keypath: "Loading.paperplane.Group 3",
+            color: Colors.common.green1,
+        },
+        {
+            keypath: "Loading.nube 2",
+            color: Colors.common.gray6,
+        },
+    ],
     Logo: [
         {
             keypath: "f1 contornos 2",

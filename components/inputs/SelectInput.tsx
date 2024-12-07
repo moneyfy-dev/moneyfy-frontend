@@ -5,7 +5,7 @@ import { useThemeColor } from '../../hooks/useThemeColor';
 import { BaseInput } from './BaseInput';
 import { ThemedText } from '../ThemedText';
 import { ThemedButton } from '../ThemedButton';
-import { SelectInputProps } from './types';
+import { SelectInputProps } from '../../types/Input';
 
 export const SelectInput = forwardRef<any, SelectInputProps>(
   ({ value, onChangeText, placeholder, options = [], ...props }, ref) => {

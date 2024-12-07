@@ -6,9 +6,6 @@ const ENV: { [key: string]: EnvVars } = {
   dev: {
     apiUrl: 'http://45.236.128.120:8080/segurosref',
   },
-  staging: {
-    apiUrl: 'http://45.236.128.120:8080/segurosref',
-  },
   prod: {
     apiUrl: 'http://45.236.128.120:8080/segurosref',
   }
@@ -17,8 +14,6 @@ const ENV: { [key: string]: EnvVars } = {
 const getEnvVars = (env = process.env.NODE_ENV || 'development'): EnvVars => {
   if (env === 'development') {
     return ENV.dev;
-  } else if (env === 'staging') {
-    return ENV.staging;
   } else if (env === 'production') {
     return ENV.prod;
   }

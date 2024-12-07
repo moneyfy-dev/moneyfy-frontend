@@ -2,7 +2,7 @@ import React, { forwardRef, useState } from 'react';
 import { TextInput, StyleSheet, NativeSyntheticEvent, TextInputFocusEventData } from 'react-native';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { BaseInput } from './BaseInput';
-import { ThemedInputCommonProps } from './types';
+import { ThemedInputCommonProps } from '../../types/Input';
 
 export const RutInput = forwardRef<TextInput, ThemedInputCommonProps>(
   ({ value, onChangeText, ...props }, ref) => {

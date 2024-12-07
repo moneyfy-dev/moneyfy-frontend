@@ -14,7 +14,7 @@ import { TicketEdge } from '@/components/images/TicketEdge';
 import Svg, { Path } from 'react-native-svg';
 import { Logo } from '@/components/Logo';
 
-export function PaymentQRScreen() {
+export default function PaymentQRScreen() {
   const themeColors = useThemeColor();
   const qrValue = 'https://connect360.cl';
 

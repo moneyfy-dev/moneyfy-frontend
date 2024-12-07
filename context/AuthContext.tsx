@@ -7,7 +7,7 @@ import { AuthContextProps, User, LoginResponse } from '@/types/auth';
 const AuthContext = createContext<AuthContextProps>({
   isAuthenticated: false,
   isLoading: true,
-  login: async (email: string, password: string): Promise<User> => {
+  loginContext: async (response: LoginResponse): Promise<User | null> => {
     throw new Error('login function must be overridden');
   },
   logout: async () => {},
@@ -112,16 +112,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthenticated(true);
   }, [hydrateUserData]);
 
-  const loginContext = async (email: string, password: string) => {
+  const loginContext = async (response: LoginResponse) => {
     try {
-      const response: LoginResponse = await login(email, password);
-      console.log(response);
-
-      if (response.status === 226) {
-        throw { response: { status: 226 } };
-      }
-
-      if (response.data && response.data.tokens) {
         // Guardar ambos tokens
         await AsyncStorage.setItem('token', response.data.tokens.jwtRefresh);
         await AsyncStorage.setItem('sessionToken', response.data.tokens.jwtSession);
@@ -134,9 +126,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLastHydrationTime(new Date());
         await AsyncStorage.setItem('lastHydrationTime', new Date().toISOString());
         return userData;
-      } else {
-        throw new Error('No se recibieron los tokens válidos');
-      }
     } catch (error: any) {
       console.error('Error en login:', error);
       // Solo limpiamos el estado si NO es el caso de nuevo dispositivo
@@ -194,8 +183,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider value={{ 
       isAuthenticated, 
-      isLoading, 
-      login: loginContext, 
+      isLoading,
+      loginContext, 
       logout, 
       user,
       refreshUserSession,

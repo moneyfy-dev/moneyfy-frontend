@@ -42,7 +42,6 @@ export default function ForgotPasswordScreen() {
             return;
         }
 
-        // Aquí irá la lógica de recuperación de contraseña
     };
 
     return (

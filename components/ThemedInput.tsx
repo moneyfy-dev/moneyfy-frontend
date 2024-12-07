@@ -5,7 +5,7 @@ import { PasswordInput } from './inputs/PasswordInput';
 import { SelectInput } from './inputs/SelectInput';
 import { RutInput } from './inputs/RutInput';
 import { SearchInput } from './inputs/SearchInput';
-import { ThemedInputCommonProps } from './inputs/types';
+import { ThemedInputCommonProps } from '../types/Input';
 
 interface ThemedInputProps extends ThemedInputCommonProps {
   type?: 'text' | 'password' | 'select' | 'rut' | 'search';

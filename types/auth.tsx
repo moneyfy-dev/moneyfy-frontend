@@ -43,7 +43,7 @@ export interface LoginResponse {
   export interface AuthContextProps {
     isAuthenticated: boolean;
     isLoading: boolean;
-    login: (email: string, password: string) => Promise<User>;
+    loginContext: (response: LoginResponse) => Promise<User | null>;
     logout: () => Promise<void>;
     user: User | null;
     refreshUserSession: () => Promise<void>;

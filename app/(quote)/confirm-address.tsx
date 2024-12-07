@@ -5,7 +5,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
 import { ThemedButton } from '@/components/ThemedButton';
 
-export function ConfirmAddressScreen() {
+export default function ConfirmAddressScreen() {
   return (
     <ThemedLayout padding={[0, 24]}>
       <ThemedText variant="title" textAlign="center" marginBottom={16}>

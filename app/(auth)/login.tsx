@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Animated, Dimensions, Alert } from 'react-native';
+import { StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Link } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
@@ -14,15 +14,19 @@ import { ThemedButton } from '@/components/ThemedButton';
 import { MessageModal } from '@/components/MessageModal';
 import { useCardVisibility } from '@/hooks/useCardVisibility';
 import { AnimatedCard } from '@/components/AnimatedCard';
+import { login } from '@/services/authService';
+import { LoadingScreen } from '@/components/LoadingScreen';
+import { LottieAnimation } from '@/components/LottieAnimation';
 
 const { height } = Dimensions.get('window');
 
 export default function LoginScreen() {
+    const [isLoading, setIsLoading] = useState(false);
     const { isVisible, showCard, hideCard } = useCardVisibility();
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { login: loginContext } = useAuth();
+    const { loginContext } = useAuth();
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [isFormValid, setIsFormValid] = useState(false);
@@ -75,8 +79,14 @@ export default function LoginScreen() {
         }
 
         try {
-            const userData = await loginContext(email, password);
-            router.replace('/(tabs)');
+            setIsLoading(true);
+            const response = await login(email, password);
+            if (response && response.data && response.data.user) {
+                await loginContext(response.data);
+                router.replace('/(tabs)');
+            } else {
+                throw new Error('Respuesta inesperada del servidor');
+            }
         } catch (error: any) {
             if (error.response?.status === 226) {
                 router.push({
@@ -93,8 +103,14 @@ export default function LoginScreen() {
                 setErrorMessage('Hubo un problema con el inicio de sesión. Inténtalo de nuevo.');
                 setIsErrorModalVisible(true);
             }
+        } finally {
+            setIsLoading(false);
         }
     };
+
+    if (isLoading) {
+        return <LoadingScreen />;
+    }
 
     return (
         <ThemedView darkColor={themeColors.backgroundColor} lightColor={themeColors.backgroundColor} style={styles.container}>
@@ -130,75 +146,75 @@ export default function LoginScreen() {
                 </ThemedView>
             </ThemedView>
 
-            <AnimatedCard 
+            <AnimatedCard
                 isVisible={isVisible}
                 hideCard={hideCard}
                 style={styles.formContainer}
             >
-                
-                    <ThemedView style={styles.logoContainerCard}>
-                        <ThemedText variant='superTitle' textAlign='left'>
-                            <ThemedText variant='superTitle' style={{ color: themeColors.textColorAccent }}>B</ThemedText>
-                            ienvenido a
-                        </ThemedText>
-                        <Logo width={200} height={48} />
-                    </ThemedView>
 
-                    <ThemedView style={styles.inputContainer}>
-                        <ThemedInput
-                            placeholder="Usuario o email"
-                            value={email}
-                            onChangeText={handleEmailChange}
-                            onBlur={() => {
-                                setTouchedFields(prev => ({ ...prev, email: true }));
-                                validateField('email');
-                            }}
-                            error={emailError}
-                        />
-                        <ThemedInput
-                            placeholder="Contraseña"
-                            value={password}
-                            onChangeText={handlePasswordChange}
-                            onBlur={() => {
-                                setTouchedFields(prev => ({ ...prev, password: true }));
-                                validateField('password');
-                            }}
-                            secureTextEntry
-                            error={passwordError}
-                        />
-                    </ThemedView>
+                <ThemedView style={styles.logoContainerCard}>
+                    <ThemedText variant='superTitle' textAlign='left'>
+                        <ThemedText variant='superTitle' style={{ color: themeColors.textColorAccent }}>B</ThemedText>
+                        ienvenido a
+                    </ThemedText>
+                    <Logo width={200} height={48} />
+                </ThemedView>
 
-                    <TouchableOpacity style={styles.forgotPasswordContainer}>
-                        <ThemedText variant='textLink' marginBottom={16} linkConfig={{ route: '/forgot-password' }}>¿Olvidaste tu contraseña?</ThemedText>
-                    </TouchableOpacity>
-
-                    <ThemedButton
-                        text="Ingresar"
-                        onPress={handleLogin}
-                        disabled={!email || !password}
+                <ThemedView style={styles.inputContainer}>
+                    <ThemedInput
+                        placeholder="Usuario o email"
+                        value={email}
+                        onChangeText={handleEmailChange}
+                        onBlur={() => {
+                            setTouchedFields(prev => ({ ...prev, email: true }));
+                            validateField('email');
+                        }}
+                        error={emailError}
                     />
-
-                    <ThemedView style={styles.registerContainer}>
-                        <ThemedText variant='paragraph'>¿No estás registrado? </ThemedText>
-                        <Link href={{ pathname: "/registerScreen" }} asChild>
-                            <TouchableOpacity>
-                                <ThemedText variant='textLink'>Registrate ahora</ThemedText>
-                            </TouchableOpacity>
-                        </Link>
-                    </ThemedView>
-
-                    <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
-
-                    <ThemedText variant='paragraph' marginBottom={16}>O continua con</ThemedText>
-
-                    <ThemedButton
-                        text="Google"
-                        icon={{ name: 'logo-google', position: 'left' }}
-                        size='sm'
-                        width='auto'
-                        onPress={handleLogin}
-                        backgroundColor={themeColors.status.error}
+                    <ThemedInput
+                        placeholder="Contraseña"
+                        value={password}
+                        onChangeText={handlePasswordChange}
+                        onBlur={() => {
+                            setTouchedFields(prev => ({ ...prev, password: true }));
+                            validateField('password');
+                        }}
+                        secureTextEntry
+                        error={passwordError}
                     />
+                </ThemedView>
+
+                <TouchableOpacity style={styles.forgotPasswordContainer}>
+                    <ThemedText variant='textLink' marginBottom={16} linkConfig={{ route: '/forgot-password' }}>¿Olvidaste tu contraseña?</ThemedText>
+                </TouchableOpacity>
+
+                <ThemedButton
+                    text="Ingresar"
+                    onPress={handleLogin}
+                    disabled={!email || !password}
+                />
+
+                <ThemedView style={styles.registerContainer}>
+                    <ThemedText variant='paragraph'>¿No estás registrado? </ThemedText>
+                    <Link href={{ pathname: "/registerScreen" }} asChild>
+                        <TouchableOpacity>
+                            <ThemedText variant='textLink'>Registrate ahora</ThemedText>
+                        </TouchableOpacity>
+                    </Link>
+                </ThemedView>
+
+                <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
+
+                <ThemedText variant='paragraph' marginBottom={16}>O continua con</ThemedText>
+
+                <ThemedButton
+                    text="Google"
+                    icon={{ name: 'logo-google', position: 'left' }}
+                    size='sm'
+                    width='auto'
+                    onPress={handleLogin}
+                    backgroundColor={themeColors.status.error}
+                />
             </AnimatedCard>
 
             <MessageModal

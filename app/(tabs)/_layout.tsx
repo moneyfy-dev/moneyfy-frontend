@@ -41,7 +41,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="referidos"
+        name="referrals"
         options={{
           title: 'Referidos',
           tabBarIcon: ({ color, size }) => (
