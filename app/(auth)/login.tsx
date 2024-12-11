@@ -81,7 +81,8 @@ export default function LoginScreen() {
         try {
             setIsLoading(true);
             const response = await login(email, password);
-            if (response && response.data && response.data.user) {
+            if (response && response.data) {
+                
                 await loginContext(response.data);
                 router.replace('/(tabs)');
             } else {
@@ -99,8 +100,14 @@ export default function LoginScreen() {
             } else if (error.response?.status === 403) {
                 setErrorMessage('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
                 setIsErrorModalVisible(true);
+            } else if (error.response?.status === 404) {
+                setErrorMessage('Aún no estas registrado. Registrate ahora');
+                setIsErrorModalVisible(true);
+            } else if (error.response?.status === 400) {
+                setErrorMessage('Email o usuario incorrecto');
+                setIsErrorModalVisible(true);
             } else {
-                setErrorMessage('Hubo un problema con el inicio de sesión. Inténtalo de nuevo.');
+                setErrorMessage('Error al iniciar sesión. Por favor, inténtalo de nuevo.');
                 setIsErrorModalVisible(true);
             }
         } finally {
@@ -230,7 +237,7 @@ export default function LoginScreen() {
                     text: "Entendido",
                     onPress: () => setIsErrorModalVisible(false)
                 }}
-            />
+            /> 
 
         </ThemedView>
     );

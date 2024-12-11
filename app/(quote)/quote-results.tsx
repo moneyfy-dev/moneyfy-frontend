@@ -10,6 +10,9 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { QuoteCard } from '@/components/QuoteCard';
+import { ThemedLayoutFlatList } from '@/components/ThemedLayoutFlatList';
+import { useRouter } from 'expo-router';
+import { CarIcon } from '@/components/images/vehicles/CarIcon';
 
 interface Filters {
   insuranceType: string;
@@ -21,7 +24,8 @@ interface Filters {
 export default function QuoteResults() {
     const themeColors = useThemeColor();
     const [showFilters, setShowFilters] = useState(false);
-    const { selectedVehicle: vehicleParam, plans: plansParam } = useLocalSearchParams();
+    const { plans: plansParam, referredId: referredIdParam, vehicle: vehicleParam } = useLocalSearchParams();
+    const router = useRouter();
     
     const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
     const [plans, setPlans] = useState<InsurancePlan[]>([]);
@@ -35,25 +39,58 @@ export default function QuoteResults() {
 
     // Función para manejar la selección del plan
     const handleSelectPlan = (plan: InsurancePlan) => {
-        // Implementa la lógica de selección aquí
-        console.log('Plan seleccionado:', plan);
+        router.push({
+            pathname: '/(quote)/confirm-address',
+            params: {
+                referredId: referredIdParam,
+                planId: plan.planId,
+                insuranceCompany: plan.insuranceCompany,
+                planName: plan.planName,
+                price: plan.price.toString(),
+                priceUf: plan.priceUf.toString(),
+                deductible: plan.deductible.toString(),
+                vehicle: vehicleParam // Asumiendo que ahora sí lo pasamos desde search-results
+            }
+        });
     };
 
     useEffect(() => {
         try {
-            if (vehicleParam && plansParam) {
-                const parsedVehicle = JSON.parse(decodeURIComponent(vehicleParam as string));
-                const parsedPlans = JSON.parse(decodeURIComponent(plansParam as string));
+            if (plansParam) {
+                console.log('referredIdParam:', referredIdParam);
+                console.log('plansParam:', plansParam);
                 
-                setSelectedVehicle(parsedVehicle);
+                let parsedPlans: InsurancePlan[];
+                
+                if (typeof plansParam === 'string') {
+                    // Si es un string, parseamos el JSON
+                    parsedPlans = JSON.parse(plansParam);
+                } else if (Array.isArray(plansParam)) {
+                    // Si ya es un array, lo convertimos a unknown primero
+                    parsedPlans = plansParam as unknown as InsurancePlan[];
+                } else {
+                    // Si es un solo objeto, lo envolvemos en un array
+                    parsedPlans = [plansParam as unknown as InsurancePlan];
+                }
+                
                 setPlans(parsedPlans);
                 setFilteredPlans(parsedPlans);
             }
+            if (vehicleParam) {
+                let parsedVehicle: Vehicle;
+                if(typeof vehicleParam === 'string') {
+                    parsedVehicle = JSON.parse(vehicleParam);
+                } else {
+                    parsedVehicle = vehicleParam as unknown as Vehicle;
+                }
+                setSelectedVehicle(parsedVehicle);
+            }
         } catch (error) {
             console.error('Error al procesar los datos:', error);
+            console.error('plansParam:', plansParam);
             Alert.alert('Error', 'Hubo un problema al cargar los resultados');
         }
-    }, [vehicleParam, plansParam]);
+    }, [plansParam]);
 
     useEffect(() => {
         let result = [...plans];
@@ -76,13 +113,20 @@ export default function QuoteResults() {
     }, [filters, plans]);
 
     return (
-        <ThemedLayout padding={[0, 24]}>
+        <ThemedLayoutFlatList padding={[0, 24]}>
             <View style={styles.container}>
                 {selectedVehicle && (
                     <View style={styles.header}>
+                        <CarIcon />
                         <View style={styles.vehicleInfo}>
-                            <ThemedText variant="title">{selectedVehicle.ppu}</ThemedText>
-                            <ThemedText>{selectedVehicle.year} {selectedVehicle.brand} {selectedVehicle.model}</ThemedText>
+                            <ThemedText variant="superTitle">{selectedVehicle.ppu}</ThemedText>
+                            <ThemedText variant="title">
+                                {selectedVehicle.year}{' '}
+                                <ThemedText variant="subTitle" style={{color: themeColors.textColorAccent}}>
+                                    {selectedVehicle.brand.toUpperCase()} {selectedVehicle.model.toUpperCase()}
+                                </ThemedText>
+                            </ThemedText>
+                            <ThemedText variant="paragraph">{selectedVehicle.engineNum}</ThemedText>
                         </View>
                     </View>
                 )}
@@ -90,7 +134,7 @@ export default function QuoteResults() {
                 <View style={styles.resultsHeader}>
                     <ThemedText>{filteredPlans.length} resultados</ThemedText>
                     <Pressable onPress={() => setShowFilters(true)}>
-                        <Ionicons name="filter-outline" size={24} color={themeColors.textColorAccent} />
+                        <Ionicons name="menu-outline" size={24} color={themeColors.textColorAccent} />
                     </Pressable>
                 </View>
 
@@ -103,7 +147,7 @@ export default function QuoteResults() {
                             showButton={true}
                         />
                     )}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item) => item.planId}
                 />
 
                 <FiltersModal
@@ -156,7 +200,7 @@ export default function QuoteResults() {
                     </View>
                 </FiltersModal>
             </View>
-        </ThemedLayout>
+        </ThemedLayoutFlatList>
     );
 }
 
@@ -168,11 +212,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 16,
+        marginTop: 10,
+        marginBottom: 20,
     },
     vehicleInfo: {
         flex: 1,
-        marginLeft: 12,
+        marginLeft: 20,
     },
     resultsHeader: {
         flexDirection: 'row',

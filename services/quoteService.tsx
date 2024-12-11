@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import getEnvVars from '../config';
-import { SearchResponse, QuoteVehicleParams, QuoteVehicleResponse } from '@/types/quote';
+import { SearchResponse, QuoteVehicleParams, QuoteVehicleResponse, SelectPlanParams } from '@/types/quote';
 
 const { apiUrl } = getEnvVars();
 
@@ -39,7 +39,6 @@ export const quoteVehicle = async (quoteData: QuoteVehicleParams): Promise<Quote
       },
     }
   );
-  console.log('response', response.data);
   
   return response.data;
 };
@@ -64,6 +63,26 @@ export const searchVehicle = async (ownerId: string, ppu: string): Promise<Searc
     }
   );
   console.log('response', response.data);
+  
+  return response.data;
+};
+
+
+
+export const selectPlan = async (planData: SelectPlanParams) => {
+  const token = await AsyncStorage.getItem('token');
+  const sessionToken = await AsyncStorage.getItem('sessionToken');
+  
+  const response = await axios.put<QuoteVehicleResponse>(
+    `${apiUrl}/referred/select/plan`,
+    planData,
+    {
+      headers: {
+        'Authorization': `Bearer ${sessionToken}`,
+        'Refresh-Token': token
+      },
+    }
+  );
   
   return response.data;
 }; 

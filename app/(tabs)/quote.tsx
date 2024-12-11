@@ -6,8 +6,6 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedInput } from '@/components/ThemedInput';
-import Colors from '@/constants/Colors';
-import { LinearGradient } from 'expo-linear-gradient';
 import { searchVehicle } from '@/services/quoteService';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
@@ -78,13 +76,12 @@ export default function QuoteScreen() {
       if (response?.data?.user) {
         await updateUserData(response.data.user);
         
-        const vehiclesData = response.data.vehicle;
-
         router.push({
           pathname: '/(quote)/search-results',
           params: {
             value: JSON.stringify(value),
-            vehicle: encodeURIComponent(JSON.stringify(vehiclesData))
+            vehicle: encodeURIComponent(JSON.stringify(response.data.vehicle)),
+            referredId: response.data.referredId
           }
         });
       } else {

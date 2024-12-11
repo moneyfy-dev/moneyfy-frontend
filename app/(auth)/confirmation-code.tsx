@@ -46,6 +46,15 @@ export default function ConfirmationCodeScreen() {
         }
     };
 
+    const handleKeyPress = (e: any, index: number) => {
+        if (e.nativeEvent.key === 'Backspace' && index > 0 && code[index] === '') {
+            const newCode = [...code];
+            newCode[index - 1] = '';
+            setCode(newCode);
+            inputRefs.current[index - 1].current?.focus();
+        }
+    };
+
     const handleConfirmCode = async (code: string) => {
         try {
             let response;
@@ -104,8 +113,11 @@ export default function ConfirmationCodeScreen() {
             <View style={styles.pageContainer}>
 
                 <ThemedText variant='title' textAlign='center' marginBottom={8}>Ingrese el código de confirmación</ThemedText>
-                <ThemedText variant='paragraph' textAlign='center' marginBottom={40}>
-                    Un código de 6 dígitos fue enviado a {email}
+                <ThemedText variant='paragraph' textAlign='center' marginBottom={10}>
+                    Un código de 6 dígitos fue enviado a
+                </ThemedText>
+                <ThemedText variant='paragraph' style={{ color: themeColors.textColorAccent }} textAlign='center' marginBottom={40}>
+                    {email}
                 </ThemedText>
 
                 <View style={styles.codeContainer}>
@@ -115,10 +127,11 @@ export default function ConfirmationCodeScreen() {
                             ref={inputRefs.current[index]}
                             value={digit}
                             onChangeText={(text) => handleCodeChange(text, index)}
+                            onKeyPress={(e) => handleKeyPress(e, index)}
                             keyboardType="numeric"
                             maxLength={1}
                             placeholder=""
-                            style={styles.codeInput}
+                            style={[styles.codeInput, { color: themeColors.textColorAccent }]}
                         />
                     ))}
                 </View>
@@ -128,10 +141,10 @@ export default function ConfirmationCodeScreen() {
 
                 <TouchableOpacity onPress={handleResendCode} disabled={isResendDisabled}>
                     <ThemedText 
-                        variant='textLink' 
+                        variant='paragraph' 
                         textAlign='center' 
                         marginBottom={24}
-                        style={isResendDisabled ? styles.disabledText : {}}
+                        style={isResendDisabled ? styles.disabledText : {color: themeColors.textColorAccent}}
                     >
                         {isResendDisabled 
                             ? `Reenviar código en ${resendTimer}s` 
@@ -161,12 +174,9 @@ const styles = StyleSheet.create({
         marginHorizontal: 'auto',
     },
     codeInput: {
-        width: 50,
-        height: 50,
-        borderWidth: 1,
-        borderRadius: 10,
         textAlign: 'center',
-        fontSize: 24,
+        width: 10,
+        padding: 0,
     },
     buttonContainer: {
         width: '100%',

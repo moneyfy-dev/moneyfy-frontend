@@ -16,7 +16,7 @@ export default function PaymentConfigScreen() {
     const [accounts, setAccounts] = useState<Account[]>([]);
     const themeColors = useThemeColor();
     const router = useRouter();
-    const { user, updateUserData } = useAuth();
+    const { user, updateUserData, hydrateUserData } = useAuth();
 
     useEffect(() => {
         if (user && user.accounts) {
@@ -46,11 +46,12 @@ export default function PaymentConfigScreen() {
         router.push('/add-account');
     };
 
-    const handleAccountUpdated = () => {
-        // Actualizar la lista de cuentas después de una actualización o eliminación
-        if (user && user.accounts) {
-            setAccounts(user.accounts);
-        }
+    const handleAccountUpdated = async () => {
+        // Forzar actualización de datos del usuario
+        await hydrateUserData(true);
+        
+        // La lista se actualizará automáticamente por el useEffect
+        // cuando el contexto de usuario se actualice
     };
 
     return (

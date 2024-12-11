@@ -33,20 +33,8 @@ const slides = [
 export const Onboarding = () => {
   const [activeSlide, setActiveSlide] = useState(0);
   const flatListRef = useRef<FlatList>(null);
-  const dotWidths = useRef(slides.map(() => new Animated.Value(8))).current;
   const { setHasSeenOnboarding, setShouldShowOnboarding } = useOnboarding();
   const themeColors = useThemeColor();
-
-  useEffect(() => {
-    slides.forEach((_, index) => {
-      Animated.spring(dotWidths[index], {
-        toValue: index === activeSlide ? 24 : 8,
-        useNativeDriver: false,
-        tension: 50,
-        friction: 7
-      }).start();
-    });
-  }, [activeSlide]);
 
   const handleNext = () => {
     if (activeSlide === slides.length - 1) {
@@ -67,12 +55,12 @@ export const Onboarding = () => {
         const isActive = index === activeSlide;
         
         return (
-          <Animated.View
+          <View
             key={index}
             style={[
               styles.dot,
               {
-                width: dotWidths[index],
+                width: isActive ? 24 : 8,
                 backgroundColor: isActive 
                   ? themeColors.textColorAccent 
                   : themeColors.disabledColor

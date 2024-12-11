@@ -3,9 +3,9 @@ import getEnvVars from '../config';
 
 const { apiUrl } = getEnvVars();
 
-export const register = async (name: string, surname: string, email: string, password: string) => {
+export const register = async (name: string, surname: string, email: string, password: string, referralCode?: string) => {
   try {
-    const requestData = { name, surname, pwd: password, email };
+    const requestData = { name, surname, pwd: password, email, referralCode };
     const response = await axios.post(`${apiUrl}/auth/register`, requestData);
     return response.data;
   } catch (error) {
@@ -60,7 +60,6 @@ export const resendConfirmationCode = async (email: string, type: string) => {
 };
 
 export const login = async (email: string, password: string) => {
-  console.log(email, password);
   try {
     const response = await axios.post(`${apiUrl}/auth/log-in`, {
       email,
@@ -68,6 +67,7 @@ export const login = async (email: string, password: string) => {
     });
     return response;
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };

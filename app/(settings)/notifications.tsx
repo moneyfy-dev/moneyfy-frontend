@@ -29,7 +29,6 @@ export default function NotificationsScreen() {
     { id: 'specialOffers', title: 'Ofertas y promociones especiales', description: 'Mantente informado sobre descuentos y promociones en seguros para ti y tus referidos.', isEnabled: false, type: 'checkbox' },
     { id: 'paymentProblems', title: 'Problemas con el pago', description: 'Te notificaremos si surge algún problema con el procesamiento de un pago por parte de tus referidos.', isEnabled: false, type: 'checkbox' },
   ]);
-  console.log('caca:', user);
 
   useEffect(() => {
     if (user && user.notifs) {
@@ -43,30 +42,11 @@ export default function NotificationsScreen() {
   }, [user]);
 
   const toggleSetting = async (id: keyof Notifications) => {
-    try {
-      const updatedSettings = notificationSettings.map(setting => {
-        if (setting.id === id) {
-          return { ...setting, isEnabled: !setting.isEnabled };
-        }
-        return setting;
-      });
-
-      setNotificationSettings(updatedSettings);
-
-      const updatedSetting = updatedSettings.find(setting => setting.id === id);
-      if (updatedSetting) {
-        await updateNotificationSetting(id, updatedSetting.isEnabled);
-        // Actualizar el contexto del usuario
-       // updateUserData({ notifs: { ...user.notifs, [id]: updatedSetting.isEnabled } });
-      }
-    } catch (error) {
-      console.error('Error al actualizar configuración de notificación:', error);
-      Alert.alert('Error', 'No se pudo actualizar la configuración de notificación');
-      // Revertir el cambio en caso de error
-      setNotificationSettings(prevSettings => prevSettings.map(setting =>
+    setNotificationSettings(prevSettings =>
+      prevSettings.map(setting =>
         setting.id === id ? { ...setting, isEnabled: !setting.isEnabled } : setting
-      ));
-    }
+      )
+    );
   };
 
   const renderSetting = (setting: NotificationSetting, index: number) => (
@@ -75,17 +55,17 @@ export default function NotificationsScreen() {
         <ThemedText variant="subTitle" marginBottom={4}>{setting.title}</ThemedText>
         <ThemedText variant="paragraph">{setting.description}</ThemedText>
       </View>
-      {setting.type === 'switch' ? (
+      {setting.type === 'switch' ? (  
         <Switch
           trackColor={{ false: themeColors.extremeContrastGray, true: themeColors.textColorAccent }}
           thumbColor={setting.isEnabled ? themeColors.extremeContrastGray : themeColors.textColorAccent}
           ios_backgroundColor={themeColors.extremeContrastGray}
-          //onValueChange={() => toggleSetting(setting.id)}
+          onValueChange={() => toggleSetting(setting.id)}
           value={setting.isEnabled}
         />
       ) : (
         <TouchableOpacity
-        //onPress={() => toggleSetting(setting.id)}
+          onPress={() => toggleSetting(setting.id)}
         >
           <Ionicons
             name={setting.isEnabled ? "checkbox-outline" : "square-outline"}

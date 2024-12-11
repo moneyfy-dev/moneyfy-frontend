@@ -14,103 +14,69 @@ import { useAuth } from '@/context/AuthContext';
 import { searchCompanies } from '@/services/quoteService';
 
 export default function SearchResultsScreen() {
-  const { type, value, vehicles: initialVehicles } = useLocalSearchParams();
+  const { type, value, vehicle: initialVehicle, referredId: initialReferredId } = useLocalSearchParams();
   const themeColors = useThemeColor();
   const router = useRouter();
   const { updateUserData } = useAuth();
 
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [buyerRut, setBuyerRut] = useState('');
   const [ownerOption, setOwnerOption] = useState(Object.keys(OWNER_OPTIONS_MAP)[0]);
+  const [referredId, setReferredId] = useState<string>('');
 
   useEffect(() => {
     try {
-      if (initialVehicles) {
-        const vehiclesString = decodeURIComponent(initialVehicles as string);
-        const parsedVehicles = JSON.parse(vehiclesString);
+      if (initialVehicle && initialReferredId) {
+        const vehicleString = decodeURIComponent(initialVehicle as string);
+        const parsedVehicle = JSON.parse(vehicleString);
         
-        setVehicles(parsedVehicles);
-        
-        // Si es búsqueda por patente y hay un solo vehículo, seleccionarlo automáticamente
-        if (type === 'plate' && parsedVehicles.length === 1) {
-          setSelectedVehicle(parsedVehicles[0]);
-        }
+        setVehicle(parsedVehicle);
+        setSelectedVehicle(parsedVehicle);
+        setReferredId(initialReferredId as string);
       }
     } catch (error) {
-      console.error('Error al procesar los vehículos:', error);
+      console.error('Error al procesar el vehículo:', error);
       Alert.alert('Error', 'Hubo un problema al cargar los resultados');
     }
-  }, [initialVehicles, type]);
-
-  // funcion para cuando lleguen los tipos de vehiculos
-  //const getVehicleIcon = (vehicleType: string) => {
-  //  switch (vehicleType.toLowerCase()) {
-  //    case 'motocicleta':
-  //      return 'bicycle-outline';
-  //    case 'suv':
-  //      return 'car-sport-outline';
-  //    default:
-  //      return 'car-outline';
-  //  }
-  //};
+  }, [initialVehicle, initialReferredId]);
 
   const handleVehicleSelect = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
   };
 
   const handleQuote = async () => {
-    if (!selectedVehicle || !buyerRut || !ownerOption) {
+    if (!selectedVehicle || !buyerRut || !ownerOption || !referredId) {
       Alert.alert('Error', 'Por favor complete todos los campos requeridos');
       return;
     }
 
     try {
-      // 1. Primero obtenemos las compañías
-      const companiesResponse = await searchCompanies();
-      const companies = companiesResponse.data.companies || [];
-      console.log(companies);
-      if (companies.length === 0) {
-        throw new Error('No hay compañías disponibles para cotizar');
-      }
-
-      // 2. Preparar los datos base para la cotización
-      const baseQuoteData = {
+      const quoteData = {
+        referredId: referredId,
         ppu: selectedVehicle.ppu,
         brand: selectedVehicle.brand,
         model: selectedVehicle.model,
         year: selectedVehicle.year,
+        colour: selectedVehicle.colour,
+        engineNum: selectedVehicle.engineNum,
         purchaserId: buyerRut,
         ownerOption: OWNER_OPTIONS_MAP[ownerOption as keyof typeof OWNER_OPTIONS_MAP],
+        companyAlias: "aseguradora1"
       };
 
-      // 3. Crear las promesas de cotización para cada compañía
-      const quotePromises = companies.map(company => 
-        quoteVehicle({
-          ...baseQuoteData,
-          companyAlias: company.alias
-        })
-      );
-
-      // 4. Ejecutar todas las cotizaciones en paralelo
-      const results = await Promise.all(quotePromises);
+      const response = await quoteVehicle(quoteData);
       
-      // 5. Combinar todos los planes de las diferentes compañías
-      const allPlans = results
-        .filter(response => response.status === 200)
-        .map(response => response.data.plans)
-        .flat();
-
-      if (allPlans.length === 0) {
-        throw new Error('No se encontraron planes disponibles');
+      if (response.data.user) {
+        await updateUserData(response.data.user);
       }
 
-      // 6. Navegar a la pantalla de resultados
       router.push({
         pathname: '/(quote)/quote-results',
         params: {
-          selectedVehicle: encodeURIComponent(JSON.stringify(selectedVehicle)),
-          plans: encodeURIComponent(JSON.stringify(allPlans))
+          plans: JSON.stringify(response.data.plans),
+          referredId: response.data.referredId,
+          vehicle: JSON.stringify(selectedVehicle)
         }
       });
 
@@ -153,28 +119,52 @@ export default function SearchResultsScreen() {
     );
   };
 
+  const getSearchValues = () => {
+    try {
+      const searchParams = JSON.parse(value as string);
+      return (
+        <View style={styles.searchValueContainer}>
+          {searchParams.ownerId && (
+            <View style={styles.searchItem}>
+              <Ionicons name="person-outline" size={20} color={themeColors.textColorAccent} />
+              <ThemedText variant="subTitle" color={themeColors.textColorAccent}>
+                {searchParams.ownerId}
+              </ThemedText>
+            </View>
+          )}
+          {searchParams.ppu && (
+            <View style={styles.searchItem}>
+              <Ionicons name="car-outline" size={20} color={themeColors.textColorAccent} />
+              <ThemedText variant="subTitle" color={themeColors.textColorAccent}>
+                {searchParams.ppu}
+              </ThemedText>
+            </View>
+          )}
+        </View>
+      );
+    } catch (error) {
+      return null;
+    }
+  };
+
   return (
     <ThemedLayout padding={[0, 24]}>
       <View style={styles.content}>
         <View style={styles.header}>
           <ThemedText variant="superTitle">
-            Resultados para {type === 'plate' ? 'la patente' : 'el RUT'}
+            Resultado de la Búsqueda
           </ThemedText>
-          <ThemedText variant="superTitle" color={themeColors.textColorAccent} marginBottom={8}>
-            {value}
-          </ThemedText>
+          {getSearchValues()}
           <ThemedText variant="paragraph" color={themeColors.textParagraph}>
-            {vehicles.length > 0 
-              ? `Hemos encontrado ${vehicles.length} resultado${vehicles.length !== 1 ? 's' : ''}`
-              : 'No se encontraron vehículos'}
+            {vehicle 
+              ? 'Hemos encontrado el siguiente vehículo'
+              : 'No se encontró el vehículo'}
           </ThemedText>
         </View>
 
-        <View>
-          {vehicles.map((vehicle, index) => (
-            <VehicleCard key={index} vehicle={vehicle} />
-          ))}
-        </View>
+        {vehicle && (
+          <VehicleCard vehicle={vehicle} />
+        )}
 
         <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
 
@@ -204,7 +194,7 @@ export default function SearchResultsScreen() {
         text="Siguiente"
         onPress={handleQuote}
         style={styles.nextButton}
-        disabled={!selectedVehicle || !buyerRut || !ownerOption}
+        disabled={!selectedVehicle || !buyerRut || !ownerOption || !referredId}
       />
     </ThemedLayout>
   );
@@ -243,5 +233,14 @@ const styles = StyleSheet.create({
     height: 1,
     width: '100%',
     marginVertical: 20,
+  },
+  searchValueContainer: {
+    marginVertical: 16,
+    gap: 8,
+  },
+  searchItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 }); 

@@ -41,9 +41,9 @@ export function PersistentAuthWrapper({ children }: { children: React.ReactNode 
     const isPublicRoute = PUBLIC_ROUTES.includes(segments[0]);
     const isPublicAuthRoute = inAuthGroup && PUBLIC_AUTH_ROUTES.includes(segments[1] || '');
 
-    console.log('Current segments:', segments);
-    console.log('Is public route:', isPublicRoute);
-    console.log('Is public auth route:', isPublicAuthRoute);
+    //console.log('Current segments:', segments);
+    //console.log('Is public route:', isPublicRoute);
+    //console.log('Is public auth route:', isPublicAuthRoute);
 
     setTimeout(() => {
       if (isPublicRoute || isPublicAuthRoute) {

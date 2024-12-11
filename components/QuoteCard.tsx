@@ -4,27 +4,11 @@ import { ThemedText } from './ThemedText';
 import { ThemedButton } from './ThemedButton';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
-import { SvgXml } from 'react-native-svg';
-import { useTheme } from '@/context/ThemeContext';
 import { Logo } from './Logo';
+import { InsurancePlan } from '@/types/quote';
 
 interface QuoteCardProps {
-  plan: {
-    planName: string;
-    insuranceCompany: string;
-    deductible: number;
-    price: number;
-    priceUf: number;
-    discount: string;
-    logos: {
-      light: string;
-      dark: string;
-    };
-    coverages: {
-      title: string;
-      description: string;
-    }[];
-  };
+  plan: InsurancePlan;
   onPress?: () => void;
   showButton?: boolean;
 }
@@ -32,32 +16,30 @@ interface QuoteCardProps {
 export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const themeColors = useThemeColor();
-  const { currentTheme } = useTheme();
-  const discountPercent = parseFloat(plan.discount);
-  const finalPrice = plan.price - (plan.price * (discountPercent / 100));
+  const discountPercent = plan.discount * 100; // Convertir a porcentaje
+  
+  // Calcular valores mensuales
+  const monthlyPrice = Math.round(plan.price / 12);
+  const monthlyFinalPrice = Math.round(monthlyPrice - (monthlyPrice * plan.discount));
+  const monthlyPriceUf = Number((plan.priceUf / 12).toFixed(2));
 
-  const handlePress = () => {
-    if (onPress) {
-      onPress();
-    }
-  };
-
-  // Datos de ejemplo para las coberturas
-  const mockCoverages = [
-    { title: 'Robo del vehículo', description: 'Valor comercial' },
-    { title: 'Pérdida total', description: 'Valor comercial en caso de daños mayores al 65% del valor' },
-    { title: 'Daños a terceros', description: 'Hasta 1.000 UF entre daños emergentes, morales y lucro cesante' },
-    { title: 'Tipo de taller', description: 'Oficial de la marca' },
-    { title: 'Auto de reemplazo', description: 'Limitado hasta 45 días' },
-    { title: 'Reposición a nuevo', description: 'Hasta 1 año después de comprado' },
-    { title: 'Promoción', description: '30% de dcto en 6 cuotas: N° 2, 4, 6, 8, 10 y 12 de la primera vigencia' },
+  // Mapear las coberturas desde los datos del plan
+  const coverages = [
+    { title: 'Robo del vehículo', description: plan.stolenVehicle },
+    { title: 'Pérdida total', description: plan.totalLoss },
+    { title: 'Daños a terceros', description: plan.damageThirdParty },
+    { title: 'Tipo de taller', description: plan.workshopType },
+    ...(plan.details ? plan.details.map(detail => ({
+      title: 'Detalle adicional',
+      description: detail
+    })) : [])
   ];
 
   return (
     <View style={[styles.card, { borderColor: themeColors.borderBackgroundColor }]}>
       <View style={styles.cardHeader}>
         <View style={styles.logoContainer}>
-          <Logo></Logo>
+          <Logo />
         </View>
         <ThemedText variant='paragraph' style={styles.planName}>{plan.planName}</ThemedText>
         <ThemedText variant="title" style={styles.deductible}>
@@ -83,7 +65,7 @@ export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) 
 
       {isExpanded && (
         <View style={styles.coveragesContainer}>
-          {mockCoverages.map((coverage, index) => (
+          {coverages.map((coverage, index) => (
             <View key={index} style={styles.coverageItem}>
               <View style={[styles.bulletPoint, { backgroundColor: themeColors.status.success }]} />
               <View style={styles.coverageText}>
@@ -92,12 +74,6 @@ export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) 
               </View>
             </View>
           ))}
-          <Pressable 
-            style={styles.seeMoreButton} 
-            onPress={() => Linking.openURL('https://connect360.cl')}
-          >
-            <ThemedText style={{ color: themeColors.status.info }}>Ver más {'>'}</ThemedText>
-          </Pressable>
         </View>
       )}
 
@@ -110,20 +86,23 @@ export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) 
           )}
           {discountPercent > 0 && (
             <ThemedText style={[styles.originalPrice, { color: themeColors.textParagraph }]}>
-              ${plan.price.toLocaleString('es-CL')}
+              ${monthlyPrice.toLocaleString('es-CL')}
             </ThemedText>
           )}
         </View>
         <ThemedText style={[styles.finalPrice, { color: themeColors.status.success }]}>
-          ${finalPrice.toLocaleString('es-CL')}
+          ${monthlyFinalPrice.toLocaleString('es-CL')}
         </ThemedText>
         <ThemedText variant="paragraph">
-          Cuota mensual {plan.priceUf} UF
+          Cuota mensual {monthlyPriceUf} UF
         </ThemedText>
       </View>
 
       {showButton && (
-        <ThemedButton text="Comprar" onPress={handlePress} />
+        <ThemedButton 
+          text="Comprar" 
+          onPress={onPress || (() => {})} 
+        />
       )}
     </View>
   );

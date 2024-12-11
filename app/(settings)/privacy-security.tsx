@@ -40,18 +40,30 @@ export default function PrivacySecurityScreen() {
   
     const toggleSwitch = async (id: keyof typeof securitySettings) => {
       try {
+        // Actualizar el estado inmediatamente para una mejor experiencia de usuario
+        setSecuritySettings(prevSettings => ({
+          ...prevSettings,
+          [id]: !prevSettings[id],
+        }));
+
         const updatedSettings = {
           ...securitySettings,
           [id]: !securitySettings[id],
         };
-        await updateLocalSecuritySettings(updatedSettings);
-        setSecuritySettings(updatedSettings);
-    
-        // Actualizar AsyncStorage directamente para persistentAuthEnabled
-        if (id === 'persistentAuthEnabled') {
-          await AsyncStorage.setItem('persistentAuthEnabled', updatedSettings[id].toString());
-        }
+
+        // Realizar las actualizaciones asíncronas
+        await Promise.all([
+          updateLocalSecuritySettings(updatedSettings),
+          id === 'persistentAuthEnabled' 
+            ? AsyncStorage.setItem('persistentAuthEnabled', (!securitySettings[id]).toString())
+            : Promise.resolve()
+        ]);
       } catch (error) {
+        // En caso de error, revertir el cambio
+        setSecuritySettings(prevSettings => ({
+          ...prevSettings,
+          [id]: !prevSettings[id],
+        }));
         console.error('Error al actualizar configuración de seguridad:', error);
         Alert.alert('Error', 'No se pudo actualizar la configuración de seguridad');
       }
@@ -69,7 +81,7 @@ export default function PrivacySecurityScreen() {
       <TouchableOpacity
         key={option.id}
         style={[styles.optionContainer, { borderBottomWidth: 0.5, borderColor: themeColors.borderBackgroundColor }]}
-        onPress={() => option.type === 'navigate' && option.route && router.push(option.route as Href<string>)}
+        onPress={() => option.type === 'navigate' && option.route && router.push(option.route as Href)}
       >
         <View style={styles.optionContent}>
           <Ionicons

@@ -95,7 +95,7 @@ export default function PersonalInfoScreen() {
         }
 
         if (!validateAddress(personalInfo.direccion)) {
-            newErrors.direccion = 'La dirección solo puede contener letras, números, espacios, comas y puntos';
+            newErrors.direccion = 'La dirección inválida';
             isValid = false;
         }
 

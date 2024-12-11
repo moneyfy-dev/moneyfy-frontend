@@ -15,14 +15,14 @@ import { Onboarding } from '@/components/Onboarding';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { hydrateUserData } from '@/services/userService';
 
-const FORCE_SHOW_ONBOARDING = false; // Mantenemos esto para desarrollo
+const FORCE_SHOW_ONBOARDING = true; // Mantenemos esto para desarrollo
 
 export default function HomeScreen() {
   const themeColors = useThemeColor();
   const router = useRouter();
   const { user, isLoading, updateUserData } = useAuth();
   const typedUser = user as User;
-  const [showBalance, setShowBalance] = useState(true);
+  const [showBalance, setShowBalance] = useState(false);
   const [personalInfo, setPersonalInfo] = useState({
     nombre: '',
     apellido: '',
@@ -230,7 +230,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.push('/(wallet)/wallet')}
+          onPress={() => router.push('/(wallet)/withdrawal')}
           style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
           <View style={styles.actionButtonIcon}>
             <Ionicons name="cash-outline" size={20} color={themeColors.white} />

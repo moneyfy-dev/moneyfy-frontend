@@ -28,6 +28,8 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
     const handleDeleteAccount = async () => {
         if (selectedAccount) {
             try {
+                console.log('selectedAccount', selectedAccount);
+                console.log('selectedId', selectedAccount.accountId);
                 await deleteAccount(selectedAccount.accountId);
                 Alert.alert('Éxito', 'Cuenta eliminada correctamente');
                 onAccountUpdated();

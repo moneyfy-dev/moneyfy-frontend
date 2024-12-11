@@ -24,6 +24,7 @@ export interface LoginResponse {
   
   export interface User {
     userId: string;
+    codeToSuggest: string;
     personalData: {
       name: string;
       surname: string;
@@ -38,6 +39,7 @@ export interface LoginResponse {
     wallet: Wallet;
     accounts: any[];
     referredPeople: any[];
+    deleteAccount: null;
   }
   
   export interface AuthContextProps {

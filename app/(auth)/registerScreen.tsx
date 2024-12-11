@@ -34,6 +34,7 @@ export default function RegisterScreen() {
         password: false,
         confirmPassword: false
     });
+    const [referralCode, setReferralCode] = useState('');
 
     useEffect(() => {
         const isValid = validateName(nombre) && validateName(apellido) &&
@@ -127,7 +128,13 @@ export default function RegisterScreen() {
         }
 
         try {
-            const response = await register(sanitizedNombre, sanitizedApellido, email.trim(), password);
+            const response = await register(
+                sanitizedNombre, 
+                sanitizedApellido, 
+                email.trim(), 
+                password,
+                referralCode.trim() || undefined
+            );
             
             if (response.status === 200) {
                 Alert.alert('Éxito', response.message);
@@ -211,6 +218,15 @@ export default function RegisterScreen() {
                     error={confirmPasswordError}
                 />
 
+                <View style={styles.referralContainer}>
+                    <ThemedInput
+                        label="¿Tienes un código de sugerido?"
+                        placeholder="Ingresa el código aquí"
+                        value={referralCode}
+                        onChangeText={setReferralCode}
+                    />
+                </View>
+
                 <View style={styles.termsContainer}>
                     <TouchableOpacity onPress={() => setTermsAccepted(!termsAccepted)}>
                         <Ionicons
@@ -275,5 +291,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         marginTop: 16,
+    },
+    referralContainer: {
+        marginTop: 16,
+        marginBottom: 8,
+    },
+    referralText: {
+        marginBottom: 8,
     },
 });

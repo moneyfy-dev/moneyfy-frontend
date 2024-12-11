@@ -33,7 +33,7 @@ const ConfigScreen = () => {
     { title: 'Información personal', icon: 'person-outline', route: '/(settings)/personal-info' },
     { title: 'Configuración de pago', icon: 'card-outline', route: '/(settings)/payment-config' },
     { title: 'Apariencia', icon: 'color-palette-outline', route: '/(settings)/appearance' },
-    { title: 'Código de referido', icon: 'qr-code-outline', route: '/(settings)/referral-code' },
+    { title: 'Código de referido', icon: 'ticket-outline', route: '/(settings)/referral-code' },
     { title: 'Privacidad y seguridad', icon: 'lock-closed-outline', route: '/(settings)/privacy-security' },
     { title: 'Notificaciones', icon: 'notifications-outline', route: '/(settings)/notifications' },
     { title: 'Cerrar sesión', icon: 'log-out-outline', onPress: handleLogout },

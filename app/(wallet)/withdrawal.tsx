@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { AccountListScreen } from '@/components/AccountListScreen';
 import { useAuth } from '@/context/AuthContext';
-import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '@/constants/Colors';
-import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { TabSelector } from '@/components/TabSelector';
@@ -17,7 +15,8 @@ import { ThemedButton } from '@/components/ThemedButton';
 type TabType = 'account' | 'history';
 
 export default function WithdrawalScreen() {
-    const [amount, setAmount] = useState('40.000');
+    const [rawAmount, setRawAmount] = useState('');
+    const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState<TabType>('account');
     const themeColors = useThemeColor();
     const { user } = useAuth();
@@ -28,13 +27,44 @@ export default function WithdrawalScreen() {
         { type: 'history', label: 'Historial', title: 'Retiros', icon: 'time-outline' }
     ];
 
+    const availableBalance = user?.wallet?.availableBalance || 0;
+    const MAX_DIGITS = 9; // Máximo 999,999,999
+
+    const handleAmountChange = (value: string) => {
+        // Remover todos los caracteres no numéricos
+        const cleanValue = value.replace(/[^0-9]/g, '');
+        
+        // Verificar que no exceda el límite de dígitos
+        if (cleanValue.length > MAX_DIGITS) return;
+        
+        // Actualizar el valor raw
+        setRawAmount(cleanValue);
+
+        // Validar el monto
+        const numericAmount = parseInt(cleanValue) || 0;
+        if (numericAmount > availableBalance) {
+            setError('El monto supera tu saldo disponible');
+        } else {
+            setError('');
+        }
+    };
+
+    const formatDisplayAmount = (value: string): string => {
+        if (!value) return '0';
+        return parseInt(value).toLocaleString('es-CL');
+    };
+
+    const handleWithdrawal = () => {
+        if (error) return;
+        console.log('Monto a retirar:', parseInt(rawAmount));
+    };
+
     return (
         <ThemedLayout
             variant="card"
             gradientColors={[Colors.common.green3, Colors.common.green5]}
         >
             <View style={styles.container}>
-
                 <View style={styles.headerContainer}>
                     <TouchableOpacity onPress={() => router.back()}>
                         <Ionicons name="chevron-back" size={24} color={themeColors.accentInDarkMode} />
@@ -43,22 +73,49 @@ export default function WithdrawalScreen() {
 
                 <View style={styles.headerSection}>
                     <View style={styles.header}>
-                        <ThemedText variant="title">Cuanto deseas retirar?</ThemedText>
-                        <ThemedText
-                            variant="superTitle"
-                            style={[styles.amountInput, { color: themeColors.textColorAccent }]}
-                        >
-                            ${amount}
-                        </ThemedText>
+                        <ThemedText variant="title">¿Cuánto deseas retirar?</ThemedText>
+                        <View style={styles.amountContainer}>
+                            <View style={styles.inputContainer}>
+                                <ThemedText
+                                    variant="superTitle"
+                                    style={[styles.currencySymbol, { color: themeColors.textColorAccent }]}
+                                >
+                                    $
+                                </ThemedText>
+                                <TextInput
+                                    value={formatDisplayAmount(rawAmount)}
+                                    onChangeText={handleAmountChange}
+                                    keyboardType="numeric"
+                                    style={[
+                                        styles.amountInput,
+                                        { color: themeColors.textColorAccent }
+                                    ]}
+                                    placeholder="0"
+                                    placeholderTextColor={themeColors.textColorAccent}
+                                    maxLength={12} // Considerando los puntos del formato
+                                    selectTextOnFocus={true} // Selecciona todo el texto al hacer focus
+                                />
+                            </View>
+                            {error && (
+                                <ThemedText
+                                    variant="paragraph"
+                                    style={styles.errorText}
+                                    color={Colors.status.error}
+                                >
+                                    {error}
+                                </ThemedText>
+                            )}
+                        </View>
                         <ThemedText variant="paragraph" color={themeColors.textColor}>
-                            Disponible para retiro $72.000
+                            Disponible para retiro ${availableBalance.toLocaleString('es-CL')}
                         </ThemedText>
                     </View>
 
                     <ThemedButton
                         text="Siguiente"
-                        onPress={() => {/* Manejar siguiente */ }}
+                        onPress={handleWithdrawal}
                         style={styles.nextButton}
+                        disabled={!rawAmount || parseInt(rawAmount) === 0 || !!error}
                     />
                 </View>
 
@@ -72,8 +129,8 @@ export default function WithdrawalScreen() {
                     {activeTab === 'account' ? (
                         <AccountListScreen
                             accounts={user?.accounts || []}
-                            onSelectAccount={(accountId) => {/* Manejar selección */ }}
-                            onAccountUpdated={() => {/* Manejar actualización */ }}
+                            onSelectAccount={(accountId) => {/* Manejar selección */}}
+                            onAccountUpdated={() => {/* Manejar actualización */}}
                         />
                     ) : (
                         <WithdrawalHistory />
@@ -90,72 +147,62 @@ const styles = StyleSheet.create({
     },
     headerSection: {
         padding: 24,
-        flex: 0.3,
+        flex: 0.6,
         alignItems: 'center',
-        justifyContent: 'flex-end',
     },
     header: {
         alignItems: 'center',
         marginBottom: 24,
         width: '100%',
-        position: 'relative',
     },
     headerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         paddingHorizontal: 24,
         paddingVertical: 20,
     },
     cardContainer: {
-        flex: 0.7,
+        flex: 0.4,
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         padding: 24,
     },
+    amountContainer: {
+        marginVertical: 16,
+        alignItems: 'center',
+        width: '100%',
+        paddingHorizontal: 20,
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 80,
+        paddingHorizontal: 20,
+    },
+    currencySymbol: {
+        fontSize: 48,
+        lineHeight: 56,
+        marginRight: 4,
+    },
     amountInput: {
         fontSize: 48,
         lineHeight: 56,
-        marginVertical: 16,
+        minWidth: 200,
+        maxWidth: '80%',
+        textAlign: 'center',
+        padding: 0,
+        includeFontPadding: false,
+        textAlignVertical: 'center',
+    },
+    errorText: {
+        marginTop: 8,
+        textAlign: 'center',
     },
     nextButton: {
+        marginTop: 20,
         padding: 16,
         borderRadius: 12,
-        alignItems: 'center',
-    },
-    tabContainer: {
-        flexDirection: 'row',
-        gap: 16,
-        marginBottom: 24,
-    },
-    tabButton: {
-        flex: 1,
-    },
-    tabButtonGradient: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-        borderRadius: 16,
-        gap: 12,
-    },
-    tabButtonContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-        borderRadius: 16,
-        gap: 12,
-    },
-    tabIcon: {
-        borderRadius: 8,
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    backButton: {
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        padding: 8,
+        width: '100%',
     },
 });

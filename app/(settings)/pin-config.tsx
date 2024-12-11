@@ -9,6 +9,8 @@ import * as SecureStore from 'expo-secure-store';
 import { sha256 } from 'js-sha256';
 import { ThemedButton } from '@/components/ThemedButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LottieAnimation } from '@/components/LottieAnimation';
+import { ThemedView } from '@/components/ThemedView';
 
 const PIN_LENGTH = 4;
 const PIN_KEY = 'user_pin_set';
@@ -122,12 +124,12 @@ export default function SetPinScreen() {
         return (
             <View style={styles.pinContainer}>
                 {[...Array(PIN_LENGTH)].map((_, index) => (
-                    <View 
-                        key={index} 
+                    <View
+                        key={index}
                         style={[
-                            styles.pinDot, 
-                            { backgroundColor: index < currentPin.length ? themeColors.textColorAccent : themeColors.unfocusedBorderColor }
-                        ]} 
+                            styles.pinDot,
+                            { borderColor: index < currentPin.length ? themeColors.textColorAccent : themeColors.unfocusedBorderColor }
+                        ]}
                     />
                 ))}
             </View>
@@ -156,29 +158,14 @@ export default function SetPinScreen() {
         );
     };
 
-    const SuccessAnimation = () => {
-        const scaleValue = new Animated.Value(0);
-        
-        useEffect(() => {
-            Animated.spring(scaleValue, {
-                toValue: 1,
-                friction: 5,
-                useNativeDriver: true,
-            }).start();
-        }, []);
-
-        return (
-            <Animated.View style={[styles.successCircle, { transform: [{ scale: scaleValue }] }]}>
-                <Ionicons name="checkmark" size={80} color={themeColors.extremeContrastGray} />
-            </Animated.View>
-        );
-    };
 
     if (stage === 'success') {
         return (
             <ThemedLayout padding={[40, 40]}>
-                <SuccessAnimation />
-                <ThemedText variant="title" textAlign="center">
+                <ThemedView style={styles.successContainer}>
+                    <LottieAnimation style={styles.successCircle} name="Success" loop={false} />
+                </ThemedView>
+                <ThemedText variant="title" textAlign="center" marginBottom={20}>
                     PIN configurado exitosamente
                 </ThemedText>
                 <ThemedButton
@@ -192,9 +179,9 @@ export default function SetPinScreen() {
 
     return (
         <ThemedLayout padding={[40, 40]}>
-            <ThemedText variant="title" textAlign="center">
+            <ThemedText variant="title" textAlign="center" marginBottom={20}>
                 {stage === 'verify' ? 'Ingrese su PIN actual' :
-                 stage === 'set' ? 'Establezca su nuevo PIN' : 'Confirme su nuevo PIN'}
+                    stage === 'set' ? 'Establezca su nuevo PIN' : 'Confirme su nuevo PIN'}
             </ThemedText>
             {renderPinDots()}
             {error ? <ThemedText variant="paragraph" color={themeColors.status.error} textAlign="center">{error}</ThemedText> : null}
@@ -213,6 +200,7 @@ const styles = StyleSheet.create({
         width: 20,
         height: 20,
         borderRadius: 10,
+        borderWidth: 2,
         marginHorizontal: 10,
     },
     numberPad: {
@@ -227,18 +215,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     successContainer: {
+        display: 'flex',
         flex: 1,
         gap: 40,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: 'transparent',
     },
+
     successCircle: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        backgroundColor: '#4CAF50', // Color verde, puedes ajustarlo según tu tema
+        width: 260,
+        height: 260,
         justifyContent: 'center',
         alignItems: 'center',
+        marginBottom: 20,
     },
     backButton: {
         marginTop: 24,

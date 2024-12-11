@@ -19,6 +19,7 @@ export interface SearchResponse {
   message: string;
   status: number;
   data: {
+    referredId: string | number | (string | number)[] | null | undefined;
     companies?: Company[];
     vehicle?: Vehicle[];
     tokens: {
@@ -40,27 +41,48 @@ export interface QuoteVehicleParams {
 }
 
 export interface InsurancePlan {
-  id: string;
-  priceId: string;
+  planId: string;
   insuranceCompany: string;
   planName: string;
   price: number;
   priceUf: number;
   deductible: number;
-  discount: string;
+  discount: number;
+  stolenVehicle: string;
+  workshopType: string;
+  totalLoss: string;
+  damageThirdParty: string;
+  details: string[];
+  createdDate: string;
+  updatedDate: string;
 }
 
 export interface QuoteVehicleResponse {
   message: string;
   status: number;
   data: {
+    referredId: string;
+    plans: InsurancePlan[];
+    vehicle: Vehicle;
+    user: any;
     tokens: {
       jwtSession: string;
       jwtRefresh: string;
     };
-    user: any;
-    plans: InsurancePlan[];
   };
+}
+
+export interface SelectPlanParams {
+  referredId: string;
+  planId: string;
+  insuranceCompany: string;
+  planName: string;
+  price: number;
+  priceUf: number;
+  deductible: number;
+  street: string;
+  streetNumber: number;
+  department: string;
 }
 
 export const OWNER_OPTIONS_MAP = {
