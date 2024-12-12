@@ -11,6 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { validateName, validateEmail, validateRUT } from '@/utils/validations';
 import axios from 'axios';
 import { ThemedCheckGroup } from '@/components/ThemedCheckGroup';
+import { MessageModal } from '@/components/MessageModal';
 
 const BANKS = [
   "Banco Scotiabank", "Banco BBVA", "Banco Itau", "Banco BICE", "Banco HSBC",
@@ -30,6 +31,10 @@ export default function AddAccountScreen() {
     const [bank, setBank] = useState('');
     const [accountType, setAccountType] = useState('');
     const [accountNumber, setAccountNumber] = useState('');
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [successModalVisible, setSuccessModalVisible] = useState(false);
     const [errors, setErrors] = useState({
         personalId: '',
         holderName: '',
@@ -84,7 +89,8 @@ export default function AddAccountScreen() {
 
     const handleSave = async () => {
         if (!validateForm()) {
-            Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
+            setErrorMessage('Por favor, corrija los errores en el formulario.');
+            setIsErrorModalVisible(true);
             return;
         }
 
@@ -108,7 +114,8 @@ export default function AddAccountScreen() {
 
             if (response && response.data && response.data.user) {
                 await updateUserData(response.data.user);
-                Alert.alert('Éxito', accountId ? 'Cuenta actualizada correctamente' : 'Cuenta agregada correctamente');
+                setSuccessMessage(accountId ? 'Cuenta actualizada correctamente' : 'Cuenta agregada correctamente');
+                setSuccessModalVisible(true);
                 router.back();
             } else {
                 throw new Error('Respuesta inesperada del servidor');
@@ -118,7 +125,8 @@ export default function AddAccountScreen() {
             if (axios.isAxiosError(error)) {
                 console.error('Error response:', error);
             }
-            Alert.alert('Error', accountId ? 'No se pudo actualizar la cuenta' : 'No se pudo agregar la cuenta');
+            setErrorMessage(accountId ? 'No se pudo actualizar la cuenta' : 'No se pudo agregar la cuenta');
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -195,6 +203,36 @@ export default function AddAccountScreen() {
                 text="Guardar"
                 onPress={handleSave}
                 style={styles.Button}
+            />
+
+            <MessageModal
+                isVisible={successModalVisible}
+                onClose={() => setSuccessModalVisible(false)}
+                title="Éxito"
+                message={successMessage}
+                icon={{
+                    name: "checkmark-circle-outline",
+                    color: themeColors.status.success
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setSuccessModalVisible(false)
+                }}
+            />
+
+            <MessageModal
+                isVisible={isErrorModalVisible}
+                onClose={() => setIsErrorModalVisible(false)}
+                title="Error"
+                message={errorMessage}
+                icon={{
+                    name: "alert-circle-outline",
+                    color: themeColors.status.error
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsErrorModalVisible(false)
+                }}
             />
         </ThemedLayout>
     );

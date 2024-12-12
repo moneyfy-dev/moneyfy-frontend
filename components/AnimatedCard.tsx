@@ -21,7 +21,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
     hideCard, 
     children, 
     style, 
-    openPercentage = 75
+    openPercentage = 65
 }) => {
     const themeColors = useThemeColor();
     const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;

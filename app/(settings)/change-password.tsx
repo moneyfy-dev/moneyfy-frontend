@@ -6,32 +6,40 @@ import { ThemedInput } from '@/components/ThemedInput';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedButton } from '@/components/ThemedButton';
 import { changePassword } from '@/services/securityService';
+import { MessageModal } from '@/components/MessageModal';
 
 export default function ChangePasswordScreen() {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [successModalVisible, setSuccessModalVisible] = useState(false);
 
     const themeColors = useThemeColor();
     const router = useRouter();
 
     const handleSave = async () => {
         if (newPassword !== confirmPassword) {
-            Alert.alert('Error', 'Las nuevas contraseñas no coinciden');
+            setErrorMessage('Las nuevas contraseñas no coinciden');
+            setIsErrorModalVisible(true);
             return;
         }
 
         try {
             const response = await changePassword(currentPassword, newPassword);
             if (response.status === 200) {
-                Alert.alert('Éxito', response.message || 'Contraseña cambiada correctamente');
+                setSuccessMessage(response.message || 'Contraseña cambiada correctamente');
+                setSuccessModalVisible(true);
                 router.back();
             } else {
-                Alert.alert('Error', response.message || 'No se pudo cambiar la contraseña');
+                setErrorMessage(response.message || 'No se pudo cambiar la contraseña');
+                setIsErrorModalVisible(true);
             }
         } catch (error) {
-            console.error('Error al cambiar la contraseña:', error);
-            Alert.alert('Error', 'No se pudo cambiar la contraseña. Por favor, intente de nuevo.');
+            setErrorMessage('No se pudo cambiar la contraseña. Por favor, intente de nuevo.');
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -68,6 +76,36 @@ export default function ChangePasswordScreen() {
                 onPress={handleSave}
                 style={styles.button}
             />
+
+            <MessageModal
+                isVisible={isErrorModalVisible}
+                onClose={() => setIsErrorModalVisible(false)}
+                title="Error"
+                message={errorMessage}
+                icon={{
+                    name: "alert-circle-outline",
+                    color: themeColors.status.error
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsErrorModalVisible(false)
+                }}
+            />
+
+            <MessageModal
+                isVisible={successModalVisible}
+                onClose={() => setSuccessModalVisible(false)}
+                title="Éxito"
+                message={successMessage}
+                icon={{
+                    name: "checkmark-circle-outline",
+                    color: themeColors.status.success
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setSuccessModalVisible(false)
+                }}
+            />
         </ThemedLayout>
     );
 }
@@ -78,5 +116,5 @@ const styles = StyleSheet.create({
     },
     button: {
         marginTop: 24,
-    }
+    },
 });

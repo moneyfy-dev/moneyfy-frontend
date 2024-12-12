@@ -11,6 +11,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter, Href } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { ThemedButton } from '@/components/ThemedButton';
+import { MessageModal } from '@/components/MessageModal';
 
 export default function RegisterScreen() {
     const [nombre, setNombre] = useState('');
@@ -35,6 +36,10 @@ export default function RegisterScreen() {
         confirmPassword: false
     });
     const [referralCode, setReferralCode] = useState('');
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successModalVisible, setSuccessModalVisible] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
         const isValid = validateName(nombre) && validateName(apellido) &&
@@ -123,7 +128,8 @@ export default function RegisterScreen() {
         const sanitizedApellido = sanitizeName(apellido);
 
         if (!validateName(sanitizedNombre) || !validateName(sanitizedApellido) || !validateEmail(email) || !validatePassword(password) || password !== confirmPassword || !termsAccepted) {
-            Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
+            setErrorMessage('Por favor, corrija los errores en el formulario.');
+            setIsErrorModalVisible(true);
             return;
         }
 
@@ -137,7 +143,8 @@ export default function RegisterScreen() {
             );
             
             if (response.status === 200) {
-                Alert.alert('Éxito', response.message);
+                setSuccessMessage(response.message);
+                setSuccessModalVisible(true);
                 router.push({
                     pathname: '/confirmation-code',
                     params: { 
@@ -149,12 +156,13 @@ export default function RegisterScreen() {
         } catch (error: any) {
             console.error('Error en el registro:', error);
             if (error instanceof Error && error.message === "The user is already registered") {
-                Alert.alert('Error', error.message);
+                setErrorMessage('El usuario ya existe');
             } else if (error.response && error.response.status === 406) {
-                Alert.alert('Error', error.message);
+                setErrorMessage(error.response.status + ' ' + error.message);
             } else {
-                Alert.alert('Error', error.message);
+                setErrorMessage(error.response.status + ' ' + error.message);
             }
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -267,6 +275,36 @@ export default function RegisterScreen() {
                     </Link>
                 </View>
             </View>
+
+            <MessageModal
+                isVisible={isErrorModalVisible}
+                onClose={() => setIsErrorModalVisible(false)}
+                title="Error"
+                message={errorMessage}
+                icon={{
+                    name: "alert-circle-outline",
+                    color: themeColors.status.error
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsErrorModalVisible(false)
+                }}
+            />
+
+            <MessageModal
+                isVisible={successModalVisible}
+                onClose={() => setSuccessModalVisible(false)}
+                title="Éxito"
+                message={successMessage}
+                icon={{
+                    name: "checkmark-circle-outline",
+                    color: themeColors.status.success
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setSuccessModalVisible(false)
+                }}
+            />
         </ThemedLayout>
     );
 }

@@ -11,19 +11,21 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ThemedDatePicker } from '@/components/ThemedDatePicker';
 import { ThemedButton } from '@/components/ThemedButton';
-import { mockReferrals } from '@/mocks/referrals';
 import { Referral } from '@/types/referral';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { ReferralStatus } from '@/types/referral';
 import { ThemedCheckGroup } from '@/components/ThemedCheckGroup';
+import { useAuth } from '@/context/AuthContext';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function ReferidosScreen() {
   const router = useRouter();
   const themeColors = useThemeColor();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [referrals, setReferrals] = useState<Referral[]>(mockReferrals);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState({
     status: '',
     dateRange: {
@@ -32,35 +34,61 @@ export default function ReferidosScreen() {
     }
   });
 
+  const { user, hydrateUserData } = useAuth();
+
+  useEffect(() => {
+    setIsLoading(true);
+    const loadInitialData = async () => {
+      await hydrateUserData(true);
+      if (user?.referredPeople) {
+        setReferrals(user.referredPeople);
+      }
+    };
+
+    loadInitialData();
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (user?.referredPeople) {
+      setReferrals(user.referredPeople);
+    }
+  }, [user?.referredPeople]);
+
   const getStatusColor = (status: ReferralStatus) => {
     const colors: Record<ReferralStatus, string> = {
-      cotizando: themeColors.status.warning,
-      inspeccion: themeColors.status.info,
-      aprobado: themeColors.status.success,
-      rechazado: themeColors.status.error,
+      Iniciando: themeColors.green4to5,
+      Cotizando: themeColors.green3to4,
+      Recopilando: themeColors.green2to3,
+      Pendiente: themeColors.status.info,
+      Aprobado: themeColors.status.success,
+      Rechazado: themeColors.status.error,
+      Caducado: themeColors.status.warning,
     };
     return colors[status];
   };
 
   const getTextColor = (status: ReferralStatus) => {
-    return status === 'cotizando' ? Colors.common.black : Colors.common.white;
+    return status === 'Caducado' ? Colors.common.black : Colors.common.white;
   };
 
   const filterReferrals = useCallback(() => {
-    let filteredResults = [...mockReferrals];
+    if (!user?.referredPeople) return;
+
+    let filteredResults = [...user.referredPeople];
 
     // Filtrar por búsqueda
     if (searchQuery) {
       filteredResults = filteredResults.filter(referral => {
-        const fullName = `${referral.referredPersonalData.name} ${referral.referredPersonalData.surname}`.toLowerCase();
+        const fullName = `${referral.referredCarData.brand} ${referral.referredCarData.model}`.toLowerCase();
         return fullName.includes(searchQuery.toLowerCase());
       });
     }
 
     // Filtrar por estado
     if (filters.status) {
-      filteredResults = filteredResults.filter(referral => 
-        referral.referredStatus === filters.status
+      filteredResults = filteredResults.filter(referral =>
+        referral.referredStatus.toLowerCase() === filters.status.toLowerCase()
       );
     }
 
@@ -68,16 +96,16 @@ export default function ReferidosScreen() {
     if (filters.dateRange.start || filters.dateRange.end) {
       filteredResults = filteredResults.filter(referral => {
         const referralDate = new Date(referral.createdDate);
-        
+
         if (filters.dateRange.start && filters.dateRange.end) {
-          return referralDate >= filters.dateRange.start && 
-                 referralDate <= filters.dateRange.end;
+          return referralDate >= filters.dateRange.start &&
+            referralDate <= filters.dateRange.end;
         }
-        
+
         if (filters.dateRange.start) {
           return referralDate >= filters.dateRange.start;
         }
-        
+
         if (filters.dateRange.end) {
           return referralDate <= filters.dateRange.end;
         }
@@ -87,7 +115,7 @@ export default function ReferidosScreen() {
     }
 
     setReferrals(filteredResults);
-  }, [searchQuery, filters]);
+  }, [searchQuery, filters, user?.referredPeople]);
 
   const handleSearch = (text: string) => {
     setSearchQuery(text);
@@ -96,7 +124,6 @@ export default function ReferidosScreen() {
   };
 
   const handleLoadMore = () => {
-    // Implementar lógica de scroll infinito
   };
 
   const applyFilters = () => {
@@ -116,7 +143,23 @@ export default function ReferidosScreen() {
         end: null
       }
     });
-    setReferrals(mockReferrals);
+    if (user?.referredPeople) {
+      setReferrals(user.referredPeople);
+    }
+  };
+
+  const normalizeStatus = (status: string): ReferralStatus => {
+    const statusMap: { [key: string]: ReferralStatus } = {
+      'Iniciando': 'Iniciando',
+      'Cotizando': 'Cotizando',
+      'Recopilando': 'Recopilando',
+      'Pendiente': 'Pendiente',
+      'Aprobado': 'Aprobado',
+      'Rechazado': 'Rechazado',
+      'Caducado': 'Caducado'
+    };
+
+    return statusMap[status] || 'Iniciando';
   };
 
   const ReferralItem = ({ item, index, isLast }: { item: Referral, index: number, isLast: boolean }) => (
@@ -138,10 +181,13 @@ export default function ReferidosScreen() {
             size={24}
           />
           <View style={styles.referralInfo}>
-            
+
             <View style={styles.nameContainer}>
               <ThemedText variant="subTitleBold">
-                {item.referredPersonalData.name} {item.referredPersonalData.surname}
+                {item.referredCarData.brand} {' '}
+                <ThemedText variant="subTitleBold" color={themeColors.textColorAccent}>
+                  {item.referredCarData.model}
+                </ThemedText>
               </ThemedText>
 
               <ThemedText variant="notes">
@@ -152,11 +198,11 @@ export default function ReferidosScreen() {
             <View style={styles.statusContainer}>
               <View style={[
                 styles.statusBadge,
-                { backgroundColor: getStatusColor(item.referredStatus as ReferralStatus) }
+                { backgroundColor: getStatusColor(normalizeStatus(item.referredStatus)) }
               ]}>
                 <ThemedText
                   variant="paragraph"
-                  style={{ color: getTextColor(item.referredStatus as ReferralStatus) }}
+                  style={{ color: getTextColor(normalizeStatus(item.referredStatus)) }}
                 >
                   {item.referredStatus}
                 </ThemedText>
@@ -218,10 +264,13 @@ export default function ReferidosScreen() {
   );
 
   const statusOptions = [
-    { key: 'cotizando', label: 'COTIZANDO' },
-    { key: 'inspeccion', label: 'INSPECCIÓN' },
-    { key: 'aprobado', label: 'APROBADO' },
-    { key: 'rechazado', label: 'RECHAZADO' }
+    { key: 'Iniciando', label: 'INICIANDO' },
+    { key: 'Cotizando', label: 'COTIZANDO' },
+    { key: 'Recopilando', label: 'RECOPILANDO' },
+    { key: 'Pendiente', label: 'PENDIENTE' },
+    { key: 'Aprobado', label: 'APROBADO' },
+    { key: 'Rechazado', label: 'RECHAZADO' },
+    { key: 'Caducado', label: 'CADUCADO' }
   ];
 
   return (
@@ -235,7 +284,7 @@ export default function ReferidosScreen() {
         keyExtractor={(item) => item.referredId}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
-        style={[styles.list, { borderTopColor: themeColors.borderBackgroundColor}]}
+        style={[styles.list, { borderTopColor: themeColors.borderBackgroundColor }]}
         contentContainerStyle={styles.listContent}
       />
 
@@ -247,7 +296,7 @@ export default function ReferidosScreen() {
           {/* Filtro de Estado */}
           <View style={[styles.statusFilterContainer, { borderBottomColor: themeColors.borderBackgroundColor }]}>
             <ThemedText variant="subTitle" marginBottom={10}>Estado</ThemedText>
-            
+
             <ThemedCheckGroup
               options={statusOptions}
               selectedValue={filters.status}
@@ -257,7 +306,7 @@ export default function ReferidosScreen() {
           </View>
 
           {/* Filtro de Rango de Fechas */}
-          <View style={[styles.dateRangeContainer, {borderBottomColor: themeColors.borderBackgroundColor}]}>
+          <View style={[styles.dateRangeContainer, { borderBottomColor: themeColors.borderBackgroundColor }]}>
             <ThemedText variant="subTitle" marginBottom={10}>Rango de fechas</ThemedText>
 
             <ThemedDatePicker
@@ -299,6 +348,8 @@ export default function ReferidosScreen() {
         </View>
 
       </FiltersModal>
+
+      {isLoading && <LoadingScreen />}
     </ThemedListLayout>
   );
 }

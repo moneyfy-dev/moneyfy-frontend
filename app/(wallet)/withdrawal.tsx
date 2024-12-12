@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Dimensions, FlatList } from 'react-native';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -10,150 +10,230 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { TabSelector } from '@/components/TabSelector';
 import WithdrawalHistory from '@/app/(wallet)/withdrawal-history';
-import { ThemedButton } from '@/components/ThemedButton';
+import { AnimatedCard } from '@/components/AnimatedCard';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useCardVisibility } from '@/hooks/useCardVisibility';
+import { ThemedView } from '@/components/ThemedView';
+import { ThemedLayoutFlatList } from '@/components/ThemedLayoutFlatList';
+import { ThemedListLayout } from '@/components/ThemedListLayout';
+import { IconContainer } from '@/components/IconContainer';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 type TabType = 'account' | 'history';
 
+type WithdrawalRecord = {
+    id: string;
+    bank: string;
+    accountNumber: string;
+    amount: number;
+    date: string;
+    remaining: number;
+};
+
+// Mock data
+const mockWithdrawals: WithdrawalRecord[] = [
+    {
+        id: '1',
+        bank: 'Banco Falabella',
+        accountNumber: '17286536',
+        amount: 45000,
+        date: '2024-03-15',
+        remaining: 155000
+    },
+    {
+        id: '2',
+        bank: 'Banco Falabella',
+        accountNumber: '17286536',
+        amount: 35000,
+        date: '2024-02-15',
+        remaining: 200000
+    },
+    {
+        id: '3',
+        bank: 'Banco Falabella',
+        accountNumber: '17286536',
+        amount: 50000,
+        date: '2024-01-15',
+        remaining: 235000
+    },
+    {
+        id: '4',
+        bank: 'Banco Falabella',
+        accountNumber: '17286536',
+        amount: 40000,
+        date: '2023-12-15',
+        remaining: 285000
+    },
+    {
+        id: '5',
+        bank: 'Banco Estado',
+        accountNumber: '23451789',
+        amount: 55000,
+        date: '2023-11-15',
+        remaining: 325000
+    }
+];
+
 export default function WithdrawalScreen() {
-    const [rawAmount, setRawAmount] = useState('');
-    const [error, setError] = useState('');
-    const [activeTab, setActiveTab] = useState<TabType>('account');
     const themeColors = useThemeColor();
     const { user } = useAuth();
     const router = useRouter();
+    const [activeTab, setActiveTab] = useState<TabType>('account');
+    const { isVisible, showCard, hideCard } = useCardVisibility();
+    const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>(mockWithdrawals);
+
+    const nextPayment = {
+        amount: user?.wallet?.availableBalance || 0,
+        date: new Date(2024, 3, 15),
+    };
 
     const tabs = [
-        { type: 'account', label: 'Seleccionar', title: 'Cuenta', icon: 'card-outline' },
-        { type: 'history', label: 'Historial', title: 'Retiros', icon: 'time-outline' }
+        { type: 'account', label: 'Cuentas', title: 'Mis Cuentas', icon: 'card-outline' },
+        { type: 'history', label: 'Historial', title: 'Mis Pagos', icon: 'time-outline' }
     ];
 
-    const availableBalance = user?.wallet?.availableBalance || 0;
-    const MAX_DIGITS = 9; // Máximo 999,999,999
+    const WithdrawalItem = ({ item, index, isLast }: { item: WithdrawalRecord, index: number, isLast: boolean }) => (
+        <View style={[styles.withdrawalItem, {
+            borderBottomWidth: isLast ? 0 : 1,
+            borderBottomColor: themeColors.borderBackgroundColor
+        }]}>
+            <View style={styles.leftContent}>
+                <IconContainer
+                    icon="card-outline"
+                    size={24}
+                    backgroundColor={themeColors.textColorAccent}
+                />
+                <View>
+                    <ThemedText variant="subTitleBold">{item.bank}</ThemedText>
+                    <ThemedText variant="paragraph">{item.accountNumber}</ThemedText>
+                    <ThemedText variant="paragraph" color={themeColors.textParagraph}>
+                        Fecha de retiro: {format(new Date(item.date), 'dd/MM/yyyy')}
+                    </ThemedText>
+                </View>
+            </View>
+            <View style={styles.rightContent}>
+                <ThemedText variant="subTitleBold" color={themeColors.status.error}>
+                    -${item.amount.toLocaleString()}
+                </ThemedText>
+                <ThemedText variant="paragraph">
+                    restante ${item.remaining.toLocaleString()}
+                </ThemedText>
+            </View>
+        </View>
+    );
 
-    const handleAmountChange = (value: string) => {
-        // Remover todos los caracteres no numéricos
-        const cleanValue = value.replace(/[^0-9]/g, '');
-        
-        // Verificar que no exceda el límite de dígitos
-        if (cleanValue.length > MAX_DIGITS) return;
-        
-        // Actualizar el valor raw
-        setRawAmount(cleanValue);
-
-        // Validar el monto
-        const numericAmount = parseInt(cleanValue) || 0;
-        if (numericAmount > availableBalance) {
-            setError('El monto supera tu saldo disponible');
-        } else {
-            setError('');
-        }
-    };
-
-    const formatDisplayAmount = (value: string): string => {
-        if (!value) return '0';
-        return parseInt(value).toLocaleString('es-CL');
-    };
-
-    const handleWithdrawal = () => {
-        if (error) return;
-        console.log('Monto a retirar:', parseInt(rawAmount));
-    };
 
     return (
-        <ThemedLayout
-            variant="card"
-            gradientColors={[Colors.common.green3, Colors.common.green5]}
+        <ThemedLayoutFlatList padding={[0, 0]}
         >
             <View style={styles.container}>
                 <View style={styles.headerContainer}>
                     <TouchableOpacity onPress={() => router.back()}>
-                        <Ionicons name="chevron-back" size={24} color={themeColors.accentInDarkMode} />
+                        <Ionicons
+                            name="chevron-back"
+                            size={24}
+                            color={themeColors.accentInDarkMode}
+                        />
                     </TouchableOpacity>
                 </View>
 
                 <View style={styles.headerSection}>
                     <View style={styles.header}>
-                        <ThemedText variant="title">¿Cuánto deseas retirar?</ThemedText>
+                        <ThemedText variant="title" color={themeColors.white}>Próximo Pago</ThemedText>
                         <View style={styles.amountContainer}>
                             <View style={styles.inputContainer}>
                                 <ThemedText
-                                    variant="superTitle"
+                                    variant="gigaTitle"
                                     style={[styles.currencySymbol, { color: themeColors.textColorAccent }]}
                                 >
                                     $
                                 </ThemedText>
-                                <TextInput
-                                    value={formatDisplayAmount(rawAmount)}
-                                    onChangeText={handleAmountChange}
-                                    keyboardType="numeric"
-                                    style={[
-                                        styles.amountInput,
-                                        { color: themeColors.textColorAccent }
-                                    ]}
-                                    placeholder="0"
-                                    placeholderTextColor={themeColors.textColorAccent}
-                                    maxLength={12} // Considerando los puntos del formato
-                                    selectTextOnFocus={true} // Selecciona todo el texto al hacer focus
-                                />
-                            </View>
-                            {error && (
                                 <ThemedText
-                                    variant="paragraph"
-                                    style={styles.errorText}
-                                    color={Colors.status.error}
+                                    variant="gigaTitle"
+                                    style={{ color: themeColors.textColorAccent }}
                                 >
-                                    {error}
+                                    {nextPayment.amount.toLocaleString('es-CL')}
                                 </ThemedText>
-                            )}
+                            </View>
                         </View>
-                        <ThemedText variant="paragraph" color={themeColors.textColor}>
-                            Disponible para retiro ${availableBalance.toLocaleString('es-CL')}
+                        <ThemedText variant="paragraph" color={themeColors.textParagraph}>
+                            {format(nextPayment.date, "d 'de' MMMM, yyyy", { locale: es })}
                         </ThemedText>
                     </View>
 
-                    <ThemedButton
-                        text="Siguiente"
-                        onPress={handleWithdrawal}
-                        style={styles.nextButton}
-                        disabled={!rawAmount || parseInt(rawAmount) === 0 || !!error}
-                    />
+                    <ThemedView style={[styles.buttonContainer, { backgroundColor: themeColors.backgroundCardColor }]}>
+                        <TouchableOpacity
+                            style={styles.detailsButton}
+                            onPress={showCard}
+                            activeOpacity={0.7}
+                        >
+                            <ThemedText variant="paragraph">Ver detalles y cuentas</ThemedText>
+                            <Ionicons
+                                name="chevron-up"
+                                size={24}
+                                color={themeColors.textColorAccent}
+                            />
+                        </TouchableOpacity>
+                    </ThemedView>
                 </View>
 
-                <View style={[styles.cardContainer, { backgroundColor: themeColors.backgroundCardColor }]}>
+            </View>
+
+            <AnimatedCard
+                isVisible={isVisible}
+                hideCard={hideCard}
+                style={styles.formContainer}
+                openPercentage={80}
+            >
+                <View style={styles.cardContent}>
                     <TabSelector
                         tabs={tabs}
                         activeTab={activeTab}
                         onTabChange={(type) => setActiveTab(type as TabType)}
                     />
-
                     {activeTab === 'account' ? (
                         <AccountListScreen
                             accounts={user?.accounts || []}
-                            onSelectAccount={(accountId) => {/* Manejar selección */}}
-                            onAccountUpdated={() => {/* Manejar actualización */}}
+                            onSelectAccount={(accountId) => {/* Manejar selección */ }}
+                            onAccountUpdated={() => {/* Manejar actualización */ }}
                         />
                     ) : (
-                        <WithdrawalHistory />
+                        <FlatList
+                            data={withdrawals}
+                            renderItem={({ item, index }) => (
+                                <WithdrawalItem
+                                    item={item}
+                                    index={index}
+                                    isLast={index === withdrawals.length - 1}
+                                />
+                            )}
+                            keyExtractor={(item) => item.id}
+                            style={[styles.list, { borderTopColor: themeColors.borderBackgroundColor }]}
+                            contentContainerStyle={styles.listContent}
+                        />
                     )}
                 </View>
-            </View>
-        </ThemedLayout>
+            </AnimatedCard>
+        </ThemedLayoutFlatList>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    gradient: {
         flex: 1,
     },
-    headerSection: {
-        padding: 24,
-        flex: 0.6,
-        alignItems: 'center',
+    container: {
+        flex: 1,
+        marginBottom: 60,
     },
-    header: {
-        alignItems: 'center',
-        marginBottom: 24,
-        width: '100%',
+    formContainer: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
     },
     headerContainer: {
         flexDirection: 'row',
@@ -161,48 +241,66 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingVertical: 20,
     },
-    cardContainer: {
-        flex: 0.4,
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
+    headerSection: {
         padding: 24,
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    header: {
+        alignItems: 'center',
+        gap: 10,
+        width: '100%',
+        marginBottom: 24,
     },
     amountContainer: {
         marginVertical: 16,
         alignItems: 'center',
         width: '100%',
-        paddingHorizontal: 20,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: 80,
-        paddingHorizontal: 20,
     },
     currencySymbol: {
-        fontSize: 48,
-        lineHeight: 56,
         marginRight: 4,
     },
-    amountInput: {
-        fontSize: 48,
-        lineHeight: 56,
-        minWidth: 200,
-        maxWidth: '80%',
-        textAlign: 'center',
-        padding: 0,
-        includeFontPadding: false,
-        textAlignVertical: 'center',
+    buttonContainer: {
+        borderRadius: 30,
+        paddingVertical: 24,
+        paddingHorizontal: 24,
     },
-    errorText: {
-        marginTop: 8,
-        textAlign: 'center',
-    },
-    nextButton: {
-        marginTop: 20,
-        padding: 16,
-        borderRadius: 12,
+    detailsButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         width: '100%',
     },
+    cardContent: {
+        flex: 1,
+        width: '100%',
+    },
+    list: {
+        flex: 1,
+        borderTopWidth: 1,
+    },
+    listContent: {
+        paddingBottom: 16,
+    },
+    withdrawalItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 16,
+    },
+    leftContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+    },
+    rightContent: {
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+    }
 });

@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   },
   inputContainerDisabled: {
     opacity: 0.5,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'transparent',
   },
   optionsContainer: {
     position: 'absolute',

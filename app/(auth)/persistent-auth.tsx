@@ -11,6 +11,7 @@ import { ThemedLayout } from '@/components/ThemedLayout';
 import { Logo } from '@/components/Logo';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import { MessageModal } from '@/components/MessageModal';
 
 interface PersistentAuthProps {
   onAuthSuccess: () => void;
@@ -21,6 +22,8 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [canShowAlert, setCanShowAlert] = useState(true);
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const themeColors = useThemeColor();
   const router = useRouter();
   const { handlePersistentAuthSuccess } = useAuth();
@@ -67,7 +70,8 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
 
   const showAlert = (title: string, message: string) => {
     if (canShowAlert) {
-      Alert.alert(title, message);
+      setErrorMessage(message);
+      setIsErrorModalVisible(true);
     } else {
       console.log('No se puede mostrar alerta:', title, message);
     }
@@ -135,6 +139,21 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
           />
         )}
       </View>
+
+      <MessageModal
+        isVisible={isErrorModalVisible}
+        onClose={() => setIsErrorModalVisible(false)}
+        title="Error"
+        message={errorMessage}
+        icon={{
+          name: "alert-circle-outline",
+          color: themeColors.status.error
+        }}
+        primaryButton={{
+          text: "Entendido",
+          onPress: () => setIsErrorModalVisible(false)
+      }}
+      />
     </ThemedLayout>
   );
 }

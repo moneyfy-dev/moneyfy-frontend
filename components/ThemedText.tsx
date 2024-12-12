@@ -3,7 +3,7 @@ import { Text, TextStyle, StyleSheet, TouchableOpacity } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Href, Link, useRouter } from 'expo-router';
 
-type TextVariant = 'jumboTitle' | 'superTitle' | 'title' | 'jumboSubTitle' | 'subTitleBold' | 'subTitle' | 'paragraph' | 'paragraphBold' | 'textLink' | 'notes' | 'default';
+type TextVariant = 'gigaTitle' | 'jumboTitle' | 'superTitle' | 'title' | 'jumboSubTitle' | 'subTitleBold' | 'subTitle' | 'paragraph' | 'paragraphBold' | 'textLink' | 'notes' | 'default';
 
 interface LinkConfig {
   route?: Href;
@@ -36,6 +36,12 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
   const router = useRouter();
 
   const variantStyles: Record<TextVariant, TextStyle> = {
+    gigaTitle: {
+      fontSize: 48,
+      lineHeight: 56,
+      color: themeColors.textColor,
+      fontWeight: '800', // extrabold
+    },
     jumboTitle: {
       fontSize: 36,
       lineHeight: 48,

@@ -13,14 +13,15 @@ import { User, Wallet } from '@/types/auth';
 import { useOnboarding } from '@/context/OnboardingContext';
 import { Onboarding } from '@/components/Onboarding';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { hydrateUserData } from '@/services/userService';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 const FORCE_SHOW_ONBOARDING = true; // Mantenemos esto para desarrollo
 
 export default function HomeScreen() {
   const themeColors = useThemeColor();
   const router = useRouter();
-  const { user, isLoading, updateUserData } = useAuth();
+  const { user, updateUserData, hydrateUserData } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const typedUser = user as User;
   const [showBalance, setShowBalance] = useState(false);
   const [personalInfo, setPersonalInfo] = useState({
@@ -57,19 +58,11 @@ export default function HomeScreen() {
     }
   }, []);
 
-  const onRefresh = React.useCallback(async () => {
-    try {
-      setRefreshing(true);
-      const response = await hydrateUserData();
-      if (response.data && response.data.user) {
-        await updateUserData(response.data.user);
-      }
-    } catch (error) {
-      console.error('Error refreshing user data:', error);
-    } finally {
-      setRefreshing(false);
-    }
-  }, [updateUserData]);
+  const onRefresh = async () => {
+    setIsLoading(true);
+    await hydrateUserData(true);
+    setIsLoading(false);
+  };
 
   if (shouldShowOnboarding) {
     return <Onboarding />;
@@ -77,9 +70,7 @@ export default function HomeScreen() {
 
   if (!user) {
     return (
-      <ThemedLayout>
-        <ThemedText variant="title">Cargando información del usuario...</ThemedText>
-      </ThemedLayout>
+      <LoadingScreen />
     );
   }
 
@@ -235,7 +226,7 @@ export default function HomeScreen() {
           <View style={styles.actionButtonIcon}>
             <Ionicons name="cash-outline" size={20} color={themeColors.white} />
           </View>
-          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Retirar Saldo</ThemedText>
+          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Ver pago</ThemedText>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -244,10 +235,11 @@ export default function HomeScreen() {
           <View style={styles.actionButtonIcon}>
             <Ionicons name="time-outline" size={20} color={themeColors.white} />
           </View>
-          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Historial de retiros</ThemedText>
+          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Historial de pagos</ThemedText>
         </TouchableOpacity>
 
       </View>
+      {isLoading && <LoadingScreen />}
     </ThemedLayout>
   );
 }

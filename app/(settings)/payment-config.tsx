@@ -11,12 +11,17 @@ import { useAuth } from '@/context/AuthContext';
 import { Account } from '@/types/useAccounts';
 import { AccountListScreen } from '@/components/AccountListScreen';
 import axios from 'axios';
+import { MessageModal } from '@/components/MessageModal';
 
 export default function PaymentConfigScreen() {
     const [accounts, setAccounts] = useState<Account[]>([]);
     const themeColors = useThemeColor();
     const router = useRouter();
     const { user, updateUserData, hydrateUserData } = useAuth();
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [successModalVisible, setSuccessModalVisible] = useState(false);
 
     useEffect(() => {
         if (user && user.accounts) {
@@ -31,14 +36,16 @@ export default function PaymentConfigScreen() {
 
             if (response && response.data && response.data.user) {
                 await updateUserData(response.data.user);
-                Alert.alert('Éxito', 'Cuenta Seleccionada');
+                setSuccessMessage('Cuenta Seleccionada');
+                setSuccessModalVisible(true);
             } else {
                 throw new Error('Respuesta inesperada del servidor');
             }
         } catch (error) {
             if (axios.isAxiosError(error)) {
             }
-            Alert.alert('Error', 'No se pudo seleccionar la cuenta');
+            setErrorMessage('No se pudo seleccionar la cuenta');
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -47,15 +54,11 @@ export default function PaymentConfigScreen() {
     };
 
     const handleAccountUpdated = async () => {
-        // Forzar actualización de datos del usuario
         await hydrateUserData(true);
-        
-        // La lista se actualizará automáticamente por el useEffect
-        // cuando el contexto de usuario se actualice
     };
 
     return (
-        <ThemedLayoutFlatList padding={[0, 40]}>
+        <ThemedLayoutFlatList padding={[40, 24]}>
             {accounts.length === 0 ? (
                 <View style={styles.emptyState}>
                     <CreditCardIcon width={117} height={107} style={styles.iconImage} />
@@ -76,6 +79,36 @@ export default function PaymentConfigScreen() {
                 onPress={handleAddAccount}
                 icon={{ name: "add", position: "left" }}
                 style={styles.Button}
+            />
+
+            <MessageModal
+                isVisible={isErrorModalVisible}
+                onClose={() => setIsErrorModalVisible(false)}
+                title="Error"
+                message={errorMessage}
+                icon={{
+                    name: "alert-circle-outline",
+                    color: themeColors.status.error
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsErrorModalVisible(false)
+                }}
+            />
+
+            <MessageModal
+                isVisible={successModalVisible}
+                onClose={() => setSuccessModalVisible(false)}
+                title="Éxito"
+                message={successMessage}
+                icon={{
+                    name: "checkmark-circle-outline",
+                    color: themeColors.status.success
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setSuccessModalVisible(false)
+                }}
             />
         </ThemedLayoutFlatList>
     );

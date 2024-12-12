@@ -1,7 +1,13 @@
 import { searchCompanies, quoteVehicle } from './quoteService';
-import { QuoteVehicleParams, InsurancePlan, Company } from '@/types/quote';
+import { QuoteVehicleParams, InsurancePlan, Company, Vehicle } from '@/types/quote';
 
-export const startQuotationFlow = async (quoteData: Omit<QuoteVehicleParams, 'companyAlias'>) => {
+interface QuotationFlowResponse {
+  plans: InsurancePlan[];
+  referredId: string;
+  vehicle: Vehicle;
+}
+
+export const startQuotationFlow = async (quoteData: Omit<QuoteVehicleParams, 'companyAlias'>): Promise<QuotationFlowResponse> => {
   try {
     // 1. Obtener compañías
     const companiesResponse = await searchCompanies();
@@ -16,17 +22,19 @@ export const startQuotationFlow = async (quoteData: Omit<QuoteVehicleParams, 'co
       try {
         const quoteParams: QuoteVehicleParams = {
           ...quoteData,
-          companyAlias: company.alias
+          companyAlias: company.alias,
         };
-        
         const response = await quoteVehicle(quoteParams);
-        return response.data.plans.map(plan => ({
-          ...plan,
-          insuranceCompany: company.name // Aseguramos que el nombre de la compañía sea consistente
-        }));
+        return {
+          plans: response.data.plans.map(plan => ({
+            ...plan,
+            insuranceCompany: company.name
+          })),
+          referralID: response.data.referredId
+        };
       } catch (error) {
         console.log(`Error al cotizar con ${company.name}:`, error);
-        return []; // Retornamos array vacío en caso de error
+        return { plans: [], referralID: null };
       }
     });
 
@@ -34,20 +42,30 @@ export const startQuotationFlow = async (quoteData: Omit<QuoteVehicleParams, 'co
     const results = await Promise.all(quotePromises);
     
     // 4. Filtrar y aplanar los resultados
-    const allPlans = results.flat().filter(plan => plan !== null);
+    const allPlans = results.map(result => result.plans).flat().filter(plan => plan !== null);
+    // Obtener el primer referralID válido
+    const referralID = results.find(result => result.referralID)?.referralID;
     
     if (allPlans.length === 0) {
       throw new Error('No se encontraron planes disponibles');
     }
+    // 5. Construir el objeto Vehicle completo
+    const vehicle: Vehicle = {
+      ppu: quoteData.ppu,
+      type: 'AUTO',
+      brand: quoteData.brand,
+      model: quoteData.model,
+      year: quoteData.year,
+      colour: quoteData.colour || 'NO ESPECIFICADO',
+      engineNum: quoteData.engineNum || 'NO ESPECIFICADO',
+      chassisNum: quoteData.chassisNum || 'NO ESPECIFICADO',
+      manufacturer: quoteData.brand
+    };
 
     return {
-      vehicle: {
-        ppu: quoteData.ppu,
-        brand: quoteData.brand,
-        model: quoteData.model,
-        year: quoteData.year
-      },
-      plans: allPlans
+      plans: allPlans,
+      referredId: referralID || quoteData.referredId as string,
+      vehicle
     };
   } catch (error) {
     console.error('Error en el flujo de cotización:', error);

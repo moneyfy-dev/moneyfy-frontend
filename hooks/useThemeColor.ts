@@ -44,6 +44,7 @@ export function useThemeColor() {
         warning: Colors.status.warning,
         info: Colors.status.info,
       },
+      loadingScreen: currentTheme === 'dark' ? Colors.common.black90 : Colors.common.white90,
 
       // Onboarding específicos
       onboardingBackground: currentTheme === 'dark' ? Colors.common.gray1 : Colors.common.gray0,

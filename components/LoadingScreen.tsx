@@ -29,23 +29,34 @@ export const LoadingScreen = () => {
   }, []);
 
   return (
-    <View style={[styles.container, { backgroundColor: themeColors.backgroundColor }]}>
-      <ThemedView style={styles.textContainer}>
-        <ThemedText variant="title">
-          Cargando{dots}
-        </ThemedText>
-      </ThemedView>
-      <LottieAnimation
-        name="Loading"
-        style={styles.animation}
-        autoPlay
-        loop
-      />
+    <View style={[styles.content, { backgroundColor: themeColors.loadingScreen }]}>
+      <View style={styles.container}>
+        <ThemedView style={styles.textContainer}>
+          <ThemedText variant="title">
+            Cargando{dots}
+          </ThemedText>
+        </ThemedView>
+        <LottieAnimation
+          name="Loading"
+          style={styles.animation}
+          autoPlay
+          loop
+        />
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  content: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -58,5 +69,6 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     width: 100,
+    backgroundColor: 'transparent',
   },
 });

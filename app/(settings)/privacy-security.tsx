@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Href } from 'expo-router';
 import { getLocalSecuritySettings, updateLocalSecuritySettings } from '@/services/securityService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MessageModal } from '@/components/MessageModal';
 
 interface SecurityOption {
     id: string;
@@ -19,7 +20,9 @@ interface SecurityOption {
 export default function PrivacySecurityScreen() {
     const themeColors = useThemeColor();
     const router = useRouter();
-  
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+
     const [securitySettings, setSecuritySettings] = useState({
       fingerprintEnabled: false,
       persistentAuthEnabled: false,
@@ -64,8 +67,8 @@ export default function PrivacySecurityScreen() {
           ...prevSettings,
           [id]: !prevSettings[id],
         }));
-        console.error('Error al actualizar configuración de seguridad:', error);
-        Alert.alert('Error', 'No se pudo actualizar la configuración de seguridad');
+        setErrorMessage('No se pudo actualizar la configuración de seguridad');
+        setIsErrorModalVisible(true);
       }
     };
   
@@ -109,6 +112,21 @@ export default function PrivacySecurityScreen() {
     return (
       <ThemedLayout padding={[0, 40]}>
         {securityOptions.map(renderOption)}
+
+        <MessageModal
+            isVisible={isErrorModalVisible}
+            onClose={() => setIsErrorModalVisible(false)}
+            title="Error"
+            message={errorMessage}
+            icon={{
+                name: "alert-circle-outline",
+                color: themeColors.status.error
+            }} 
+            primaryButton={{
+                text: "Entendido",
+                onPress: () => setIsErrorModalVisible(false)
+            }}
+        />
       </ThemedLayout>
     );
   }

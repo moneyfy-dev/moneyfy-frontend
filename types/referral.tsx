@@ -1,4 +1,4 @@
-export type ReferralStatus = 'cotizando' | 'inspeccion' | 'aprobado' | 'rechazado';
+export type ReferralStatus = 'Iniciando' | 'Cotizando' | 'Recopilando' | 'Pendiente' | 'Aprobado' | 'Rechazado' | 'Caducado';
 
 export interface ReferredPersonalData {
   purchaserId: string;
@@ -21,13 +21,21 @@ export interface ReferredCarData {
 }
 
 export interface ReferredPlanData {
+  updatedDate: string;
+  createdDate: string;
+  details: never[];
+  damageThirdParty: string;
+  totalLoss: string;
+  workshopType: string;
+  stolenVehicle: string;
+  referredPlanId: string;
   id: string;
   planName: string;
   insuranceCompany: string;
   deductible: number;
   price: number;
   priceUf: number;
-  discount: string;
+  discount: number;
   logos: {
     light: string;
     dark: string;

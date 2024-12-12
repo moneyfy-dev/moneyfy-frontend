@@ -5,6 +5,7 @@ import { ThemedText } from './ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '@/constants/Colors';
+import { Vehicle } from '@/types/quote';
 
 interface VehicleCardProps {
   brand: string;
@@ -30,7 +31,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
   const Container = onPress ? TouchableOpacity : View;
 
   return (
-    <Container
+    <TouchableOpacity
       onPress={onPress}
       style={[
         styles.vehicleCard,
@@ -40,12 +41,9 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
         }
       ]}
     >
-      <LinearGradient
-        colors={[Colors.common.green2, Colors.common.green2]}
-        style={[styles.iconContainer]}
-      >
-        {[<Ionicons key="car-icon" name='car-outline' size={24} color={themeColors.white} />]}
-      </LinearGradient>
+      <View style={[styles.iconContainer, { backgroundColor: themeColors.textColorAccent }]}>
+        <Ionicons key="car-icon" name='car-outline' size={24} color={themeColors.white} />
+      </View>
       
       <View style={styles.vehicleInfo}>
         <ThemedText variant="paragraph">{brand}</ThemedText>
@@ -61,7 +59,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({
           color={isSelected ? themeColors.textColorAccent : themeColors.borderBackgroundColor}
         />
       )}
-    </Container>
+    </TouchableOpacity>
   );
 };
 
@@ -76,11 +74,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   iconContainer: {
-    width: 40,
-    alignSelf: 'stretch',
+    width: 48,
+    height: 48,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 10,
   },
   vehicleInfo: {
     flex: 1,

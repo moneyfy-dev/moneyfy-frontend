@@ -12,16 +12,19 @@ import axios from 'axios';
 import { NoAccountWarning } from '@/components/NoAccountWarning';
 import { ThemedButton } from '@/components/ThemedButton';
 import { validateRUT } from '@/utils/validations';
-
-type SearchType = 'plate' | 'rut';
+import { LoadingScreen } from '@/components/LoadingScreen';
+import { MessageModal } from '@/components/MessageModal';
 
 export default function QuoteScreen() {
   const router = useRouter();
   const themeColors = useThemeColor();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [searchValue, setSearchValue] = useState({
-      ownerId: '',
-      ppu: '',
-    });
+    ownerId: '',
+    ppu: '',
+  });
   const [errors, setErrors] = useState({
     ownerId: '',
     ppu: '',
@@ -58,6 +61,7 @@ export default function QuoteScreen() {
   };
 
   const handleSearch = async (value: { ownerId: string, ppu: string }) => {
+    setIsLoading(true);
     if (!validateForm()) {
       return;
     }
@@ -75,7 +79,7 @@ export default function QuoteScreen() {
 
       if (response?.data?.user) {
         await updateUserData(response.data.user);
-        
+
         router.push({
           pathname: '/(quote)/search-results',
           params: {
@@ -91,10 +95,14 @@ export default function QuoteScreen() {
       console.error('Error al buscar:', error);
       if (axios.isAxiosError(error)) {
         const errorMessage = error.response?.data?.message || 'Error al realizar la búsqueda';
-        Alert.alert('Error', errorMessage);
+        setErrorMessage(errorMessage);
+        setIsErrorModalVisible(true);
       } else {
-        Alert.alert('Error', 'No se pudo realizar la búsqueda. Intente nuevamente.');
+        setErrorMessage('No se pudo realizar la búsqueda. Intente nuevamente.');
+        setIsErrorModalVisible(true);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -132,6 +140,7 @@ export default function QuoteScreen() {
           placeholder='Ingresa la patente del vehículo'
           error={errors.ppu}
           icon="car-outline"
+          isPlate={true}
         />
       </View>
 
@@ -158,6 +167,23 @@ export default function QuoteScreen() {
           Ingreso manual
         </ThemedText>
       </TouchableOpacity>
+
+      <MessageModal
+        isVisible={isErrorModalVisible}
+        onClose={() => setIsErrorModalVisible(false)}
+        title="Error"
+        message={errorMessage}
+        icon={{
+          name: "alert-circle-outline",
+          color: themeColors.status.error
+        }}
+        primaryButton={{
+          text: "Entendido",
+          onPress: () => setIsErrorModalVisible(false)
+        }}
+      />
+      
+      {isLoading && <LoadingScreen />}
     </ThemedLayout>
   );
 }

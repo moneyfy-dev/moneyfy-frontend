@@ -1,6 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Alert, Share, Clipboard, } from 'react-native';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
 import { IconContainer } from '@/components/IconContainer';
@@ -13,49 +12,86 @@ import { Ionicons } from '@expo/vector-icons';
 import { TicketEdge } from '@/components/images/TicketEdge';
 import Svg, { Path } from 'react-native-svg';
 import { Logo } from '@/components/Logo';
+import { useLocalSearchParams } from 'expo-router';
+import { InsurancePlan, Vehicle } from '@/types/quote';
+import { useRouter } from 'expo-router';
+import { MessageModal } from '@/components/MessageModal';
 
 export default function PaymentQRScreen() {
+  const router = useRouter();
+  const { referredId: referredIdParam, plan: planParam, vehicle: vehicleParam } = useLocalSearchParams();
+
+  const [plan, setPlan] = useState<InsurancePlan | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
   const themeColors = useThemeColor();
   const qrValue = 'https://connect360.cl';
 
-  // Datos de ejemplo (estos vendrían por props o contexto en producción)
-  const vehicleInfo = {
-    brand: "Toyota",
-    model: "NEW YARIS SEDAN XLI",
-    ppu: "CTJZ47",
-    year: "2011"
+  useEffect(() => {
+    try {
+      if (planParam) {
+        const parsedPlan = JSON.parse(planParam as string) as InsurancePlan;
+        setPlan(parsedPlan);
+      }
+      if (vehicleParam) {
+        let parsedVehicle: Vehicle;
+        if (typeof vehicleParam === 'string') {
+          parsedVehicle = JSON.parse(vehicleParam);
+        } else {
+          parsedVehicle = vehicleParam as unknown as Vehicle;
+        }
+        setSelectedVehicle(parsedVehicle);
+      }
+    } catch (error) {
+      console.error('Error al procesar los datos:', error);
+      console.error('plansParam:', planParam);
+      setErrorMessage('Hubo un problema al cargar los resultados');
+      setIsErrorModalVisible(true);
+    }
+  }, [planParam, vehicleParam]);
+  const link = `https://bci.cl/id=${referredIdParam}`;
+
+  const handleShareLink = async () => {
+    try {
+      await Share.share({
+        title: '¡Ya puedes finalizar la compra de tu seguro!',
+        message: `Para realizar el pago de tu seguro ${plan?.planName} para tu vehículo ${selectedVehicle?.brand} ${selectedVehicle?.model} ${selectedVehicle?.year} Ingresa al siguiente enlace:\n\n${link} `,
+      });
+    } catch (error) {
+      console.error('Error al compartir:', error);
+    }
   };
 
-  const planInfo = {
-    id: "1",
-    insuranceCompany: "Seguros Falabella",
-    planName: "Seguro Motocicleta Full Falabella",
-    deductible: "10 UF",
-    monthlyPayment: "0.5 UF",
-    price: 18870,
-    originalPrice: 26957,
-    discount: 30
+  const handleCopyCode = async () => {
+    try {
+      await Clipboard.setString(link);
+      setIsCopied(true);
+      // Resetear el estado después de 2 segundos
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Error al copiar:', error);
+    }
   };
 
-  const handleShareLink = () => {
-    console.log('Compartiendo enlace...');
-  };
-
-  const handleCopyLink = async () => {
-    await Clipboard.setStringAsync(qrValue);
-    // agregar un Toast o Alert para confirmar la copia
+  const handleGoToIndex = () => {
+    router.push('/');
   };
 
   return (
     <ThemedLayout padding={[0, 24]}>
       <View style={styles.content}>
         <View style={styles.qrSection}>
-          <ThemedText variant="title" textAlign="center" marginBottom={16}>
-            Código de pago
+          <ThemedText variant="superTitle" textAlign="center" marginBottom={16}>
+            Ya puede realizar el pago
           </ThemedText>
 
           <ThemedText variant="paragraph" textAlign="center" marginBottom={24}>
-            Comparte el código para que el cliente realice el pago
+            Comparte el código con el cliente para terminar el proceso de contratación
           </ThemedText>
 
           <View style={styles.qrContainer}>
@@ -68,35 +104,41 @@ export default function PaymentQRScreen() {
           </View>
 
           <View style={styles.urlContainer}>
-            <ThemedText
-              variant="paragraph"
-              textAlign="center"
-              color={themeColors.status.success}
-            >
-              {qrValue}
-            </ThemedText>
-            <TouchableOpacity
-              onPress={handleCopyLink}
-              style={styles.copyButton}
-            >
-              <Ionicons
-                name="copy-outline"
-                size={20}
-                color={themeColors.status.success}
-              />
+
+            <TouchableOpacity onPress={handleCopyCode}>
+              <View style={styles.copyContainer}>
+                <ThemedText
+                  variant="paragraph"
+                  color={isCopied ? themeColors.gray3to4 : themeColors.textColorAccent}
+                >
+                  {isCopied ? "¡Código copiado!" : "Copiar código"}
+                </ThemedText>
+                <Ionicons
+                  name={isCopied ? "checkmark-circle" : "copy-outline"}
+                  size={20}
+                  color={isCopied ? themeColors.gray3to4 : themeColors.textColorAccent}
+                  style={{ marginLeft: 8 }}
+                />
+              </View>
             </TouchableOpacity>
           </View>
-
           <ThemedButton
-            text="Compartir Link"
+            text="Compartir"
             onPress={handleShareLink}
             icon={{ name: "share", position: "left" }}
             style={{ marginBottom: 24 }}
           />
+          <ThemedButton
+            text="Volver al inicio"
+            onPress={handleGoToIndex}
+            icon={{ name: "home", position: "left" }}
+            style={{ marginBottom: 24 }}
+            variant="secondary"
+          />
         </View>
 
         <View style={styles.detailSection}>
-          <TicketEdge 
+          <TicketEdge
             style={{
               flex: 1,
               alignSelf: 'stretch',
@@ -109,8 +151,8 @@ export default function PaymentQRScreen() {
             {
               backgroundColor: themeColors.backgroundColor,
               borderColor: themeColors.borderBackgroundColor,
-              }
-              ]}>
+            }
+          ]}>
             <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
               <ThemedText variant="title" textAlign="center" marginBottom={12}>
                 Detalle de la compra
@@ -122,7 +164,7 @@ export default function PaymentQRScreen() {
               <IconContainer
                 icon="person-outline"
                 size={24}
-                style={{ backgroundColor: themeColors.status.success }}
+                style={{ backgroundColor: themeColors.textColorAccent }}
               />
               <View style={styles.referralInfo}>
                 <View style={styles.nameContainer}>
@@ -141,23 +183,41 @@ export default function PaymentQRScreen() {
               </View>
             </View>
 
-            <VehicleCard
-              brand={vehicleInfo.brand}
-              model={vehicleInfo.model}
-              ppu={vehicleInfo.ppu}
-              year={vehicleInfo.year}
-              showRightIcon={false}
-            />
-
-            <View style={styles.section}>
-              <QuoteCard
-                plan={planInfo}
-                showButton={false}
+            {selectedVehicle && (
+              <VehicleCard
+                brand={selectedVehicle.brand}
+                model={selectedVehicle.model}
+                ppu={selectedVehicle.ppu}
+                year={selectedVehicle.year}
+                isSelected={true}
               />
+            )}
+            <View style={styles.section}>
+              {plan && (
+                <QuoteCard
+                  plan={plan}
+                  showButton={false}
+                />
+              )}
             </View>
           </View>
         </View>
       </View>
+
+      <MessageModal
+        isVisible={isErrorModalVisible}
+        onClose={() => setIsErrorModalVisible(false)}
+        title="Error"
+        message={errorMessage}
+        icon={{
+          name: "alert-circle-outline",
+          color: themeColors.status.error
+        }}
+        primaryButton={{
+          text: "Entendido",
+          onPress: () => setIsErrorModalVisible(false)
+        }}
+      />
     </ThemedLayout>
   );
 }
@@ -167,14 +227,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   qrSection: {
-    marginTop: 60,
+    marginTop: 20,
     marginBottom: 24,
   },
   detailSection: {
     flex: 1,
   },
   ticketContent: {
-    padding: 16,
+    paddingHorizontal: 20,
     borderWidth: 1,
     borderTopWidth: 0,
     borderRadius: 12,
@@ -202,7 +262,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   section: {
-    gap: 16,
+    marginTop: 20,
   },
   urlContainer: {
     flexDirection: 'row',
@@ -213,5 +273,11 @@ const styles = StyleSheet.create({
   },
   copyButton: {
     padding: 8,
+  },
+  copyContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
   },
 });

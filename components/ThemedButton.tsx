@@ -53,11 +53,11 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
         buttonSizeStyle,
         buttonWidthStyle,
         { backgroundColor: buttonBackgroundColor },
-        variant === 'secondary' && { borderWidth: 1, borderColor: themeColors.buttonBackgroundColor },
+        variant === 'secondary' && { borderWidth: 1, borderColor: themeColors.textColorAccent },
         style
     ];
 
-    const textColor = variant === 'primary' ? themeColors.buttonTextColor : themeColors.buttonBackgroundColor;
+    const textColor = variant === 'primary' ? themeColors.buttonTextColor : themeColors.textColorAccent;
 
     return (
         <TouchableOpacity

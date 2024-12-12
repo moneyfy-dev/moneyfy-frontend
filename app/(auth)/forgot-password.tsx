@@ -8,6 +8,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
 import { ThemedButton } from '@/components/ThemedButton';
 import { Ionicons } from '@expo/vector-icons';
+import { MessageModal } from '@/components/MessageModal';
 
 export default function ForgotPasswordScreen() {
     const [email, setEmail] = useState('');
@@ -17,6 +18,8 @@ export default function ForgotPasswordScreen() {
     });
     const themeColors = useThemeColor();
     const router = useRouter();
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     const handleEmailChange = (text: string) => {
         setEmail(text);
@@ -38,10 +41,10 @@ export default function ForgotPasswordScreen() {
         validateField();
 
         if (!validateEmail(email)) {
-            Alert.alert('Error', 'Por favor, ingresa un email válido.');
+            setErrorMessage('Por favor, ingresa un email válido.');
+            setIsErrorModalVisible(true);
             return;
         }
-
     };
 
     return (
@@ -112,6 +115,21 @@ export default function ForgotPasswordScreen() {
                     </TouchableOpacity>
                 </View>
             </View>
+
+            <MessageModal
+                isVisible={isErrorModalVisible}
+                onClose={() => setIsErrorModalVisible(false)}
+                title="Error"
+                message={errorMessage}
+                icon={{
+                    name: "alert-circle-outline",
+                    color: themeColors.status.error
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsErrorModalVisible(false)
+                }}
+            />
         </ThemedLayout>
     );
 }

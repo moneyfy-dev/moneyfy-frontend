@@ -39,7 +39,7 @@ export const ThemedCheckGroup: React.FC<ThemedCheckGroupProps> = ({
           onPress={() => onSelect(key)}
         >
           <ThemedText
-            variant="textLink"
+            variant="notes"
             textAlign="center"
             color={selectedValue === key ? themeColors.backgroundColor : themeColors.textColorAccent}
             numberOfLines={1}

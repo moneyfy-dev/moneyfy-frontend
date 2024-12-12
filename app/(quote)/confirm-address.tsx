@@ -7,64 +7,77 @@ import { ThemedButton } from '@/components/ThemedButton';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { selectPlan } from '@/services/quoteService';
+import { LoadingScreen } from '@/components/LoadingScreen';
+import { MessageModal } from '@/components/MessageModal';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 export default function ConfirmAddressScreen() {
-  const {
-    referredId, planId, insuranceCompany, planName,
-    price, priceUf, deductible, vehicle
-  } = useLocalSearchParams();
+  const { referredId: referredIdParam, plan: planParam, vehicle: vehicleParam } = useLocalSearchParams();
   const router = useRouter();
   const { updateUserData } = useAuth();
-
+  const [isLoading, setIsLoading] = useState(false);
   const [street, setStreet] = useState('');
   const [streetNumber, setStreetNumber] = useState('');
   const [department, setDepartment] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const themeColors = useThemeColor();
 
   const parsedVehicle = useMemo(() => {
     try {
-      return typeof vehicle === 'string' ? JSON.parse(decodeURIComponent(vehicle)) : vehicle;
+      return typeof vehicleParam === 'string' ? JSON.parse(decodeURIComponent(vehicleParam)) : vehicleParam;
     } catch (error) {
       console.error('Error parsing vehicle:', error);
       return null;
     }
-  }, [vehicle]);
+  }, [vehicleParam]);
 
   const handleContinue = async () => {
+    setIsLoading(true);
     if (!street || !streetNumber) {
-      Alert.alert('Error', 'Por favor complete los campos requeridos');
+      setErrorMessage('Por favor complete los campos requeridos');
+      setIsErrorModalVisible(true);
       return;
     }
-
     try {
-      setLoading(true);
-      const planData = {
-        referredId: referredId as string,
-        planId: planId as string,
-        insuranceCompany: insuranceCompany as string,
-        planName: planName as string,
-        price: Number(price),
-        priceUf: Number(priceUf),
-        deductible: Number(deductible),
+      const parsedPlan = JSON.parse(planParam as string);
+
+      // Extraemos solo los datos necesarios para la solicitud
+      const selectPlanData = {
+        referredId: referredIdParam as string,
+        planId: parsedPlan.planId,
+        insuranceCompany: parsedPlan.insuranceCompany,
+        planName: parsedPlan.planName,
+        price: parsedPlan.price,
+        priceUf: parsedPlan.priceUf,
+        deductible: parsedPlan.deductible,
         street,
         streetNumber: Number(streetNumber),
         department
       };
 
-      const response = await selectPlan(planData);
+      const response = await selectPlan(selectPlanData);
 
       if (response.data.user) {
         await updateUserData(response.data.user);
       }
 
-      // Navegar a la siguiente pantalla
-      router.push('/(quote)/payment-qr');
+      // Pasamos el plan completo a la siguiente pantalla
+      router.push({
+        pathname: '/(quote)/payment-qr',
+        params: {
+          referredId: response.data.referredId,
+          plan: planParam, // Mantenemos el plan completo original
+          vehicle: vehicleParam
+        }
+      });
 
     } catch (error) {
       console.error('Error al seleccionar plan:', error);
-      Alert.alert('Error', 'No se pudo procesar la selección del plan');
+      setErrorMessage('No se pudo procesar la selección del plan');
+      setIsErrorModalVisible(true);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -105,11 +118,29 @@ export default function ConfirmAddressScreen() {
         />
 
       </View>
-        <ThemedButton
-          text="Continuar"
-          onPress={handleContinue}
-          disabled={!street || !streetNumber}
-        />
+      <ThemedButton
+        text="Continuar"
+        onPress={handleContinue}
+        disabled={!street || !streetNumber}
+      />
+
+      <MessageModal
+        isVisible={isErrorModalVisible}
+        onClose={() => setIsErrorModalVisible(false)}
+        title="Error"
+        message={errorMessage}
+        icon={{
+          name: "alert-circle-outline",
+          color: themeColors.status.error
+        }}
+        primaryButton={{
+          text: "Entendido",
+          onPress: () => setIsErrorModalVisible(false)
+        }}
+      />
+      {isLoading && (
+        <LoadingScreen />
+      )}
     </ThemedLayout>
   );
 }

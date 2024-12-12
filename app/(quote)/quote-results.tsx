@@ -13,6 +13,7 @@ import { QuoteCard } from '@/components/QuoteCard';
 import { ThemedLayoutFlatList } from '@/components/ThemedLayoutFlatList';
 import { useRouter } from 'expo-router';
 import { CarIcon } from '@/components/images/vehicles/CarIcon';
+import { MessageModal } from '@/components/MessageModal';
 
 interface Filters {
   insuranceType: string;
@@ -26,7 +27,8 @@ export default function QuoteResults() {
     const [showFilters, setShowFilters] = useState(false);
     const { plans: plansParam, referredId: referredIdParam, vehicle: vehicleParam } = useLocalSearchParams();
     const router = useRouter();
-    
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
     const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
     const [plans, setPlans] = useState<InsurancePlan[]>([]);
     const [filteredPlans, setFilteredPlans] = useState<InsurancePlan[]>([]);
@@ -39,26 +41,21 @@ export default function QuoteResults() {
 
     // Función para manejar la selección del plan
     const handleSelectPlan = (plan: InsurancePlan) => {
+        console.log('referredIdParam', referredIdParam);
         router.push({
             pathname: '/(quote)/confirm-address',
             params: {
                 referredId: referredIdParam,
-                planId: plan.planId,
-                insuranceCompany: plan.insuranceCompany,
-                planName: plan.planName,
-                price: plan.price.toString(),
-                priceUf: plan.priceUf.toString(),
-                deductible: plan.deductible.toString(),
-                vehicle: vehicleParam // Asumiendo que ahora sí lo pasamos desde search-results
+                plan: JSON.stringify(plan),
+                vehicle: vehicleParam
             }
         });
     };
 
     useEffect(() => {
+        console.log('vehicleParam', vehicleParam);
         try {
             if (plansParam) {
-                console.log('referredIdParam:', referredIdParam);
-                console.log('plansParam:', plansParam);
                 
                 let parsedPlans: InsurancePlan[];
                 
@@ -86,9 +83,8 @@ export default function QuoteResults() {
                 setSelectedVehicle(parsedVehicle);
             }
         } catch (error) {
-            console.error('Error al procesar los datos:', error);
-            console.error('plansParam:', plansParam);
-            Alert.alert('Error', 'Hubo un problema al cargar los resultados');
+            setErrorMessage('Hubo un problema al cargar los resultados');
+            setIsErrorModalVisible(true);
         }
     }, [plansParam]);
 
@@ -100,9 +96,6 @@ export default function QuoteResults() {
                 plan.insuranceCompany.toLowerCase().includes(filters.company.toLowerCase())
             );
         }
-
-        // Aquí podrías agregar más filtros según los campos que vengan en los planes
-        // Por ejemplo, si los planes tuvieran un campo coverage:
         if (filters.coverage) {
             result = result.filter(plan => 
                 plan.planName.toLowerCase().includes(filters.coverage.toLowerCase())
@@ -126,7 +119,7 @@ export default function QuoteResults() {
                                     {selectedVehicle.brand.toUpperCase()} {selectedVehicle.model.toUpperCase()}
                                 </ThemedText>
                             </ThemedText>
-                            <ThemedText variant="paragraph">{selectedVehicle.engineNum}</ThemedText>
+                            <ThemedText variant="paragraph">N° Motor {''} {selectedVehicle.engineNum}</ThemedText>
                         </View>
                     </View>
                 )}
@@ -200,6 +193,21 @@ export default function QuoteResults() {
                     </View>
                 </FiltersModal>
             </View>
+
+            <MessageModal
+                isVisible={isErrorModalVisible}
+                onClose={() => setIsErrorModalVisible(false)}
+                title="Error"
+                message={errorMessage}
+                icon={{
+                    name: "alert-circle-outline",
+                    color: themeColors.status.error
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsErrorModalVisible(false)
+                }}
+            />
         </ThemedLayoutFlatList>
     );
 }
@@ -223,9 +231,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 16,
-    },
-    resultsList: {
-        flex: 1,
     },
     card: {
         padding: 16,

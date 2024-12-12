@@ -6,19 +6,25 @@ import { ThemedInput } from '@/components/ThemedInput';
 import { ThemedButton } from '@/components/ThemedButton';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
+import { MessageModal } from '@/components/MessageModal';
 
 export default function TwoFactorAuthScreen() {
     const [verificationCode, setVerificationCode] = useState('');
     const themeColors = useThemeColor();
+    const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
+    const [infoMessage, setInfoMessage] = useState('');
+
 
     const handleVerify = () => {
         // Aquí iría la lógica para verificar el código
-        Alert.alert('Verificación', 'Código enviado para verificación');
+        setInfoMessage('Código enviado para verificación');
+        setIsInfoModalVisible(true);
     };
 
     const handleResendCode = () => {
         // Aquí iría la lógica para reenviar el código
-        Alert.alert('Reenvío', 'Se ha enviado un nuevo código');
+        setInfoMessage('Se ha enviado un nuevo código');
+        setIsInfoModalVisible(true);
     };
 
     return (
@@ -57,6 +63,21 @@ export default function TwoFactorAuthScreen() {
                     variant="secondary"
                 />
             </View>
+
+            <MessageModal
+                isVisible={isInfoModalVisible}
+                onClose={() => setIsInfoModalVisible(false)}
+                title="Información"
+                message={infoMessage}
+                icon={{
+                    name: "information-circle-outline",
+                    color: themeColors.status.info
+                }} 
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsInfoModalVisible(false)
+                }}
+            />
         </ThemedLayout>
     );
 }

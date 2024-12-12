@@ -8,18 +8,20 @@ import { SearchInput } from './inputs/SearchInput';
 import { ThemedInputCommonProps } from '../types/Input';
 
 interface ThemedInputProps extends ThemedInputCommonProps {
-  type?: 'text' | 'password' | 'select' | 'rut' | 'search';
+  type?: 'text' | 'password' | 'select' | 'rut' | 'search' | 'plate';
   secureTextEntry?: boolean;
   isSelect?: boolean;
   options?: string[];
   isRUT?: boolean;
+  isPlate?: boolean;
 }
 
 export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
-  ({ type, secureTextEntry, isSelect, isRUT, ...props }, ref) => {
+  ({ type, secureTextEntry, isSelect, isRUT, isPlate, ...props }, ref) => {
     if (secureTextEntry) type = 'password';
     if (isSelect) type = 'select';
     if (isRUT) type = 'rut';
+    if (isPlate) type = 'plate';
 
     switch (type) {
       case 'password':
@@ -30,6 +32,13 @@ export const ThemedInput = forwardRef<TextInput, ThemedInputProps>(
         return <RutInput ref={ref} {...props} />;
       case 'search':
         return <SearchInput ref={ref} {...props} />;
+      case 'plate':
+        return <ThemedTextInput 
+          ref={ref} 
+          {...props} 
+          maxLength={6}
+          autoCapitalize="characters"
+        />;
       default:
         return <ThemedTextInput ref={ref} {...props} />;
     }

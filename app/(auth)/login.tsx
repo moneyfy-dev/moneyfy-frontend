@@ -16,7 +16,6 @@ import { useCardVisibility } from '@/hooks/useCardVisibility';
 import { AnimatedCard } from '@/components/AnimatedCard';
 import { login } from '@/services/authService';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { LottieAnimation } from '@/components/LottieAnimation';
 
 const { height } = Dimensions.get('window');
 
@@ -98,26 +97,22 @@ export default function LoginScreen() {
                     }
                 });
             } else if (error.response?.status === 403) {
-                setErrorMessage('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
+                setErrorMessage(error.response.status + ' ' + error.message);
                 setIsErrorModalVisible(true);
             } else if (error.response?.status === 404) {
-                setErrorMessage('Aún no estas registrado. Registrate ahora');
+                setErrorMessage(error.response.status + ' ' + error.message);
                 setIsErrorModalVisible(true);
             } else if (error.response?.status === 400) {
-                setErrorMessage('Email o usuario incorrecto');
+                setErrorMessage(error.response.status + ' ' + error.message);
                 setIsErrorModalVisible(true);
             } else {
-                setErrorMessage('Error al iniciar sesión. Por favor, inténtalo de nuevo.');
+                setErrorMessage(error.response.status + ' ' + error.message);
                 setIsErrorModalVisible(true);
             }
         } finally {
             setIsLoading(false);
         }
     };
-
-    if (isLoading) {
-        return <LoadingScreen />;
-    }
 
     return (
         <ThemedView darkColor={themeColors.backgroundColor} lightColor={themeColors.backgroundColor} style={styles.container}>
@@ -212,7 +207,7 @@ export default function LoginScreen() {
 
                 <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
 
-                <ThemedText variant='paragraph' marginBottom={16}>O continua con</ThemedText>
+                {/*<ThemedText variant='paragraph' marginBottom={16}>O continua con</ThemedText>
 
                 <ThemedButton
                     text="Google"
@@ -221,7 +216,7 @@ export default function LoginScreen() {
                     width='auto'
                     onPress={handleLogin}
                     backgroundColor={themeColors.status.error}
-                />
+                />*/}
             </AnimatedCard>
 
             <MessageModal
@@ -239,6 +234,7 @@ export default function LoginScreen() {
                 }}
             /> 
 
+            {isLoading && <LoadingScreen />}
         </ThemedView>
     );
 }

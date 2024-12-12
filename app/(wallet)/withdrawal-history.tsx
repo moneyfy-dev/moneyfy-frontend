@@ -21,13 +21,44 @@ type WithdrawalRecord = {
 const mockWithdrawals: WithdrawalRecord[] = [
     {
         id: '1',
-        bank: 'Banco estado',
+        bank: 'Banco Falabella',
         accountNumber: '17286536',
-        amount: 32000,
-        date: '2024-11-15',
-        remaining: 23000
+        amount: 45000,
+        date: '2024-03-15',
+        remaining: 155000
     },
-    // Añade más datos mock aquí si necesitas
+    {
+        id: '2',
+        bank: 'Banco Falabella',
+        accountNumber: '17286536',
+        amount: 35000,
+        date: '2024-02-15',
+        remaining: 200000
+    },
+    {
+        id: '3',
+        bank: 'Banco Falabella',
+        accountNumber: '17286536',
+        amount: 50000,
+        date: '2024-01-15',
+        remaining: 235000
+    },
+    {
+        id: '4',
+        bank: 'Banco Falabella',
+        accountNumber: '17286536',
+        amount: 40000,
+        date: '2023-12-15',
+        remaining: 285000
+    },
+    {
+        id: '5',
+        bank: 'Banco Estado',
+        accountNumber: '23451789',
+        amount: 55000,
+        date: '2023-11-15',
+        remaining: 325000
+    }
 ];
 
 export default function WithdrawalHistory() {

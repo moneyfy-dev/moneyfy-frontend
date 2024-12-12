@@ -16,10 +16,15 @@ import axios from 'axios';
 import { updateUserProfile } from '@/services/userService';
 import * as FileSystem from 'expo-file-system';
 import { ProfilePictureModal } from '@/components/ProfilePictureModal';
+import { MessageModal } from '@/components/MessageModal';
 
 export default function PersonalInfoScreen() {
     const { user, updateUserData } = useAuth();
     const themeColors = useThemeColor();
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [successModalVisible, setSuccessModalVisible] = useState(false);
     const [personalInfo, setPersonalInfo] = useState({
         nombre: '',
         apellido: '',
@@ -105,7 +110,8 @@ export default function PersonalInfoScreen() {
 
     const handleSave = async () => {
         if (!validateForm()) {
-            Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
+            setErrorMessage('Por favor, corrija los errores en el formulario.');
+            setIsErrorModalVisible(true);
             return;
         }
 
@@ -147,7 +153,8 @@ export default function PersonalInfoScreen() {
             if (response && response.data && response.data.user) {
                 // Actualizar los datos del usuario en el contexto de autenticación
                 await updateUserData(response.data.user);
-                Alert.alert('Éxito', 'Información personal actualizada correctamente');
+                setSuccessMessage('Información personal actualizada correctamente');
+                setSuccessModalVisible(true);
             } else {
                 throw new Error('Respuesta inesperada del servidor');
             }
@@ -158,7 +165,8 @@ export default function PersonalInfoScreen() {
                 console.error('Error status:', error.response?.status);
                 console.error('Error headers:', error.response?.headers);
             }
-            Alert.alert('Error', 'No se pudo actualizar la información personal');
+            setErrorMessage('No se pudo actualizar la información personal');
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -256,6 +264,36 @@ export default function PersonalInfoScreen() {
                 onDelete={handleDeleteProfilePicture}
                 onChange={pickImage}
             />
+
+            <MessageModal
+                isVisible={isErrorModalVisible}
+                onClose={() => setIsErrorModalVisible(false)}
+                title="Error"
+                message={errorMessage}
+                icon={{
+                    name: "alert-circle-outline",
+                    color: themeColors.status.error
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsErrorModalVisible(false)
+                }}
+            />
+
+            <MessageModal
+                isVisible={successModalVisible}
+                onClose={() => setSuccessModalVisible(false)}
+                title="Éxito"
+                message={successMessage}
+                icon={{
+                    name: "checkmark-circle-outline",
+                    color: themeColors.status.success
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setSuccessModalVisible(false)
+                }}
+            />
         </ThemedLayout>
     );
 }
@@ -263,6 +301,7 @@ export default function PersonalInfoScreen() {
 const styles = StyleSheet.create({
     content: {
         flex: 1,
+        marginBottom: 48,
     },
     profileSection: {
         flexDirection: 'column',

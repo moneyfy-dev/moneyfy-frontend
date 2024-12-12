@@ -12,24 +12,11 @@ import { Alert } from 'react-native';
 import { getAvailableVehicles } from '@/services/vehicleService';
 import { VehicleModel } from '@/types/vehicles';
 import { useAuth } from '@/context/AuthContext';
-import { searchCompanies, quoteVehicle } from '@/services/quoteService';
 import { useRouter } from 'expo-router';
+import { OWNER_OPTIONS_MAP } from '@/types/quote';
+import { startQuotationFlow } from '@/services/quotationFlowService';
+import { MessageModal } from '@/components/MessageModal';
 
-const OWNER_OPTIONS = [
-    "Si, soy el dueño del vehículo",
-    "No, soy el padre/madre del dueño",
-    "No, soy el conviviente civil del dueño",
-    "No, soy el cónyuge del dueño",
-    "No, soy el hijo(a) del dueño"
-];
-
-const OWNER_OPTIONS_MAP = {
-    "Si, soy el dueño del vehículo": "owner",
-    "No, soy el padre/madre del dueño": "parent",
-    "No, soy el conviviente civil del dueño": "civil_cohabitant",
-    "No, soy el cónyuge del dueño": "spouse",
-    "No, soy el hijo(a) del dueño": "child"
-};
 
 export default function ManualSearchScreen() {
     const themeColors = useThemeColor();
@@ -38,6 +25,8 @@ export default function ManualSearchScreen() {
     const [selectedVehicle, setSelectedVehicle] = useState<VehicleModel | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     const [formData, setFormData] = useState({
         patente: '',
@@ -46,7 +35,7 @@ export default function ManualSearchScreen() {
         año: '',
         version: '',
         rut: '',
-        isDueño: ''
+        isDueño: 'Si, soy el dueño del vehículo'
     });
 
     const [errors, setErrors] = useState({
@@ -74,8 +63,8 @@ export default function ManualSearchScreen() {
             // Actualizar datos del usuario
             await updateUserData(response.data.user);
         } catch (error) {
-            console.error('Error al cargar vehículos:', error);
-            Alert.alert('Error', 'No se pudieron cargar los vehículos disponibles');
+            setErrorMessage('No se pudieron cargar los vehículos disponibles');
+            setIsErrorModalVisible(true);
         } finally {
             setIsLoading(false);
         }
@@ -94,69 +83,36 @@ export default function ManualSearchScreen() {
     const handleSubmit = async () => {
         if (!validateRUT(formData.rut)) {
             setErrors({ ...errors, rut: 'RUT inválido' });
-            Alert.alert('Error', 'Por favor, corrija los errores en el formulario.');
+            setErrorMessage('Por favor, corrija los errores en el formulario.');
+            setIsErrorModalVisible(true);
             return;
         }
 
         try {
             setIsLoading(true);
 
-            // 1. Obtener compañías
-            const companiesResponse = await searchCompanies();
-            const companies = companiesResponse.data.companies || [];
-
-            if (companies.length === 0) {
-                throw new Error('No hay compañías disponibles para cotizar');
-            }
-
-            // 2. Preparar datos base para la cotización
-            const baseQuoteData = {
-                ppu: formData.patente,
+            const response = await startQuotationFlow({
+                ppu: formData.patente.toUpperCase(),
                 brand: formData.marca,
                 model: formData.modelo,
                 year: formData.año,
                 purchaserId: formData.rut,
-                ownerOption: OWNER_OPTIONS_MAP[formData.isDueño as keyof typeof OWNER_OPTIONS_MAP],
-            };
-
-            // 3. Crear las promesas de cotización para cada compañía
-            const quotePromises = companies.map(company => 
-                quoteVehicle({
-                    ...baseQuoteData,
-                    companyAlias: company.alias
-                })
-            );
-
-            // 4. Ejecutar todas las cotizaciones en paralelo
-            const results = await Promise.all(quotePromises);
-
-            // 5. Combinar todos los planes de las diferentes compañías
-            const allPlans = results
-                .filter(response => response.status === 200)
-                .map(response => response.data.plans)
-                .flat();
-
-            if (allPlans.length === 0) {
-                throw new Error('No se encontraron planes disponibles');
-            }
-
-            // 6. Navegar a la pantalla de resultados
+                ownerOption: OWNER_OPTIONS_MAP[formData.isDueño as keyof typeof OWNER_OPTIONS_MAP]
+            });
+            console.log('response', response.referredId);
             router.push({
                 pathname: '/(quote)/quote-results',
                 params: {
-                    selectedVehicle: encodeURIComponent(JSON.stringify({
-                        ppu: formData.patente,
-                        brand: formData.marca,
-                        model: formData.modelo,
-                        year: formData.año
-                    })),
-                    plans: encodeURIComponent(JSON.stringify(allPlans))
+                    plans: encodeURIComponent(JSON.stringify(response.plans)),
+                    referredId: response.referredId,
+                    vehicle: encodeURIComponent(JSON.stringify(response.vehicle))
                 }
             });
 
         } catch (error) {
             console.error('Error al cotizar:', error);
-            Alert.alert('Error', 'No se pudo realizar la cotización');
+            setErrorMessage('No se pudo realizar la cotización');
+            setIsErrorModalVisible(true);
         } finally {
             setIsLoading(false);
         }
@@ -179,6 +135,7 @@ export default function ManualSearchScreen() {
                     value={formData.patente}
                     onChangeText={(value) => setFormData({ ...formData, patente: value })}
                     placeholder="Patente"
+                    isPlate={true}
                 />
 
                 <ThemedAutocomplete
@@ -240,7 +197,7 @@ export default function ManualSearchScreen() {
                     onChangeText={(value) => setFormData({ ...formData, isDueño: value })}
                     placeholder="Si, soy el dueño del vehículo"
                     isSelect={true}
-                    options={OWNER_OPTIONS}
+                    options={Object.keys(OWNER_OPTIONS_MAP)}
                 />
             </View>
 
@@ -248,6 +205,21 @@ export default function ManualSearchScreen() {
                 text="Siguiente"
                 onPress={handleSubmit}
                 disabled={isLoading || !formData.marca || !formData.modelo || !formData.patente || !formData.rut || !formData.isDueño}
+            />
+
+            <MessageModal
+                isVisible={isErrorModalVisible}
+                onClose={() => setIsErrorModalVisible(false)}
+                title="Error"
+                message={errorMessage}
+                icon={{
+                    name: "alert-circle-outline",
+                    color: themeColors.status.error
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsErrorModalVisible(false)
+                }}
             />
         </ThemedLayout>
     );

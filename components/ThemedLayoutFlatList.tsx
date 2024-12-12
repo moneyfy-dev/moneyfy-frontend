@@ -16,7 +16,7 @@ export const ThemedLayoutFlatList: React.FC<ThemedLayoutProps> = ({
     contentContainerStyle,
     padding = [40, 40] // Valor por defecto
 }) => {
-    const [paddingTop, paddingBottom] = Array.isArray(padding) ? padding : [padding, padding];
+    const [paddingVertical, paddingHorizontal] = Array.isArray(padding) ? padding : [padding, padding];
 
     return (
         <ThemedSafeAreaView style={styles.container}>
@@ -28,7 +28,7 @@ export const ThemedLayoutFlatList: React.FC<ThemedLayoutProps> = ({
                 <View
                     style={[
                         styles.scrollViewContent, 
-                        { paddingTop, paddingBottom },
+                        { paddingVertical, paddingHorizontal },
                         contentContainerStyle
                     ]}
                 >
@@ -48,7 +48,6 @@ const styles = StyleSheet.create({
     },
     scrollViewContent: {
         flexGrow: 1,
-        paddingHorizontal: 24,
     },
     backgroundSvg: {
         position: 'absolute',

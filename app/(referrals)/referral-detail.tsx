@@ -6,48 +6,87 @@ import { ThemedText } from '@/components/ThemedText';
 import { QuoteCard } from '@/components/QuoteCard';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { mockReferrals } from '@/mocks/referrals';
 import { Referral, ReferralStatus } from '@/types/referral';
 import { VehicleCard } from '@/components/VehicleCard';
-import { Ionicons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
 import { IconContainer } from '@/components/IconContainer';
+import { useAuth } from '@/context/AuthContext';
+import Colors from '@/constants/Colors';
+import { InsurancePlan } from '@/types/quote';
+import { ReferralInfoCard } from '@/components/ReferralInfoCard';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function ReferralDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const themeColors = useThemeColor();
   const [referral, setReferral] = useState<Referral | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { user, hydrateUserData } = useAuth();
 
   useEffect(() => {
-    // Simulamos la carga de datos
-    const referralData = mockReferrals.find(r => r.referredId === params.id);
-    setReferral(referralData || null);
+    let isMounted = true;
+
+    const loadReferralData = async () => {
+      setIsLoading(true);
+      try {
+        await hydrateUserData(true);
+        if (isMounted && user?.referredPeople) {
+          const referralData = user.referredPeople.find(r => r.referredId === params.id);
+          setReferral(referralData || null);
+          console.log('referralData', referralData?.referredPlanData);
+        }
+      } catch (error) {
+        console.error('Error loading referral data:', error);
+      }
+    };
+
+    loadReferralData();
+    setIsLoading(false);
+    return () => {
+      isMounted = false;
+    };
   }, [params.id]);
 
   if (!referral) {
     return (
-      <ThemedLayout>
-        <View style={styles.loadingContainer}>
-          <ThemedText>Cargando...</ThemedText>
-        </View>
-      </ThemedLayout>
+      <LoadingScreen />
     );
   }
 
   const getStatusColor = (status: ReferralStatus) => {
     const colors: Record<ReferralStatus, string> = {
-      cotizando: themeColors.status.warning,
-      inspeccion: themeColors.status.info,
-      aprobado: themeColors.status.success,
-      rechazado: themeColors.status.error,
+      'Iniciando': themeColors.green4to5,
+      'Cotizando': themeColors.green3to4,
+      'Recopilando': themeColors.green2to3,
+      'Pendiente': themeColors.status.info,
+      'Aprobado': themeColors.status.success,
+      'Rechazado': themeColors.status.error,
+      'Caducado': themeColors.status.warning,
     };
     return colors[status];
   };
 
   const getTextColor = (status: ReferralStatus) => {
-    return status === 'cotizando' ? Colors.common.black : Colors.common.white;
+    return status === 'Caducado' ? Colors.common.black : Colors.common.white;
+  };
+
+  const mapToPlanFormat = (referredPlan: typeof referral.referredPlanData): InsurancePlan => {
+    return {
+      planId: referredPlan.referredPlanId || '',
+      planName: referredPlan.planName || '',
+      insuranceCompany: referredPlan.insuranceCompany || '',
+      deductible: referredPlan.deductible || 0,
+      price: referredPlan.price || 0,
+      priceUf: referredPlan.priceUf || 0,
+      discount: referredPlan.discount as unknown as number || 0,
+      stolenVehicle: referredPlan.stolenVehicle || '',
+      workshopType: referredPlan.workshopType || '',
+      totalLoss: referredPlan.totalLoss || '',
+      damageThirdParty: referredPlan.damageThirdParty || '',
+      details: referredPlan.details || [],
+      createdDate: referredPlan.createdDate || '',
+      updatedDate: referredPlan.updatedDate || '',
+    };
   };
 
   return (
@@ -58,13 +97,13 @@ export default function ReferralDetailScreen() {
           <IconContainer
             icon="person-outline"
             size={24}
-            style={[{ backgroundColor: getStatusColor(referral.referredStatus as ReferralStatus) }]}
+            style={[{ backgroundColor: getStatusColor(referral.referredStatus) }]}
           />
           <View style={styles.referralInfo}>
-
             <View style={styles.nameContainer}>
               <ThemedText variant="subTitleBold">
-                {referral.referredPersonalData.name} {referral.referredPersonalData.surname}
+                {referral.referredCarData.brand || 'Sin marca'} {' '}
+                {referral.referredCarData.model || 'registrado'}
               </ThemedText>
 
               <ThemedText variant="notes">
@@ -75,11 +114,11 @@ export default function ReferralDetailScreen() {
             <View style={styles.statusContainer}>
               <View style={[
                 styles.statusBadge,
-                { backgroundColor: getStatusColor(referral.referredStatus as ReferralStatus) }
+                { backgroundColor: getStatusColor(referral.referredStatus) }
               ]}>
                 <ThemedText
                   variant="paragraph"
-                  style={{ color: getTextColor(referral.referredStatus as ReferralStatus) }}
+                  style={{ color: getTextColor(referral.referredStatus) }}
                 >
                   {referral.referredStatus}
                 </ThemedText>
@@ -89,6 +128,12 @@ export default function ReferralDetailScreen() {
             <ThemedText variant="notes">
               Cotizado el: {format(new Date(referral.createdDate), 'dd/MM/yyyy')}
             </ThemedText>
+
+            {referral.referredPersonalData.purchaserId && (
+              <ThemedText variant="notes">
+                RUT: {referral.referredPersonalData.purchaserId}
+              </ThemedText>
+            )}
           </View>
         </View>
 
@@ -98,19 +143,27 @@ export default function ReferralDetailScreen() {
           model={referral.referredCarData.model}
           ppu={referral.referredCarData.ppu}
           year={referral.referredCarData.year}
-          showRightIcon={false}
+          isSelected={true}
         />
 
         {/* Plan seleccionado */}
-        {referral.referredPlanData.id && (
+        {referral.referredPlanData && 
+         referral.referredPlanData.planName && (
           <View style={styles.section}>
             <QuoteCard
-              plan={referral.referredPlanData}
+              plan={mapToPlanFormat(referral.referredPlanData)}
               showButton={false}
             />
           </View>
         )}
+
+        {/* Información adicional */}
+        <ReferralInfoCard
+          personalData={referral.referredPersonalData}
+          addressData={referral.referredAddressData}
+        />
       </View>
+      {isLoading && <LoadingScreen />}
     </ThemedLayout>
   );
 }

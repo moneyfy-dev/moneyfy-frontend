@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput, ScrollView } from 'react-native';
 import { useRouter, Href, useLocalSearchParams } from 'expo-router';
 import { ThemedLayout } from '@/components/ThemedLayout';
 import { ThemedText } from '@/components/ThemedText';
@@ -8,6 +8,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useAuth } from '@/context/AuthContext';
 import { ThemedButton } from '@/components/ThemedButton';
 import { confirmRegistration, resendConfirmationCode, confirmDeviceChange } from '@/services/authService';
+import { MessageModal } from '@/components/MessageModal';
 
 export default function ConfirmationCodeScreen() {
     const route = useLocalSearchParams();
@@ -21,6 +22,10 @@ export default function ConfirmationCodeScreen() {
     const themeColors = useThemeColor();
     const [isResendDisabled, setIsResendDisabled] = useState(false);
     const [resendTimer, setResendTimer] = useState(0);
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successModalVisible, setSuccessModalVisible] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -69,7 +74,8 @@ export default function ConfirmationCodeScreen() {
                 router.replace('/(tabs)');
             }
         } catch (error) {
-            Alert.alert('Error', 'Código inválido. Por favor intente nuevamente.');
+            setErrorMessage('Código inválido. Por favor intente nuevamente.');
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -77,24 +83,26 @@ export default function ConfirmationCodeScreen() {
         if (isResendDisabled) return;
 
         setIsResendDisabled(true);
-        setResendTimer(60); // Deshabilita el botón por 60 segundos
+        setResendTimer(60);
 
         try {
-
             if(flow === 'device-change') {
                 const response = await resendConfirmationCode(email as string, 'changeDevice');
                 if (response.status === 200) {
-                    Alert.alert('Éxito', 'Se ha enviado un nuevo código de confirmación.');
+                    setSuccessMessage('Se ha enviado un nuevo código de confirmación.');
+                    setSuccessModalVisible(true);
                 }
             } else {
                 const response = await resendConfirmationCode(email as string, 'registerUser');
                 if (response.status === 200) {
-                    Alert.alert('Éxito', 'Se ha enviado un nuevo código de confirmación.');
+                    setSuccessMessage('Se ha enviado un nuevo código de confirmación.');
+                    setSuccessModalVisible(true);
                 }
             }
         } catch (error) {
             console.error('Error al reenviar el código:', error);
-            Alert.alert('Error', 'No se pudo reenviar el código. Inténtalo de nuevo.');
+            setErrorMessage('No se pudo reenviar el código. Inténtalo de nuevo.');
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -157,6 +165,36 @@ export default function ConfirmationCodeScreen() {
                     onPress={() => handleConfirmCode(code.join(''))}
                 />
             </View>
+
+            <MessageModal
+                isVisible={isErrorModalVisible}
+                onClose={() => setIsErrorModalVisible(false)}
+                title="Error"
+                message={errorMessage}
+                icon={{
+                    name: "alert-circle-outline",
+                    color: themeColors.status.error
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsErrorModalVisible(false)
+                }}
+            />
+
+            <MessageModal
+                isVisible={successModalVisible}
+                onClose={() => setSuccessModalVisible(false)}
+                title="Éxito"
+                message={successMessage}
+                icon={{
+                    name: "checkmark-circle-outline",
+                    color: themeColors.status.success
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setSuccessModalVisible(false)
+                }}
+            />
         </ThemedLayout>
     );
 }

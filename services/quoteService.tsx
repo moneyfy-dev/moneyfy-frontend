@@ -19,7 +19,6 @@ export const searchCompanies = async (): Promise<SearchResponse> => {
       },
     }
   );
-  console.log('response', response.data);
   
   return response.data;
 };
@@ -72,6 +71,7 @@ export const searchVehicle = async (ownerId: string, ppu: string): Promise<Searc
 export const selectPlan = async (planData: SelectPlanParams) => {
   const token = await AsyncStorage.getItem('token');
   const sessionToken = await AsyncStorage.getItem('sessionToken');
+  console.log('planData', planData);
   
   const response = await axios.put<QuoteVehicleResponse>(
     `${apiUrl}/referred/select/plan`,

@@ -21,7 +21,7 @@ export interface SearchResponse {
   data: {
     referredId: string | number | (string | number)[] | null | undefined;
     companies?: Company[];
-    vehicle?: Vehicle[];
+    vehicle?: Vehicle;
     tokens: {
       jwtSession: string;
       jwtRefresh: string;
@@ -31,6 +31,7 @@ export interface SearchResponse {
 }
 
 export interface QuoteVehicleParams {
+  referredId?: string;
   ppu: string;
   brand: string;
   model: string;
@@ -38,6 +39,9 @@ export interface QuoteVehicleParams {
   purchaserId: string;
   ownerOption: string;
   companyAlias: string;
+  colour?: string;
+  engineNum?: string;
+  chassisNum?: string;
 }
 
 export interface InsurancePlan {
@@ -51,7 +55,7 @@ export interface InsurancePlan {
   stolenVehicle: string;
   workshopType: string;
   totalLoss: string;
-  damageThirdParty: string;
+  damageThirdParty: string
   details: string[];
   createdDate: string;
   updatedDate: string;

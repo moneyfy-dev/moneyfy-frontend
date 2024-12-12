@@ -12,47 +12,51 @@ import { Vehicle, OWNER_OPTIONS_MAP } from '@/types/quote';
 import { quoteVehicle } from '@/services/quoteService';
 import { useAuth } from '@/context/AuthContext';
 import { searchCompanies } from '@/services/quoteService';
+import { VehicleCard } from '@/components/VehicleCard';
+import { startQuotationFlow } from '@/services/quotationFlowService';
+import { LoadingScreen } from '@/components/LoadingScreen';
+import { MessageModal } from '@/components/MessageModal';
 
 export default function SearchResultsScreen() {
   const { type, value, vehicle: initialVehicle, referredId: initialReferredId } = useLocalSearchParams();
   const themeColors = useThemeColor();
   const router = useRouter();
-  const { updateUserData } = useAuth();
-
+  const [isLoading, setIsLoading] = useState(false);
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [buyerRut, setBuyerRut] = useState('');
   const [ownerOption, setOwnerOption] = useState(Object.keys(OWNER_OPTIONS_MAP)[0]);
   const [referredId, setReferredId] = useState<string>('');
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     try {
       if (initialVehicle && initialReferredId) {
         const vehicleString = decodeURIComponent(initialVehicle as string);
         const parsedVehicle = JSON.parse(vehicleString);
-        
+
         setVehicle(parsedVehicle);
         setSelectedVehicle(parsedVehicle);
         setReferredId(initialReferredId as string);
       }
     } catch (error) {
       console.error('Error al procesar el vehículo:', error);
-      Alert.alert('Error', 'Hubo un problema al cargar los resultados');
+      setErrorMessage('Hubo un problema al cargar los resultados');
+      setIsErrorModalVisible(true);
     }
   }, [initialVehicle, initialReferredId]);
 
-  const handleVehicleSelect = (vehicle: Vehicle) => {
-    setSelectedVehicle(vehicle);
-  };
-
   const handleQuote = async () => {
+    setIsLoading(true);
     if (!selectedVehicle || !buyerRut || !ownerOption || !referredId) {
-      Alert.alert('Error', 'Por favor complete todos los campos requeridos');
+      setErrorMessage('Por favor complete todos los campos requeridos');
+      setIsErrorModalVisible(true);
       return;
     }
 
     try {
-      const quoteData = {
+      const response = await startQuotationFlow({
         referredId: referredId,
         ppu: selectedVehicle.ppu,
         brand: selectedVehicle.brand,
@@ -60,63 +64,28 @@ export default function SearchResultsScreen() {
         year: selectedVehicle.year,
         colour: selectedVehicle.colour,
         engineNum: selectedVehicle.engineNum,
+        chassisNum: selectedVehicle.chassisNum,
         purchaserId: buyerRut,
         ownerOption: OWNER_OPTIONS_MAP[ownerOption as keyof typeof OWNER_OPTIONS_MAP],
-        companyAlias: "aseguradora1"
-      };
-
-      const response = await quoteVehicle(quoteData);
-      
-      if (response.data.user) {
-        await updateUserData(response.data.user);
-      }
+      });
+      console.log('response', response.vehicle);
 
       router.push({
         pathname: '/(quote)/quote-results',
         params: {
-          plans: JSON.stringify(response.data.plans),
-          referredId: response.data.referredId,
-          vehicle: JSON.stringify(selectedVehicle)
+          plans: encodeURIComponent(JSON.stringify(response.plans)),
+          referredId: response.referredId,
+          vehicle: encodeURIComponent(JSON.stringify(response.vehicle))
         }
       });
 
     } catch (error) {
       console.error('Error al cotizar:', error);
-      Alert.alert('Error', 'No se pudo realizar la cotización');
+      setErrorMessage('No se pudo realizar la cotización');
+      setIsErrorModalVisible(true);
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
-    const isSelected = selectedVehicle?.ppu === vehicle.ppu;
-    
-    return (
-      <TouchableOpacity
-        onPress={() => handleVehicleSelect(vehicle)}
-        style={[
-          styles.vehicleCard,
-          { 
-            borderColor: isSelected ? themeColors.textColorAccent : themeColors.borderBackgroundColor,
-            backgroundColor: isSelected ? themeColors.backgroundCardColor : 'transparent'
-          }
-        ]}
-      >
-        <View style={[styles.iconContainer, { backgroundColor: themeColors.textColorAccent }]}>
-          <Ionicons name='car-outline' size={24} color={themeColors.white} />
-        </View>
-        <View style={styles.vehicleInfo}>
-          <ThemedText variant="paragraph">{vehicle.brand}</ThemedText>
-          <ThemedText variant="subTitle">{vehicle.ppu} - {vehicle.year}</ThemedText>
-          <ThemedText variant="paragraph" color={themeColors.textColorAccent}>
-            {vehicle.model}
-          </ThemedText>
-        </View>
-        <Ionicons 
-          name={isSelected ? "checkmark-circle" : "chevron-forward"} 
-          size={24} 
-          color={isSelected ? themeColors.textColorAccent : themeColors.borderBackgroundColor} 
-        />
-      </TouchableOpacity>
-    );
   };
 
   const getSearchValues = () => {
@@ -156,14 +125,20 @@ export default function SearchResultsScreen() {
           </ThemedText>
           {getSearchValues()}
           <ThemedText variant="paragraph" color={themeColors.textParagraph}>
-            {vehicle 
+            {vehicle
               ? 'Hemos encontrado el siguiente vehículo'
               : 'No se encontró el vehículo'}
           </ThemedText>
         </View>
 
         {vehicle && (
-          <VehicleCard vehicle={vehicle} />
+          <VehicleCard
+            brand={vehicle.brand}
+            model={vehicle.model}
+            ppu={vehicle.ppu}
+            year={vehicle.year}
+            isSelected={true}
+          />
         )}
 
         <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
@@ -189,13 +164,31 @@ export default function SearchResultsScreen() {
           options={Object.keys(OWNER_OPTIONS_MAP)}
         />
       </View>
-      
+
       <ThemedButton
         text="Siguiente"
         onPress={handleQuote}
         style={styles.nextButton}
         disabled={!selectedVehicle || !buyerRut || !ownerOption || !referredId}
       />
+
+      <MessageModal
+        isVisible={isErrorModalVisible}
+        onClose={() => setIsErrorModalVisible(false)}
+        title="Error"
+        message={errorMessage}
+        icon={{
+          name: "alert-circle-outline",
+          color: themeColors.status.error
+        }}
+        primaryButton={{
+          text: "Entendido",
+          onPress: () => setIsErrorModalVisible(false)
+        }}
+      />
+      {isLoading && (
+        <LoadingScreen />
+      )}
     </ThemedLayout>
   );
 }

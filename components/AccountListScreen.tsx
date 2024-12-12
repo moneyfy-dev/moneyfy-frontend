@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Account } from '@/types/useAccounts';
 import { useRouter } from 'expo-router';
 import { deleteAccount } from '@/services/accountService';
+import { MessageModal } from './MessageModal';
 
 interface AccountListScreenProps {
     accounts: Account[];
@@ -19,6 +20,10 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
     const router = useRouter();
     const [menuVisible, setMenuVisible] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [successModalVisible, setSuccessModalVisible] = useState(false);
 
     const handleMenuPress = (account: Account) => {
         setSelectedAccount(account);
@@ -31,11 +36,13 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
                 console.log('selectedAccount', selectedAccount);
                 console.log('selectedId', selectedAccount.accountId);
                 await deleteAccount(selectedAccount.accountId);
-                Alert.alert('Éxito', 'Cuenta eliminada correctamente');
+                setSuccessMessage('Cuenta eliminada correctamente');
+                setSuccessModalVisible(true);
                 onAccountUpdated();
             } catch (error) {
                 console.error('Error al eliminar la cuenta:', error);
-                Alert.alert('Error', 'No se pudo eliminar la cuenta');
+                setErrorMessage('No se pudo eliminar la cuenta');
+                setIsErrorModalVisible(true);
             }
         }
         setMenuVisible(false);
@@ -111,6 +118,36 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
                     </View>
                 </TouchableOpacity>
             </Modal>
+
+            <MessageModal
+                isVisible={successModalVisible}
+                onClose={() => setSuccessModalVisible(false)}
+                title="Éxito"
+                message={successMessage}
+                icon={{
+                    name: "checkmark-circle-outline",
+                    color: themeColors.status.success
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setSuccessModalVisible(false)
+                }}
+            />
+
+            <MessageModal
+                isVisible={isErrorModalVisible}
+                onClose={() => setIsErrorModalVisible(false)}
+                title="Error"
+                message={errorMessage}
+                icon={{
+                    name: "alert-circle-outline",
+                    color: themeColors.status.error
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsErrorModalVisible(false)
+                }}
+            />
         </>
     );
 }
