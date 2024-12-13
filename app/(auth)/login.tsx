@@ -49,25 +49,25 @@ export default function LoginScreen() {
             try {
                 const { apiUrl } = getEnvVars();
                 setServiceLog(prev => prev + '\nIntentando conexión a: ' + apiUrl);
-                
+
                 const response = await axios.post(`${apiUrl}/auth/log-in`, {
                     email: 'alejandro.osses.r@gmail.com',
                     pwd: 'Lololanda'
                 });
-                
+
                 setServiceLog(prev => prev + '\nRespuesta exitosa: ' + JSON.stringify(response.data));
             } catch (error: any) {
                 setServiceLog(prev => {
                     let errorLog = '\n=== Error de Conexión ===';
                     errorLog += '\nTipo de error: ' + (error.name || 'Desconocido');
-                    
+
                     // Información específica de la respuesta del servidor
                     if (error.response) {
                         errorLog += '\nEstado: ' + error.response.status;
                         errorLog += '\nMensaje: ' + JSON.stringify(error.response.data);
                         errorLog += '\nHeaders: ' + JSON.stringify(error.response.headers);
                     }
-                    
+
                     // Información de la solicitud
                     if (error.config) {
                         errorLog += '\nMétodo: ' + error.config.method;
@@ -75,19 +75,19 @@ export default function LoginScreen() {
                         errorLog += '\nHeaders de solicitud: ' + JSON.stringify(error.config.headers);
                         errorLog += '\nDatos enviados: ' + JSON.stringify(error.config.data);
                     }
-                    
+
                     // Error de red o timeout
                     if (error.code) {
                         errorLog += '\nCódigo de error: ' + error.code;
                     }
-                    
+
                     errorLog += '\nMensaje completo: ' + error.message;
-                    
+
                     return prev + errorLog;
                 });
             }
         };
-    
+
         testConnection();
     }, []);
 
@@ -133,7 +133,7 @@ export default function LoginScreen() {
             setIsLoading(true);
             const response = await login(email, password);
             if (response && response.data) {
-                
+
                 await loginContext(response.data);
                 router.replace('/(tabs)');
             } else {
@@ -213,61 +213,61 @@ export default function LoginScreen() {
                 hideCard={hideCard}
                 style={styles.formContainer}
             >
+                <ScrollView>
+                    <ThemedView style={styles.logoContainerCard}>
+                        <ThemedText variant='superTitle' textAlign='left'>
+                            <ThemedText variant='superTitle' style={{ color: themeColors.textColorAccent }}>B</ThemedText>
+                            ienvenido a
+                        </ThemedText>
+                        <Logo width={200} height={48} />
+                    </ThemedView>
 
-                <ThemedView style={styles.logoContainerCard}>
-                    <ThemedText variant='superTitle' textAlign='left'>
-                        <ThemedText variant='superTitle' style={{ color: themeColors.textColorAccent }}>B</ThemedText>
-                        ienvenido a
-                    </ThemedText>
-                    <Logo width={200} height={48} />
-                </ThemedView>
+                    <ThemedView style={styles.inputContainer}>
+                        <ThemedInput
+                            placeholder="Usuario o email"
+                            value={email}
+                            onChangeText={handleEmailChange}
+                            onBlur={() => {
+                                setTouchedFields(prev => ({ ...prev, email: true }));
+                                validateField('email');
+                            }}
+                            error={emailError}
+                        />
+                        <ThemedInput
+                            placeholder="Contraseña"
+                            value={password}
+                            onChangeText={handlePasswordChange}
+                            onBlur={() => {
+                                setTouchedFields(prev => ({ ...prev, password: true }));
+                                validateField('password');
+                            }}
+                            secureTextEntry
+                            error={passwordError}
+                        />
+                    </ThemedView>
 
-                <ThemedView style={styles.inputContainer}>
-                    <ThemedInput
-                        placeholder="Usuario o email"
-                        value={email}
-                        onChangeText={handleEmailChange}
-                        onBlur={() => {
-                            setTouchedFields(prev => ({ ...prev, email: true }));
-                            validateField('email');
-                        }}
-                        error={emailError}
+                    <TouchableOpacity style={styles.forgotPasswordContainer}>
+                        <ThemedText variant='textLink' marginBottom={16} linkConfig={{ route: '/forgot-password' }}>¿Olvidaste tu contraseña?</ThemedText>
+                    </TouchableOpacity>
+
+                    <ThemedButton
+                        text="Ingresar"
+                        onPress={handleLogin}
+                        disabled={!email || !password}
                     />
-                    <ThemedInput
-                        placeholder="Contraseña"
-                        value={password}
-                        onChangeText={handlePasswordChange}
-                        onBlur={() => {
-                            setTouchedFields(prev => ({ ...prev, password: true }));
-                            validateField('password');
-                        }}
-                        secureTextEntry
-                        error={passwordError}
-                    />
-                </ThemedView>
 
-                <TouchableOpacity style={styles.forgotPasswordContainer}>
-                    <ThemedText variant='textLink' marginBottom={16} linkConfig={{ route: '/forgot-password' }}>¿Olvidaste tu contraseña?</ThemedText>
-                </TouchableOpacity>
+                    <ThemedView style={styles.registerContainer}>
+                        <ThemedText variant='paragraph'>¿No estás registrado? </ThemedText>
+                        <Link href={{ pathname: "/registerScreen" }} asChild>
+                            <TouchableOpacity>
+                                <ThemedText variant='textLink'>Registrate ahora</ThemedText>
+                            </TouchableOpacity>
+                        </Link>
+                    </ThemedView>
 
-                <ThemedButton
-                    text="Ingresar"
-                    onPress={handleLogin}
-                    disabled={!email || !password}
-                />
+                    <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
 
-                <ThemedView style={styles.registerContainer}>
-                    <ThemedText variant='paragraph'>¿No estás registrado? </ThemedText>
-                    <Link href={{ pathname: "/registerScreen" }} asChild>
-                        <TouchableOpacity>
-                            <ThemedText variant='textLink'>Registrate ahora</ThemedText>
-                        </TouchableOpacity>
-                    </Link>
-                </ThemedView>
-
-                <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
-
-                {/*<ThemedText variant='paragraph' marginBottom={16}>O continua con</ThemedText>
+                    {/*<ThemedText variant='paragraph' marginBottom={16}>O continua con</ThemedText>
 
                 <ThemedButton
                     text="Google"
@@ -277,6 +277,7 @@ export default function LoginScreen() {
                     onPress={handleLogin}
                     backgroundColor={themeColors.status.error}
                 />*/}
+                </ScrollView>
             </AnimatedCard>
 
             <MessageModal
@@ -292,7 +293,7 @@ export default function LoginScreen() {
                     text: "Entendido",
                     onPress: () => setIsErrorModalVisible(false)
                 }}
-            /> 
+            />
 
             {isLoading && <LoadingScreen />}
         </ThemedView>
@@ -335,6 +336,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 16,
         backgroundColor: 'transparent',
+        alignSelf: 'center',
     },
     divider: {
         height: 1,

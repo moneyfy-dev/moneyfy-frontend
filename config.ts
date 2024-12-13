@@ -5,11 +5,11 @@ interface EnvVars {
 
 const ENV: { [key: string]: EnvVars } = {
   development: {
-    apiUrl: process.env.API_URL || 'http://app-moneyfy-qa.connect360.cl:8080/segurosref',
+    apiUrl: process.env.API_URL || 'https://app-moneyfy-qa.connect360.cl:8443/segurosref',
     environment: process.env.NODE_ENV || 'development'
   },
   production: {
-    apiUrl: process.env.API_URL || 'http://app-moneyfy-qa.connect360.cl:8080/segurosref',
+    apiUrl: process.env.API_URL || 'https://app-moneyfy-qa.connect360.cl:8443/segurosref',
     environment: process.env.NODE_ENV || 'production'
   }
 };

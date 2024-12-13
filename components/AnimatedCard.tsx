@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Animated, PanResponder, Dimensions, ViewStyle, StyleSheet } from 'react-native';
+import { Animated, PanResponder, Dimensions, ViewStyle, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import { ThemedView } from './ThemedView';
 import { useThemeColor } from '../hooks/useThemeColor';
 
@@ -16,11 +16,11 @@ interface AnimatedCardProps {
     openPercentage?: number; // Porcentaje de apertura de la pantalla
 }
 
-export const AnimatedCard: React.FC<AnimatedCardProps> = ({ 
-    isVisible, 
-    hideCard, 
-    children, 
-    style, 
+export const AnimatedCard: React.FC<AnimatedCardProps> = ({
+    isVisible,
+    hideCard,
+    children,
+    style,
     openPercentage = 65
 }) => {
     const themeColors = useThemeColor();
@@ -38,7 +38,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
 
             onPanResponderRelease: (_, { vy }) => {
                 const shouldClose = vy > 0.2;
-                
+
                 Animated.spring(translateY, {
                     toValue: shouldClose ? SNAP_BOTTOM : openPosition,
                     useNativeDriver: true,
@@ -67,6 +67,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
 
     return (
         <Animated.View
+            pointerEvents="box-none"
             style={[
                 {
                     position: 'absolute',
@@ -80,28 +81,37 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
             ]}
             {...panResponder.panHandlers}
         >
-            <ThemedView style={[styles.card, { backgroundColor: themeColors.backgroundCardColor }]}>
-                <ThemedView style={[styles.bar, { backgroundColor: themeColors.extremeContrastGray }]}/>
-                {children}
-            </ThemedView>
+            <TouchableWithoutFeedback style={[styles.card, { backgroundColor: themeColors.backgroundCardColor }]} onPress={(e) => e.stopPropagation()}>
+                <ThemedView style={styles.internalContainer}>
+                    <ThemedView style={[styles.bar, { backgroundColor: themeColors.extremeContrastGray }]} />
+                    {children}
+                </ThemedView>
+            </TouchableWithoutFeedback>
         </Animated.View>
     );
 };
 
 const styles = StyleSheet.create({
+
     card: {
         flex: 1,
-        paddingTop: 20,
-        paddingBottom: 40,
-        paddingHorizontal: 24,
+        paddingHorizontal: 1,
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         alignItems: 'center',
+        justifyContent: 'center',
+    },
+    internalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+        paddingTop: 20,
     },
     bar: {
         width: 60,
         height: 8,
         borderRadius: 4,
         marginBottom: 20,
+        alignSelf: 'center',
     },
 });
