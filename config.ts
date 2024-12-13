@@ -1,23 +1,23 @@
 interface EnvVars {
   apiUrl: string;
+  environment: string;
 }
 
 const ENV: { [key: string]: EnvVars } = {
-  dev: {
-    apiUrl: 'http://45.236.128.120:8080/segurosref',
+  development: {
+    apiUrl: process.env.API_URL || 'http://app-moneyfy-qa.connect360.cl:8080/segurosref',
+    environment: process.env.NODE_ENV || 'development'
   },
-  prod: {
-    apiUrl: 'http://45.236.128.120:8080/segurosref',
+  production: {
+    apiUrl: process.env.API_URL || 'http://app-moneyfy-qa.connect360.cl:8080/segurosref',
+    environment: process.env.NODE_ENV || 'production'
   }
 };
 
-const getEnvVars = (env = process.env.NODE_ENV || 'development'): EnvVars => {
-  if (env === 'development') {
-    return ENV.dev;
-  } else if (env === 'production') {
-    return ENV.prod;
-  }
-  return ENV.dev;
+const getEnvVars = (): EnvVars => {
+  const env = process.env.NODE_ENV || 'development';
+  
+  return ENV[env];
 };
 
 export default getEnvVars;

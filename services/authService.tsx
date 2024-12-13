@@ -3,6 +3,27 @@ import getEnvVars from '../config';
 
 const { apiUrl } = getEnvVars();
 
+// Función de prueba para verificar la URL y las credenciales
+// const testLoginConnection = async () => {
+//   try {
+//     console.log('API URL:', apiUrl); // Para verificar que la URL se está cargando correctamente
+//     const testResponse = await axios.post(`${apiUrl}/auth/log-in`, {
+//       email: 'alejandro.osses.r@gmail.com',
+//       pwd: 'Lololanda'
+//     });
+//     console.log('Test Login Response:', testResponse.data);
+//     return testResponse;
+//   } catch (error) {
+//     console.error('Test Login Error:', error);
+//     console.error('API URL used:', apiUrl);
+//     if (axios.isAxiosError(error)) {
+//       console.error('Error Response:', error.response?.data);
+//       console.error('Error Status:', error.response?.status);
+//     }
+//     throw error;
+//   }
+// };
+
 export const register = async (name: string, surname: string, email: string, password: string, referralCode?: string) => {
   try {
     const requestData = { name, surname, pwd: password, email, referralCode };
@@ -67,7 +88,24 @@ export const login = async (email: string, password: string) => {
     });
     return response;
   } catch (error) {
-    console.log(error);
+    if (axios.isAxiosError(error)) {
+      console.error('Error de inicio de sesión:', {
+        mensaje: error.response?.data?.message,
+        estado: error.response?.status,
+        datos: error.response?.data,
+        configuración: error.config
+      });
+      
+      // Lanzamos un error más informativo
+      if (error.response) {
+        throw {
+          mensaje: error.response.data?.message || 'Error desconocido',
+          estado: error.response.status,
+          datos: error.response.data
+        };
+      }
+    }
+    // Si no es un error de Axios, lanzamos el error original
     throw error;
   }
 };

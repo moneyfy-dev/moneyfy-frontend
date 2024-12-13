@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { Link } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
@@ -16,6 +16,10 @@ import { useCardVisibility } from '@/hooks/useCardVisibility';
 import { AnimatedCard } from '@/components/AnimatedCard';
 import { login } from '@/services/authService';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import getEnvVars from '../../config';
+import axios from 'axios';
+
+const { apiUrl } = getEnvVars();
 
 const { height } = Dimensions.get('window');
 
@@ -33,11 +37,59 @@ export default function LoginScreen() {
     const router = useRouter();
     const [touchedFields, setTouchedFields] = useState({ email: false, password: false });
     const [errorMessage, setErrorMessage] = useState('');
+    const [serviceLog, setServiceLog] = useState<string>('');
 
     useEffect(() => {
         const isValid = validateEmail(email) && validatePassword(password);
         setIsFormValid(isValid);
     }, [email, password]);
+
+    useEffect(() => {
+        const testConnection = async () => {
+            try {
+                const { apiUrl } = getEnvVars();
+                setServiceLog(prev => prev + '\nIntentando conexión a: ' + apiUrl);
+                
+                const response = await axios.post(`${apiUrl}/auth/log-in`, {
+                    email: 'alejandro.osses.r@gmail.com',
+                    pwd: 'Lololanda'
+                });
+                
+                setServiceLog(prev => prev + '\nRespuesta exitosa: ' + JSON.stringify(response.data));
+            } catch (error: any) {
+                setServiceLog(prev => {
+                    let errorLog = '\n=== Error de Conexión ===';
+                    errorLog += '\nTipo de error: ' + (error.name || 'Desconocido');
+                    
+                    // Información específica de la respuesta del servidor
+                    if (error.response) {
+                        errorLog += '\nEstado: ' + error.response.status;
+                        errorLog += '\nMensaje: ' + JSON.stringify(error.response.data);
+                        errorLog += '\nHeaders: ' + JSON.stringify(error.response.headers);
+                    }
+                    
+                    // Información de la solicitud
+                    if (error.config) {
+                        errorLog += '\nMétodo: ' + error.config.method;
+                        errorLog += '\nURL: ' + error.config.url;
+                        errorLog += '\nHeaders de solicitud: ' + JSON.stringify(error.config.headers);
+                        errorLog += '\nDatos enviados: ' + JSON.stringify(error.config.data);
+                    }
+                    
+                    // Error de red o timeout
+                    if (error.code) {
+                        errorLog += '\nCódigo de error: ' + error.code;
+                    }
+                    
+                    errorLog += '\nMensaje completo: ' + error.message;
+                    
+                    return prev + errorLog;
+                });
+            }
+        };
+    
+        testConnection();
+    }, []);
 
     const handleEmailChange = (text: string) => {
         setEmail(text);
@@ -124,6 +176,14 @@ export default function LoginScreen() {
 
             <ThemedView style={styles.logoContainer}>
                 <Logo style={styles.loginLogo} width={280} height={60} />
+                <ThemedText variant='paragraph' textAlign='center'>
+                    API URL: {apiUrl}
+                </ThemedText>
+                <ScrollView style={styles.logContainer}>
+                    <ThemedText variant='paragraph' textAlign='left'>
+                        {serviceLog}
+                    </ThemedText>
+                </ScrollView>
                 <ThemedText variant='jumboTitle' textAlign='center' marginBottom={16}>
                     Transforma tus redes en ingresos
                 </ThemedText>
@@ -329,4 +389,12 @@ const styles = StyleSheet.create({
     loginLogo: {
         marginBottom: 64,
     },
+    logContainer: {
+        maxHeight: 200,
+        width: '100%',
+        marginVertical: 10,
+        padding: 10,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 8
+    }
 });

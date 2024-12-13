@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { login, getUserData, verifyToken } from '@/services/authService';
 import { differenceInMinutes } from 'date-fns';
 import { AuthContextProps, User, LoginResponse } from '@/types/auth';
+import getEnvVars from '../config';
 
 const AuthContext = createContext<AuthContextProps>({
   isAuthenticated: false,

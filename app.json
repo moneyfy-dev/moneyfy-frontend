@@ -3,7 +3,7 @@
     "newArchEnabled": true,
     "name": "Moneyfy",
     "slug": "Moneyfy",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -14,15 +14,9 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
-      "splash": {
-        "image": null
-      }
+      "supportsTablet": true
     },
     "android": {
-      "splash": {
-        "image": null
-      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
