@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
+import { StyleSheet, TouchableOpacity, Dimensions, ScrollView, Animated } from 'react-native';
 import { Link } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
@@ -26,6 +26,7 @@ const { height } = Dimensions.get('window');
 export default function LoginScreen() {
     const [isLoading, setIsLoading] = useState(false);
     const { isVisible, showCard, hideCard } = useCardVisibility();
+    const [isFormVisible, setIsFormVisible] = useState(false);
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -33,63 +34,34 @@ export default function LoginScreen() {
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [isFormValid, setIsFormValid] = useState(false);
+    const formAnimation = useRef(new Animated.Value(height)).current;
     const themeColors = useThemeColor();
     const router = useRouter();
     const [touchedFields, setTouchedFields] = useState({ email: false, password: false });
     const [errorMessage, setErrorMessage] = useState('');
-    const [serviceLog, setServiceLog] = useState<string>('');
+    const [serviceLog, setServiceLog] = useState<string>('Iniciando logs...\n');
+
+    const showLoginForm = () => {
+        setIsFormVisible(true);
+        Animated.spring(formAnimation, {
+            toValue: 0,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const hideLoginForm = () => {
+        Animated.spring(formAnimation, {
+            toValue: height,
+            useNativeDriver: true,
+        }).start(() => {
+            setIsFormVisible(false);
+        });
+    };
 
     useEffect(() => {
         const isValid = validateEmail(email) && validatePassword(password);
         setIsFormValid(isValid);
     }, [email, password]);
-
-    useEffect(() => {
-        const testConnection = async () => {
-            try {
-                const { apiUrl } = getEnvVars();
-                setServiceLog(prev => prev + '\nIntentando conexión a: ' + apiUrl);
-
-                const response = await axios.post(`${apiUrl}/auth/log-in`, {
-                    email: 'alejandro.osses.r@gmail.com',
-                    pwd: 'Lololanda'
-                });
-
-                setServiceLog(prev => prev + '\nRespuesta exitosa: ' + JSON.stringify(response.data));
-            } catch (error: any) {
-                setServiceLog(prev => {
-                    let errorLog = '\n=== Error de Conexión ===';
-                    errorLog += '\nTipo de error: ' + (error.name || 'Desconocido');
-
-                    // Información específica de la respuesta del servidor
-                    if (error.response) {
-                        errorLog += '\nEstado: ' + error.response.status;
-                        errorLog += '\nMensaje: ' + JSON.stringify(error.response.data);
-                        errorLog += '\nHeaders: ' + JSON.stringify(error.response.headers);
-                    }
-
-                    // Información de la solicitud
-                    if (error.config) {
-                        errorLog += '\nMétodo: ' + error.config.method;
-                        errorLog += '\nURL: ' + error.config.url;
-                        errorLog += '\nHeaders de solicitud: ' + JSON.stringify(error.config.headers);
-                        errorLog += '\nDatos enviados: ' + JSON.stringify(error.config.data);
-                    }
-
-                    // Error de red o timeout
-                    if (error.code) {
-                        errorLog += '\nCódigo de error: ' + error.code;
-                    }
-
-                    errorLog += '\nMensaje completo: ' + error.message;
-
-                    return prev + errorLog;
-                });
-            }
-        };
-
-        testConnection();
-    }, []);
 
     const handleEmailChange = (text: string) => {
         setEmail(text);
@@ -168,22 +140,16 @@ export default function LoginScreen() {
 
     return (
         <ThemedView darkColor={themeColors.backgroundColor} lightColor={themeColors.backgroundColor} style={styles.container}>
-            <ThemedView
+            <TouchableOpacity
                 style={styles.backgroundTouchable}
+                onPress={hideLoginForm}
+                activeOpacity={1}
             >
                 <BackgroundCircles style={styles.backgroundImage} />
-            </ThemedView>
+            </TouchableOpacity>
 
             <ThemedView style={styles.logoContainer}>
                 <Logo style={styles.loginLogo} width={280} height={60} />
-                <ThemedText variant='paragraph' textAlign='center'>
-                    API URL: {apiUrl}
-                </ThemedText>
-                <ScrollView style={styles.logContainer}>
-                    <ThemedText variant='paragraph' textAlign='left'>
-                        {serviceLog}
-                    </ThemedText>
-                </ScrollView>
                 <ThemedText variant='jumboTitle' textAlign='center' marginBottom={16}>
                     Transforma tus redes en ingresos
                 </ThemedText>
@@ -196,7 +162,7 @@ export default function LoginScreen() {
             <ThemedView style={[styles.initialContainer, { backgroundColor: themeColors.backgroundCardColor }]}>
                 <ThemedButton
                     text="Ingresar"
-                    onPress={showCard}
+                    onPress={showLoginForm}
                 />
                 <ThemedView style={styles.registerContainer}>
                     <ThemedText variant='paragraph'>¿No estás registrado? </ThemedText>
@@ -208,12 +174,20 @@ export default function LoginScreen() {
                 </ThemedView>
             </ThemedView>
 
-            <AnimatedCard
+            {/*<AnimatedCard
                 isVisible={isVisible}
                 hideCard={hideCard}
                 style={styles.formContainer}
+            >*/}
+            <Animated.View
+                style={[
+                    styles.formContainer,
+                    {
+                        transform: [{ translateY: formAnimation }]
+                    }
+                ]}
             >
-                <ScrollView>
+                <ScrollView contentContainerStyle={[styles.card, { backgroundColor: themeColors.backgroundCardColor }]}>
                     <ThemedView style={styles.logoContainerCard}>
                         <ThemedText variant='superTitle' textAlign='left'>
                             <ThemedText variant='superTitle' style={{ color: themeColors.textColorAccent }}>B</ThemedText>
@@ -278,7 +252,8 @@ export default function LoginScreen() {
                     backgroundColor={themeColors.status.error}
                 />*/}
                 </ScrollView>
-            </AnimatedCard>
+                </Animated.View>
+            {/*</AnimatedCard>*/}
 
             <MessageModal
                 isVisible={isErrorModalVisible}
@@ -316,6 +291,14 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
+    },
+    card: {
+        flex: 1,
+        paddingVertical: 40,
+        paddingHorizontal: 24,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        alignItems: 'center'
     },
     cardTitle: {
         marginBottom: 20,
@@ -392,11 +375,14 @@ const styles = StyleSheet.create({
         marginBottom: 64,
     },
     logContainer: {
-        maxHeight: 200,
+        height: 300,
         width: '100%',
         marginVertical: 10,
-        padding: 10,
-        backgroundColor: '#f0f0f0',
-        borderRadius: 8
+        paddingVertical: 0,
+        paddingHorizontal: 10,
+        backgroundColor: '#ffffff',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#ddd'
     }
 });
