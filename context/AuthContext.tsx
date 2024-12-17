@@ -34,22 +34,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [lastHydrationTime, setLastHydrationTime] = useState<Date | null>(null);
 
   useEffect(() => {
-    checkAuthStatus();
+    let isMounted = true;
+
+    const initializeAuth = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const sessionToken = await AsyncStorage.getItem('sessionToken');
+        const storedUser = await AsyncStorage.getItem('user');
+        const persistentAuthEnabled = await AsyncStorage.getItem('persistentAuthEnabled');
+
+        if (!token || !sessionToken || !storedUser) {
+          if (isMounted) {
+            setIsAuthenticated(false);
+            setUser(null);
+            setIsPersistentAuthRequired(false);
+          }
+          await AsyncStorage.multiRemove(['token', 'sessionToken', 'user']);
+        } else {
+          const { isValid, userData } = await verifyToken(token, sessionToken);
+          if (isValid && isMounted) {
+            setIsAuthenticated(true);
+            setUser(userData.user);
+            setIsPersistentAuthRequired(persistentAuthEnabled === 'true');
+          } else {
+            if (isMounted) {
+              setIsAuthenticated(false);
+              setUser(null);
+              setIsPersistentAuthRequired(false);
+            }
+            await AsyncStorage.multiRemove(['token', 'sessionToken', 'user']);
+          }
+        }
+      } catch (error) {
+        if (isMounted) {
+          setIsAuthenticated(false);
+          setUser(null);
+          setIsPersistentAuthRequired(false);
+        }
+        await AsyncStorage.multiRemove(['token', 'sessionToken', 'user']);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const checkAuthStatus = useCallback(async (): Promise<void> => {
-    setIsLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
       const sessionToken = await AsyncStorage.getItem('sessionToken');
       const storedUser = await AsyncStorage.getItem('user');
       const persistentAuthEnabled = await AsyncStorage.getItem('persistentAuthEnabled');
-  
+
       if (!token || !sessionToken || !storedUser) {
         setIsAuthenticated(false);
         setUser(null);
         setIsPersistentAuthRequired(false);
-        // Limpiar tokens si alguno falta
         await AsyncStorage.multiRemove(['token', 'sessionToken', 'user']);
       } else {
         const { isValid, userData } = await verifyToken(token, sessionToken);
@@ -69,8 +116,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setIsPersistentAuthRequired(false);
       await AsyncStorage.multiRemove(['token', 'sessionToken', 'user']);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 

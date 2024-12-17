@@ -1,28 +1,42 @@
-import React from 'react';
-import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { ThemeProvider as NavigationThemeProvider, DarkTheme, DefaultTheme, } from '@react-navigation/native';
+import SplashScreenMoneyfy from './splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { PersistentAuthWrapper } from '@/components/PersistentAuthWrapper';
 import { OnboardingProvider } from '@/context/OnboardingContext';
-import SplashScreenMoneyfy from './splash-screen';
-import * as SplashScreen from 'expo-splash-screen';
 import { useInitialResources } from '@/hooks/useInitialResources';
+import { screens } from '@/types/routes';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  
+  const { isAuthenticated, isLoading } = useAuth();
+  const [minimumLoadingComplete, setMinimumLoadingComplete] = useState(false);
+
   const [fontsLoaded, fontError] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
-  
-  const { isLoading: isInitialDataLoading, error: initialDataError } = useInitialResources();
 
-  if (!fontsLoaded || isInitialDataLoading) {
-    return <SplashScreenMoneyfy />;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinimumLoadingComplete(true);
+    }, 4000);
+
+    return () => clearTimeout(timer); 
+  }, []);
+
+  if (!minimumLoadingComplete || !fontsLoaded) {
+    return (
+      <ThemeProvider>
+        <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <SplashScreenMoneyfy />
+        </NavigationThemeProvider>
+      </ThemeProvider>
+    );
   }
 
   return (
@@ -30,19 +44,15 @@ export default function RootLayout() {
       <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <SafeAreaProvider>
           <AuthProvider>
-            <OnboardingProvider>
-              <PersistentAuthWrapper>
-                <Stack initialRouteName='(auth)'>
-                  <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                  <Stack.Screen name="(settings)" options={{ headerShown: false }} />
-                  <Stack.Screen name="(quote)" options={{ headerShown: false }} />
-                  <Stack.Screen name="(referrals)" options={{ headerShown: false }} />
-                  <Stack.Screen name="(wallet)" options={{ headerShown: false }} />
-                  <Stack.Screen name="(legal)" options={{ headerShown: false }} />
+            <PersistentAuthWrapper>
+              <OnboardingProvider>
+                <Stack initialRouteName={isAuthenticated ? '(tabs)' : '(auth)'}>
+                  {screens.map(screen => (
+                    <Stack.Screen key={screen.name} name={screen.name} options={screen.options} />
+                  ))}
                 </Stack>
-              </PersistentAuthWrapper>
-            </OnboardingProvider>
+              </OnboardingProvider>
+            </PersistentAuthWrapper>
           </AuthProvider>
         </SafeAreaProvider>
       </NavigationThemeProvider>

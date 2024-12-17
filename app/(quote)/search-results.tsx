@@ -56,6 +56,7 @@ export default function SearchResultsScreen() {
     }
 
     try {
+      console.log('referredId', referredId);
       const response = await startQuotationFlow({
         referredId: referredId,
         ppu: selectedVehicle.ppu,

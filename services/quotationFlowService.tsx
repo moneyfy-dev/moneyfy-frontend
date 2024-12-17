@@ -7,6 +7,12 @@ interface QuotationFlowResponse {
   vehicle: Vehicle;
 }
 
+// Primero, definimos una interfaz para el resultado de la cotización
+interface QuoteResult {
+  plans: InsurancePlan[];
+  referralID: string | null;
+}
+
 export const startQuotationFlow = async (quoteData: Omit<QuoteVehicleParams, 'companyAlias'>): Promise<QuotationFlowResponse> => {
   try {
     // 1. Obtener compañías
@@ -25,6 +31,7 @@ export const startQuotationFlow = async (quoteData: Omit<QuoteVehicleParams, 'co
           companyAlias: company.alias,
         };
         const response = await quoteVehicle(quoteParams);
+        console.log('response', response);
         return {
           plans: response.data.plans.map(plan => ({
             ...plan,
@@ -39,10 +46,23 @@ export const startQuotationFlow = async (quoteData: Omit<QuoteVehicleParams, 'co
     });
 
     // 3. Ejecutar todas las cotizaciones en paralelo
-    const results = await Promise.all(quotePromises);
+    // Modificar el Promise.all para manejar timeouts
+const results = await Promise.all<QuoteResult>(
+  quotePromises.map(p => 
+    Promise.race<QuoteResult>([
+      p,
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout en cotización')), 30000)
+      )
+    ])
+  )
+);
     
     // 4. Filtrar y aplanar los resultados
-    const allPlans = results.map(result => result.plans).flat().filter(plan => plan !== null);
+    const allPlans = results
+      .map((result: QuoteResult) => result.plans)
+      .flat()
+      .filter(plan => plan !== null);
     // Obtener el primer referralID válido
     const referralID = results.find(result => result.referralID)?.referralID;
     
@@ -68,6 +88,7 @@ export const startQuotationFlow = async (quoteData: Omit<QuoteVehicleParams, 'co
       vehicle
     };
   } catch (error) {
+    console.log('final deñl servicio', error);
     console.error('Error en el flujo de cotización:', error);
     throw error;
   }

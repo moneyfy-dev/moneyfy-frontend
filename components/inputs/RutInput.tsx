@@ -13,7 +13,9 @@ export const RutInput = forwardRef<TextInput, ThemedInputCommonProps>(
       const cleaned = rut.replace(/\D/g, '');
       let formatted = '';
       if (cleaned.length > 1) {
-        formatted = cleaned.slice(0, -1).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '-' + cleaned.slice(-1);
+        let lastChar = cleaned.slice(-1).toLowerCase();
+        let rutWithoutLastChar = cleaned.slice(0, -1);
+        formatted = rutWithoutLastChar.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '-' + lastChar;
       } else {
         formatted = cleaned;
       }
@@ -22,13 +24,14 @@ export const RutInput = forwardRef<TextInput, ThemedInputCommonProps>(
 
     const handleRUTChange = (text: string) => {
       const numericValue = text.replace(/\D/g, '');
-      onChangeText(formatRUT(numericValue));
+      onChangeText(numericValue);
     };
 
     const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
-        setIsFocused(false);
-        props.onBlur?.(e);
-      };
+      setIsFocused(false);
+      onChangeText(formatRUT(value));
+      props.onBlur?.(e);
+    };
 
     return (
       <BaseInput
@@ -44,12 +47,13 @@ export const RutInput = forwardRef<TextInput, ThemedInputCommonProps>(
               color: themeColors.textColor,
             }
           ]}
-          value={formatRUT(value)}
+          value={value}
           onChangeText={handleRUTChange}
-          keyboardType="numeric"
           onFocus={() => setIsFocused(true)}
+          autoCorrect={false}
           onBlur={handleBlur}
           placeholderTextColor={themeColors.placeholderColor}
+          maxLength={12}
           {...props}
         />
       </BaseInput>

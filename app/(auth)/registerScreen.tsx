@@ -38,7 +38,6 @@ export default function RegisterScreen() {
     const [referralCode, setReferralCode] = useState('');
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const [successModalVisible, setSuccessModalVisible] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
@@ -143,8 +142,6 @@ export default function RegisterScreen() {
             );
             
             if (response.status === 200) {
-                setSuccessMessage(response.message);
-                setSuccessModalVisible(true);
                 router.push({
                     pathname: '/confirmation-code',
                     params: { 
@@ -291,20 +288,6 @@ export default function RegisterScreen() {
                 }}
             />
 
-            <MessageModal
-                isVisible={successModalVisible}
-                onClose={() => setSuccessModalVisible(false)}
-                title="Éxito"
-                message={successMessage}
-                icon={{
-                    name: "checkmark-circle-outline",
-                    color: themeColors.status.success
-                }}
-                primaryButton={{
-                    text: "Entendido",
-                    onPress: () => setSuccessModalVisible(false)
-                }}
-            />
         </ThemedLayout>
     );
 }
