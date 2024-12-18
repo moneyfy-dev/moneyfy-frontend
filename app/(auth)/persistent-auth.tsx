@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Alert, AppState } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedButton } from '@/components/ThemedButton';
-import { ThemedInput } from '@/components/ThemedInput';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { isBiometricAvailable, authenticateBiometric } from '@/services/biometricService';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedButton } from '@/shared/components/ThemedButton';
+import { ThemedInput } from '@/shared/components/ThemedInput';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { isBiometricAvailable, authenticateBiometric } from '@/core/services/biometricService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from "@react-native-community/netinfo";
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { Logo } from '@/components/Logo';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { Logo } from '@/shared/components/Logo';
 import { useRouter } from 'expo-router';
-import { useAuth } from '@/context/AuthContext';
-import { MessageModal } from '@/components/MessageModal';
+import { useAuth } from '@/core/context/AuthContext';
+import { MessageModal } from '@/shared/components/MessageModal';
 
 interface PersistentAuthProps {
   onAuthSuccess: () => void;

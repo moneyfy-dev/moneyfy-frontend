@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function PrivacyPolicy() {

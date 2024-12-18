@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert, Share, Clipboard, } from 'react-native';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { ThemedText } from '@/components/ThemedText';
-import { IconContainer } from '@/components/IconContainer';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { ThemedButton } from '@/components/ThemedButton';
-import { VehicleCard } from '@/components/VehicleCard';
-import { QuoteCard } from '@/components/QuoteCard';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { IconContainer } from '@/shared/components/IconContainer';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { ThemedButton } from '@/shared/components/ThemedButton';
+import { VehicleCard } from '@/shared/components/VehicleCard';
+import { QuoteCard } from '@/shared/components/QuoteCard';
 import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
-import { TicketEdge } from '@/components/images/TicketEdge';
+import { TicketEdge } from '@/shared/components/images/TicketEdge';
 import Svg, { Path } from 'react-native-svg';
-import { Logo } from '@/components/Logo';
+import { Logo } from '@/shared/components/Logo';
 import { useLocalSearchParams } from 'expo-router';
-import { InsurancePlan, Vehicle } from '@/types/quote';
+import { InsurancePlan, Vehicle } from '@/core/types/quote';
 import { useRouter } from 'expo-router';
-import { MessageModal } from '@/components/MessageModal';
+import { MessageModal } from '@/shared/components/MessageModal';
 
 export default function PaymentQRScreen() {
   const router = useRouter();

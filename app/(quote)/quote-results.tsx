@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Pressable, Alert, FlatList } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { InsurancePlan, Vehicle } from '@/types/quote';
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedInput } from "@/components/ThemedInput";
-import { FiltersModal } from '@/components/FiltersModal';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { InsurancePlan, Vehicle } from '@/core/types/quote';
+import { ThemedText } from "@/shared/components/ThemedText";
+import { ThemedInput } from "@/shared/components/ThemedInput";
+import { FiltersModal } from '@/shared/components/FiltersModal';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
-import { QuoteCard } from '@/components/QuoteCard';
-import { ThemedLayoutFlatList } from '@/components/ThemedLayoutFlatList';
+import { QuoteCard } from '@/shared/components/QuoteCard';
+import { ThemedLayoutFlatList } from '@/shared/components/ThemedLayoutFlatList';
 import { useRouter } from 'expo-router';
-import { CarIcon } from '@/components/images/vehicles/CarIcon';
-import { MessageModal } from '@/components/MessageModal';
+import { CarIcon } from '@/shared/components/images/vehicles/CarIcon';
+import { MessageModal } from '@/shared/components/MessageModal';
+import { ROUTES } from '@/core/types/routes';
 
 interface Filters {
   insuranceType: string;
@@ -43,7 +44,7 @@ export default function QuoteResults() {
     const handleSelectPlan = (plan: InsurancePlan) => {
         console.log('referredIdParam', referredIdParam);
         router.push({
-            pathname: '/(quote)/confirm-address',
+            pathname: ROUTES.QUOTE.CONFIRM_ADDRESS,
             params: {
                 referredId: referredIdParam,
                 plan: JSON.stringify(plan),

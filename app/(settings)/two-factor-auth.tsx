@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Alert } from 'react-native';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedInput } from '@/components/ThemedInput';
-import { ThemedButton } from '@/components/ThemedButton';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedInput } from '@/shared/components/ThemedInput';
+import { ThemedButton } from '@/shared/components/ThemedButton';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
-import { MessageModal } from '@/components/MessageModal';
+import { MessageModal } from '@/shared/components/MessageModal';
 
 export default function TwoFactorAuthScreen() {
     const [verificationCode, setVerificationCode] = useState('');

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { ThemedInput } from '@/components/ThemedInput';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { ThemedButton } from '@/components/ThemedButton';
-import { changePassword } from '@/services/securityService';
-import { MessageModal } from '@/components/MessageModal';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { ThemedInput } from '@/shared/components/ThemedInput';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { ThemedButton } from '@/shared/components/ThemedButton';
+import { changePassword } from '@/core/services/securityService';
+import { MessageModal } from '@/shared/components/MessageModal';
 
 export default function ChangePasswordScreen() {
     const [currentPassword, setCurrentPassword] = useState('');

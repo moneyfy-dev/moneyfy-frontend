@@ -1,9 +1,9 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { StyleSheet, View } from 'react-native';
-import { useOnboarding } from '@/context/OnboardingContext';
+import { useOnboarding } from '@/core/context/OnboardingContext';
 
 export default function TabLayout() {
   const themeColors = useThemeColor();
@@ -41,9 +41,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="referrals"
+        name="quoters"
         options={{
-          title: 'Referidos',
+          title: 'Cotizantes',
           tabBarIcon: ({ color, size }) => (
             <TabBarIcon name="people-outline" color={color} size={size} />
           ),

@@ -1,24 +1,19 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Dimensions, FlatList } from 'react-native';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { ThemedText } from '@/components/ThemedText';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { AccountListScreen } from '@/components/AccountListScreen';
-import { useAuth } from '@/context/AuthContext';
-import Colors from '@/constants/Colors';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { AccountListScreen } from '@/shared/components/AccountListScreen';
+import { useAuth } from '@/core/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { TabSelector } from '@/components/TabSelector';
-import WithdrawalHistory from '@/app/(wallet)/withdrawal-history';
-import { AnimatedCard } from '@/components/AnimatedCard';
+import { TabSelector } from '@/shared/components/TabSelector';
+import { AnimatedCard } from '@/shared/components/AnimatedCard';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useCardVisibility } from '@/hooks/useCardVisibility';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedLayoutFlatList } from '@/components/ThemedLayoutFlatList';
-import { ThemedListLayout } from '@/components/ThemedListLayout';
-import { IconContainer } from '@/components/IconContainer';
+import { useCardVisibility } from '@/shared/hooks/useCardVisibility';
+import { ThemedView } from '@/shared/components/ThemedView';
+import { ThemedLayoutFlatList } from '@/shared/components/ThemedLayoutFlatList';
+import { IconContainer } from '@/shared/components/IconContainer';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 

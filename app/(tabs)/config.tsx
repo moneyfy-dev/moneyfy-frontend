@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Href } from 'expo-router';
-import { LogoutModal } from '@/components/LogoutModal';
-import { useAuth } from '@/context/AuthContext';
-import { AvatarIcon } from '@/components/images/AvatarIcon';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { ThemedText } from '@/components/ThemedText';
+import { LogoutModal } from '@/shared/components/LogoutModal';
+import { useAuth } from '@/core/context/AuthContext';
+import { AvatarIcon } from '@/shared/components/images/AvatarIcon';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ROUTES } from '@/core/types/routes';
 const ConfigScreen = () => {
   const themeColors = useThemeColor();
   const router = useRouter();
@@ -30,12 +31,12 @@ const ConfigScreen = () => {
   };
 
   const menuItems = [
-    { title: 'Información personal', icon: 'person-outline', route: '/(settings)/personal-info' },
-    { title: 'Configuración de pago', icon: 'card-outline', route: '/(settings)/payment-config' },
-    { title: 'Apariencia', icon: 'color-palette-outline', route: '/(settings)/appearance' },
-    { title: 'Código de referido', icon: 'ticket-outline', route: '/(settings)/referral-code' },
-    { title: 'Privacidad y seguridad', icon: 'lock-closed-outline', route: '/(settings)/privacy-security' },
-    { title: 'Notificaciones', icon: 'notifications-outline', route: '/(settings)/notifications' },
+    { title: 'Información personal', icon: 'person-outline', route: ROUTES.SETTINGS.PERSONAL_INFO },
+    { title: 'Configuración de pago', icon: 'card-outline', route: ROUTES.SETTINGS.PAYMENT_CONFIG },
+    { title: 'Apariencia', icon: 'color-palette-outline', route: ROUTES.SETTINGS.APPEARANCE },
+    { title: 'Código de referido', icon: 'ticket-outline', route: ROUTES.SETTINGS.REFERRAL_CODE },
+    { title: 'Privacidad y seguridad', icon: 'lock-closed-outline', route: ROUTES.SETTINGS.PRIVACY_SECURITY },
+    { title: 'Notificaciones', icon: 'notifications-outline', route: ROUTES.SETTINGS.NOTIFICATIONS },
     { title: 'Cerrar sesión', icon: 'log-out-outline', onPress: handleLogout },
   ];
 

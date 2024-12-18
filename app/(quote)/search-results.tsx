@@ -2,20 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { ThemedInput } from '@/components/ThemedInput';
-import { ThemedButton } from '@/components/ThemedButton';
-import { ThemedView } from '@/components/ThemedView';
-import { Vehicle, OWNER_OPTIONS_MAP } from '@/types/quote';
-import { quoteVehicle } from '@/services/quoteService';
-import { useAuth } from '@/context/AuthContext';
-import { searchCompanies } from '@/services/quoteService';
-import { VehicleCard } from '@/components/VehicleCard';
-import { startQuotationFlow } from '@/services/quotationFlowService';
-import { LoadingScreen } from '@/components/LoadingScreen';
-import { MessageModal } from '@/components/MessageModal';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { ThemedInput } from '@/shared/components/ThemedInput';
+import { ThemedButton } from '@/shared/components/ThemedButton';
+import { ThemedView } from '@/shared/components/ThemedView';
+import { Vehicle, OWNER_OPTIONS_MAP } from '@/core/types/quote';
+import { quoteVehicle } from '@/core/services/quoteService';
+import { useAuth } from '@/core/context/AuthContext';
+import { searchCompanies } from '@/core/services/quoteService';
+import { VehicleCard } from '@/shared/components/VehicleCard';
+import { startQuotationFlow } from '@/core/services/quotationFlowService';
+import { LoadingScreen } from '@/shared/components/LoadingScreen';
+import { MessageModal } from '@/shared/components/MessageModal';
+import { ROUTES } from '@/core/types/routes';
 
 export default function SearchResultsScreen() {
   const { type, value, vehicle: initialVehicle, referredId: initialReferredId } = useLocalSearchParams();
@@ -72,7 +73,7 @@ export default function SearchResultsScreen() {
       console.log('response', response.vehicle);
 
       router.push({
-        pathname: '/(quote)/quote-results',
+        pathname: ROUTES.QUOTE.QUOTE_RESULTS,
         params: {
           plans: encodeURIComponent(JSON.stringify(response.plans)),
           referredId: response.referredId,

@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ThemedLayoutFlatList } from '@/components/ThemedLayoutFlatList';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedButton } from '@/components/ThemedButton';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { CreditCardIcon } from '@/components/images/CreditCardIcon';
-import { selectAccount } from '@/services/accountService';
-import { useAuth } from '@/context/AuthContext';
-import { Account } from '@/types/useAccounts';
-import { AccountListScreen } from '@/components/AccountListScreen';
+import { ThemedLayoutFlatList } from '@/shared/components/ThemedLayoutFlatList';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedButton } from '@/shared/components/ThemedButton';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { CreditCardIcon } from '@/shared/components/images/CreditCardIcon';
+import { selectAccount } from '@/core/services/accountService';
+import { useAuth } from '@/core/context/AuthContext';
+import { Account } from '@/core/types/useAccounts';
+import { AccountListScreen } from '@/shared/components/AccountListScreen';
 import axios from 'axios';
-import { MessageModal } from '@/components/MessageModal';
+import { MessageModal } from '@/shared/components/MessageModal';
+import { ROUTES } from '@/core/types/routes';
 
 export default function PaymentConfigScreen() {
     const [accounts, setAccounts] = useState<Account[]>([]);
@@ -50,7 +51,7 @@ export default function PaymentConfigScreen() {
     };
 
     const handleAddAccount = () => {
-        router.push('/add-account');
+        router.push(ROUTES.SETTINGS.ADD_ACCOUNT);
     };
 
     const handleAccountUpdated = async () => {

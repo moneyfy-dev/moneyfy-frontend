@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Image, Share, Clipboard, TouchableOpacity } from 'react-native';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedButton } from '@/components/ThemedButton';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { useAuth } from '@/context/AuthContext';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedButton } from '@/shared/components/ThemedButton';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { useAuth } from '@/core/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ReferralCodeScreen() {

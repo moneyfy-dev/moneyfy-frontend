@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Switch, TouchableOpacity, Alert } from 'react-native';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { ThemedText } from '@/components/ThemedText';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Href } from 'expo-router';
-import { getLocalSecuritySettings, updateLocalSecuritySettings } from '@/services/securityService';
+import { getLocalSecuritySettings, updateLocalSecuritySettings } from '@/core/services/securityService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MessageModal } from '@/components/MessageModal';
+import { MessageModal } from '@/shared/components/MessageModal';
+import { ROUTES } from '@/core/types/routes';
 
 interface SecurityOption {
     id: string;
@@ -73,9 +74,9 @@ export default function PrivacySecurityScreen() {
     };
   
     const securityOptions: SecurityOption[] = [
-      { id: 'password', title: 'Cambiar contraseña', type: 'navigate', route: '/change-password' },
-      { id: 'pin', title: 'Establecer PIN o Patrón', type: 'navigate', route: '/pin-config' },
-      { id: 'twoFactor', title: 'Autenticación de dos pasos', type: 'navigate', route: '/two-factor-auth' },
+      { id: 'password', title: 'Cambiar contraseña', type: 'navigate', route: ROUTES.SETTINGS.CHANGE_PASSWORD },
+      { id: 'pin', title: 'Establecer PIN o Patrón', type: 'navigate', route: ROUTES.SETTINGS.PIN_CONFIG },
+      { id: 'twoFactor', title: 'Autenticación de dos pasos', type: 'navigate', route: ROUTES.SETTINGS.TWO_FACTOR },
       { id: 'fingerprintEnabled', title: 'Autorizar huella', type: 'switch', isEnabled: securitySettings.fingerprintEnabled },
       { id: 'persistentAuthEnabled', title: 'Autenticación persistente', type: 'switch', isEnabled: securitySettings.persistentAuthEnabled },
     ];

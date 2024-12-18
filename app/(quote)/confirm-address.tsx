@@ -1,15 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedInput } from '@/components/ThemedInput';
-import { ThemedButton } from '@/components/ThemedButton';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedInput } from '@/shared/components/ThemedInput';
+import { ThemedButton } from '@/shared/components/ThemedButton';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useAuth } from '@/context/AuthContext';
-import { selectPlan } from '@/services/quoteService';
-import { LoadingScreen } from '@/components/LoadingScreen';
-import { MessageModal } from '@/components/MessageModal';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useAuth } from '@/core/context/AuthContext';
+import { selectPlan } from '@/core/services/quoteService';
+import { LoadingScreen } from '@/shared/components/LoadingScreen';
+import { MessageModal } from '@/shared/components/MessageModal';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { ROUTES } from '@/core/types/routes';
 
 export default function ConfirmAddressScreen() {
   const { referredId: referredIdParam, plan: planParam, vehicle: vehicleParam } = useLocalSearchParams();
@@ -64,7 +65,7 @@ export default function ConfirmAddressScreen() {
 
       // Pasamos el plan completo a la siguiente pantalla
       router.push({
-        pathname: '/(quote)/payment-qr',
+        pathname: ROUTES.QUOTE.PAYMENT_QR,
         params: {
           referredId: response.data.referredId,
           plan: planParam, // Mantenemos el plan completo original

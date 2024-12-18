@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stack, usePathname } from 'expo-router';
-import { ThemedHeader } from '@/components/ThemedHeader';
+import { ThemedHeader } from '@/shared/components/ThemedHeader';
 
 interface HeaderInfo {
   title: string;

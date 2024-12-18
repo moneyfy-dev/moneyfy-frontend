@@ -2,18 +2,19 @@ import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { ThemedInput } from '@/components/ThemedInput';
-import { searchVehicle } from '@/services/quoteService';
-import { useAuth } from '@/context/AuthContext';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { ThemedInput } from '@/shared/components/ThemedInput';
+import { searchVehicle } from '@/core/services/quoteService';
+import { useAuth } from '@/core/context/AuthContext';
 import axios from 'axios';
-import { NoAccountWarning } from '@/components/NoAccountWarning';
-import { ThemedButton } from '@/components/ThemedButton';
-import { validateRUT } from '@/utils/validations';
-import { LoadingScreen } from '@/components/LoadingScreen';
-import { MessageModal } from '@/components/MessageModal';
+import { NoAccountWarning } from '@/shared/components/NoAccountWarning';
+import { ThemedButton } from '@/shared/components/ThemedButton';
+import { validateRUT } from '@/shared/utils/validations';
+import { LoadingScreen } from '@/shared/components/LoadingScreen';
+import { MessageModal } from '@/shared/components/MessageModal';
+import { ROUTES } from '@/core/types/routes';
 
 export default function QuoteScreen() {
   const router = useRouter();
@@ -81,7 +82,7 @@ export default function QuoteScreen() {
         await updateUserData(response.data.user);
 
         router.push({
-          pathname: '/(quote)/search-results',
+          pathname: ROUTES.QUOTE.SEARCH_RESULTS,
           params: {
             value: JSON.stringify(value),
             vehicle: encodeURIComponent(JSON.stringify(response.data.vehicle)),
@@ -152,7 +153,7 @@ export default function QuoteScreen() {
 
       <TouchableOpacity
         style={styles.manualEntryButton}
-        onPress={() => router.push('/(quote)/manual-search')}
+        onPress={() => router.push(ROUTES.QUOTE.MANUAL_SEARCH)}
       >
         <Ionicons
           name="hand-left-outline"

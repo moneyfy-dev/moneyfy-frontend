@@ -4,18 +4,23 @@ import SplashScreenMoneyfy from './splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { AuthProvider, useAuth } from '@/context/AuthContext';
-import { ThemeProvider } from '@/context/ThemeContext';
-import { PersistentAuthWrapper } from '@/components/PersistentAuthWrapper';
-import { OnboardingProvider } from '@/context/OnboardingContext';
-import { useInitialResources } from '@/hooks/useInitialResources';
-import { screens } from '@/types/routes';
+import { useColorScheme } from '@/shared/hooks/useColorScheme';
+import { AuthProvider, useAuth } from '@/core/context/AuthContext';
+import { ThemeProvider } from '@/core/context/ThemeContext';
+import { PersistentAuthWrapper } from '@/shared/components/PersistentAuthWrapper';
+import { OnboardingProvider } from '@/core/context/OnboardingContext';
+import { ROUTES, screens } from '@/core/types/routes';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const { isAuthenticated, isLoading } = useAuth();
   const [minimumLoadingComplete, setMinimumLoadingComplete] = useState(false);
+
+  console.log('RootLayout Render:', {
+    isAuthenticated,
+    isLoading,
+    minimumLoadingComplete
+  });
 
   const [fontsLoaded, fontError] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -30,6 +35,10 @@ export default function RootLayout() {
   }, []);
 
   if (!minimumLoadingComplete || !fontsLoaded) {
+    console.log('Loading State:', {
+      minimumLoadingComplete,
+      fontsLoaded
+    });
     return (
       <ThemeProvider>
         <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -38,6 +47,10 @@ export default function RootLayout() {
       </ThemeProvider>
     );
   }
+
+  console.log('Main Return:', {
+    screens: screens.map(s => s.name)
+  });
 
   return (
     <ThemeProvider>

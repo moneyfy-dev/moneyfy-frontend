@@ -1,15 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput, ScrollView } from 'react-native';
 import { useRouter, Href, useLocalSearchParams } from 'expo-router';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedInput } from '@/components/ThemedInput';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { useAuth } from '@/context/AuthContext';
-import { ThemedButton } from '@/components/ThemedButton';
-import { confirmRegistration, resendConfirmationCode, confirmDeviceChange } from '@/services/authService';
-import { MessageModal } from '@/components/MessageModal';
-
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedInput } from '@/shared/components/ThemedInput';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { useAuth } from '@/core/context/AuthContext';
+import { ThemedButton } from '@/shared/components/ThemedButton';
+import { confirmRegistration, resendConfirmationCode, confirmDeviceChange } from '@/core/services/authService';
+import { MessageModal } from '@/shared/components/MessageModal';
+import { ROUTES } from '@/core/types/routes';
 export default function ConfirmationCodeScreen() {
     const route = useLocalSearchParams();
     const { email, flow } = route;
@@ -67,11 +67,11 @@ export default function ConfirmationCodeScreen() {
             if (flow === 'device-change') {
                 response = await confirmDeviceChange(email as string, code);
                 await updateUserData(response.data.user);
-                router.replace('/(tabs)');
+                router.push(ROUTES.TABS.INDEX);
             } else {
                 response = await confirmRegistration(email as string, code);
                 await updateUserData(response.data.user);
-                router.replace('/(tabs)');
+                router.push(ROUTES.TABS.INDEX);
             }
         } catch (error) {
             setErrorMessage('Código inválido. Por favor intente nuevamente.');

@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, Dimensions, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import Colors from '@/constants/Colors';
 import { LineChart } from 'react-native-chart-kit';
-import { useAuth } from '@/context/AuthContext';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedLayout } from '@/components/ThemedLayout';
+import { useAuth } from '@/core/context/AuthContext';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
 import { LinearGradient } from 'expo-linear-gradient';
-import { AvatarIcon } from '@/components/images/AvatarIcon';
-import { User, Wallet } from '@/types/auth';
-import { useOnboarding } from '@/context/OnboardingContext';
-import { Onboarding } from '@/components/Onboarding';
+import { AvatarIcon } from '@/shared/components/images/AvatarIcon';
+import { User, Wallet } from '@/core/types/auth';
+import { useOnboarding } from '@/core/context/OnboardingContext';
+import { Onboarding } from '@/shared/components/Onboarding';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { LoadingScreen } from '@/components/LoadingScreen';
+import { LoadingScreen } from '@/shared/components/LoadingScreen';
+import { ROUTES } from '@/core/types/routes';
 
 const FORCE_SHOW_ONBOARDING = true; // Mantenemos esto para desarrollo
 
@@ -193,7 +194,7 @@ export default function HomeScreen() {
       </View>
 
       <TouchableOpacity
-        onPress={() => router.push('/(tabs)/quote')}
+        onPress={() => router.push(ROUTES.TABS.QUOTE)}
       >
         <LinearGradient
           colors={[Colors.common.green2, Colors.common.green4]}
@@ -212,16 +213,16 @@ export default function HomeScreen() {
       <View style={styles.actionContainer}>
 
         <TouchableOpacity
-          onPress={() => router.push('/(tabs)/referrals')}
+          onPress={() => router.push(ROUTES.TABS.QUOTERS)}
           style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
           <View style={styles.actionButtonIcon}>
             <Ionicons name="people-outline" size={20} color={themeColors.white} />
           </View>
-          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Referidos</ThemedText>
+          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Cotizantes</ThemedText>
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.push('/(wallet)/withdrawal')}
+          onPress={() => router.push(ROUTES.WALLET.WITHDRAWAL)}
           style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
           <View style={styles.actionButtonIcon}>
             <Ionicons name="cash-outline" size={20} color={themeColors.white} />
@@ -230,7 +231,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.push('/(wallet)/withdrawal-history')}
+          onPress={() => router.push(ROUTES.WALLET.HISTORY)}
           style={[styles.actionButton, { backgroundColor: themeColors.extremeContrastGray }]}>
           <View style={styles.actionButtonIcon}>
             <Ionicons name="time-outline" size={20} color={themeColors.white} />

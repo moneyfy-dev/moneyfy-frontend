@@ -1,25 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Dimensions, ScrollView, Animated } from 'react-native';
 import { Link } from 'expo-router';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedInput } from '@/components/ThemedInput';
-import { useAuth } from '@/context/AuthContext';
-import { BackgroundCircles } from '@/components/images/BackgroundCircles';
-import { Logo } from '@/components/Logo';
-import { validateEmail, validatePassword } from '@/utils/validations';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { ThemedView } from '@/shared/components/ThemedView';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedInput } from '@/shared/components/ThemedInput';
+import { useAuth } from '@/core/context/AuthContext';
+import { BackgroundCircles } from '@/shared/components/images/BackgroundCircles';
+import { Logo } from '@/shared/components/Logo';
+import { validateEmail, validatePassword } from '@/shared/utils/validations';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
-import { ThemedButton } from '@/components/ThemedButton';
-import { MessageModal } from '@/components/MessageModal';
-import { useCardVisibility } from '@/hooks/useCardVisibility';
-import { AnimatedCard } from '@/components/AnimatedCard';
-import { login } from '@/services/authService';
-import { LoadingScreen } from '@/components/LoadingScreen';
-import getEnvVars from '../../config';
-import axios from 'axios';
-
-const { apiUrl } = getEnvVars();
+import { ThemedButton } from '@/shared/components/ThemedButton';
+import { MessageModal } from '@/shared/components/MessageModal';
+import { useCardVisibility } from '@/shared/hooks/useCardVisibility';
+import { AnimatedCard } from '@/shared/components/AnimatedCard';
+import { login } from '@/core/services/authService';
+import { LoadingScreen } from '@/shared/components/LoadingScreen';
+import { ROUTES } from '@/core/types/routes';
 
 const { height } = Dimensions.get('window');
 
@@ -107,14 +104,14 @@ export default function LoginScreen() {
             if (response && response.data) {
 
                 await loginContext(response.data);
-                router.replace('/(tabs)');
+                router.replace(ROUTES.TABS.INDEX);
             } else {
                 throw new Error('Respuesta inesperada del servidor');
             }
         } catch (error: any) {
             if (error.response?.status === 226) {
                 router.push({
-                    pathname: '/confirmation-code',
+                    pathname: ROUTES.AUTH.CONFIRMATION,
                     params: {
                         email: email,
                         flow: 'device-change'
@@ -166,7 +163,7 @@ export default function LoginScreen() {
                 />
                 <ThemedView style={styles.registerContainer}>
                     <ThemedText variant='paragraph'>¿No estás registrado? </ThemedText>
-                    <Link href={{ pathname: "/registerScreen" }} asChild>
+                    <Link href={{ pathname: ROUTES.AUTH.REGISTER }} asChild>
                         <TouchableOpacity>
                             <ThemedText variant='textLink'>Registrate ahora</ThemedText>
                         </TouchableOpacity>
@@ -221,7 +218,7 @@ export default function LoginScreen() {
                     </ThemedView>
 
                     <TouchableOpacity style={styles.forgotPasswordContainer}>
-                        <ThemedText variant='textLink' marginBottom={16} linkConfig={{ route: '/forgot-password' }}>¿Olvidaste tu contraseña?</ThemedText>
+                        <ThemedText variant='textLink' marginBottom={16} linkConfig={{ route: ROUTES.AUTH.FORGOT_PASSWORD }}>¿Olvidaste tu contraseña?</ThemedText>
                     </TouchableOpacity>
 
                     <ThemedButton
@@ -232,7 +229,7 @@ export default function LoginScreen() {
 
                     <ThemedView style={styles.registerContainer}>
                         <ThemedText variant='paragraph'>¿No estás registrado? </ThemedText>
-                        <Link href={{ pathname: "/registerScreen" }} asChild>
+                        <Link href={{ pathname: ROUTES.AUTH.REGISTER }} asChild>
                             <TouchableOpacity>
                                 <ThemedText variant='textLink'>Registrate ahora</ThemedText>
                             </TouchableOpacity>

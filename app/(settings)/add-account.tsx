@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, View, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedInput } from '@/components/ThemedInput';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { ThemedButton } from '@/components/ThemedButton';
-import { addAccount, updateAccount } from '@/services/accountService';
-import { useAuth } from '@/context/AuthContext';
-import { validateName, validateEmail, validateRUT } from '@/utils/validations';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedInput } from '@/shared/components/ThemedInput';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { ThemedButton } from '@/shared/components/ThemedButton';
+import { addAccount, updateAccount } from '@/core/services/accountService';
+import { useAuth } from '@/core/context/AuthContext';
+import { validateName, validateEmail, validateRUT } from '@/shared/utils/validations';
 import axios from 'axios';
-import { ThemedCheckGroup } from '@/components/ThemedCheckGroup';
-import { MessageModal } from '@/components/MessageModal';
+import { ThemedCheckGroup } from '@/shared/components/ThemedCheckGroup';
+import { MessageModal } from '@/shared/components/MessageModal';
 
 const BANKS = [
   "Banco Scotiabank", "Banco BBVA", "Banco Itau", "Banco BICE", "Banco HSBC",

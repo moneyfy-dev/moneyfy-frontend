@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedLayout } from '@/components/ThemedLayout';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
+import { ROUTES } from '@/core/types/routes';
 
 export default function TermsAndConditions() {
   const themeColors = useThemeColor();
@@ -177,7 +178,7 @@ export default function TermsAndConditions() {
                 <ThemedText
                   variant="textLink"
                   linkConfig={{
-                    route: "/(legal)/privacy-policy"
+                    route: ROUTES.LEGAL.PRIVACY_POLICY
                   }}
                 >
                   Política de Privacidad.

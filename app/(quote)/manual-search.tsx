@@ -1,21 +1,22 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { ThemedLayout } from "@/components/ThemedLayout";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedInput } from "@/components/ThemedInput";
-import { ThemedAutocomplete } from "@/components/ThemedAutocomplete";
-import { ThemedButton } from "@/components/ThemedButton";
-import { ThemedView } from '@/components/ThemedView';
-import { validateRUT } from '@/utils/validations';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { ThemedLayout } from "@/shared/components/ThemedLayout";
+import { ThemedText } from "@/shared/components/ThemedText";
+import { ThemedInput } from "@/shared/components/ThemedInput";
+import { ThemedAutocomplete } from "@/shared/components/ThemedAutocomplete";
+import { ThemedButton } from "@/shared/components/ThemedButton";
+import { ThemedView } from '@/shared/components/ThemedView';
+import { validateRUT } from '@/shared/utils/validations';
 import { Alert } from 'react-native';
-import { getAvailableVehicles } from '@/services/vehicleService';
-import { VehicleModel } from '@/types/vehicles';
-import { useAuth } from '@/context/AuthContext';
+import { getAvailableVehicles } from '@/core/services/vehicleService';
+import { VehicleModel } from '@/core/types/vehicles';
+import { useAuth } from '@/core/context/AuthContext';
 import { useRouter } from 'expo-router';
-import { OWNER_OPTIONS_MAP } from '@/types/quote';
-import { startQuotationFlow } from '@/services/quotationFlowService';
-import { MessageModal } from '@/components/MessageModal';
+import { OWNER_OPTIONS_MAP } from '@/core/types/quote';
+import { startQuotationFlow } from '@/core/services/quotationFlowService';
+import { MessageModal } from '@/shared/components/MessageModal';
+import { ROUTES } from '@/core/types/routes';
 
 
 export default function ManualSearchScreen() {
@@ -101,7 +102,7 @@ export default function ManualSearchScreen() {
             });
             console.log('response', response.referredId);
             router.push({
-                pathname: '/(quote)/quote-results',
+                pathname: ROUTES.QUOTE.QUOTE_RESULTS,
                 params: {
                     plans: encodeURIComponent(JSON.stringify(response.plans)),
                     referredId: response.referredId,

@@ -1,4 +1,4 @@
-import { Referral } from '@/types/referral';
+import { Referral } from '@/core/types/referral';
 
 export const mockReferrals: Referral[] = [
   {
