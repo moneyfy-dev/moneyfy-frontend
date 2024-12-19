@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { ThemedText } from '@/shared/components';
+import { useThemeColor } from '@/shared/hooks';
 
 interface CheckOption {
   key: string;

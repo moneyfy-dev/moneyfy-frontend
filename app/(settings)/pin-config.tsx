@@ -1,16 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View, TouchableOpacity, Alert, Animated } from 'react-native';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { sha256 } from 'js-sha256';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LottieAnimation } from '@/shared/components/animations/LottieAnimation';
-import { ThemedView } from '@/shared/components/ui/ThemedView';
+import { StyleSheet, View, TouchableOpacity, Alert, Animated } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedView, ThemedLayout, ThemedText, ThemedButton, LottieAnimation, MessageModal } from '@/shared/components';
+import { Ionicons } from '@expo/vector-icons';
 
 const PIN_LENGTH = 4;
 const PIN_KEY = 'user_pin_set';

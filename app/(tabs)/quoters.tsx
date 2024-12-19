@@ -1,23 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, StyleSheet, FlatList, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ThemedListLayout } from '@/shared/components/layouts/ThemedListLayout';
-import { ThemedInput } from '@/shared/components/ui/ThemedInput';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { FiltersModal } from '@/shared/components/modals/FiltersModal';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { IconContainer } from '@/shared/components/ui/IconContainer';
-import { format } from 'date-fns';
-import { ThemedDatePicker } from '@/shared/components/ui/ThemedDatePicker';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
-import { Quoter } from '@/core/types/quoter';
+import { ROUTES, Quoter, QuoterStatus } from '@/core/types';
+import { View, StyleSheet, FlatList, Pressable } from 'react-native';
 import Colors from '@/constants/Colors';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedListLayout, ThemedInput, ThemedText, ThemedButton, ThemedCheckGroup, FiltersModal, LoadingScreen, IconContainer, ThemedDatePicker } from '@/shared/components';
+import { format } from 'date-fns';
+import { useAuth } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
-import { QuoterStatus } from '@/core/types/quoter';
-import { ThemedCheckGroup } from '@/shared/components/ui/ThemedCheckGroup';
-import { useAuth } from '@/core/context/AuthContext';
-import { LoadingScreen } from '@/shared/components/animations/LoadingScreen';
-import { ROUTES } from '@/core/types/routes';
 
 export default function QuotersScreen() {
   const router = useRouter();

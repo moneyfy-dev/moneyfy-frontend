@@ -1,6 +1,6 @@
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { useThemeColor } from '@/shared/hooks';
 import { ViewStyle } from 'react-native';
 
 interface CreditCardIconProps {

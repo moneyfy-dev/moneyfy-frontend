@@ -1,9 +1,9 @@
 import React, { forwardRef, useState } from 'react';
+import { ThemedInputCommonProps } from '@/core/types';
 import { TextInput, TouchableOpacity, StyleSheet, NativeSyntheticEvent, TextInputFocusEventData } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { BaseInput } from '@/shared/components';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { BaseInput } from './BaseInput';
-import { ThemedInputCommonProps } from '@/core/types/Input';
 
 export const PasswordInput = forwardRef<TextInput, ThemedInputCommonProps>(
   (props, ref) => {

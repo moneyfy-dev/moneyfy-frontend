@@ -6,10 +6,10 @@ import {
   Pressable,
   ScrollView,
 } from 'react-native';
-import { ThemedText } from '../ui/ThemedText';
-import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import Colors from '@/constants/Colors';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedText } from '@/shared/components';
+import { Ionicons } from '@expo/vector-icons';
 interface ModalProps {
   visible: boolean;
   onClose: () => void;

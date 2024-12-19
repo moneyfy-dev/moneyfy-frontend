@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, View, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { ThemedInput } from '@/shared/components/ui/ThemedInput';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
-import { addAccount, updateAccount } from '@/core/services/accountService';
-import { useAuth } from '@/core/context/AuthContext';
+import { StyleSheet } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, ThemedCheckGroup, MessageModal } from '@/shared/components';
 import { validateName, validateEmail, validateRUT } from '@/shared/utils/validations';
+import { useAuth } from '@/core/context';
 import axios from 'axios';
-import { ThemedCheckGroup } from '@/shared/components/ui/ThemedCheckGroup';
-import { MessageModal } from '@/shared/components/modals/MessageModal';
+import { addAccount, updateAccount } from '@/core/services';
 
 const BANKS = [
   "Banco Scotiabank", "Banco BBVA", "Banco Itau", "Banco BICE", "Banco HSBC",

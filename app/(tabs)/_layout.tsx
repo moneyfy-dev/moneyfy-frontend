@@ -1,9 +1,9 @@
-import { Tabs } from 'expo-router';
 import React from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { Tabs } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
-import { useOnboarding } from '@/core/context/OnboardingContext';
+import { useThemeColor } from '@/shared/hooks';
+import { useOnboarding } from '@/core/context';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const themeColors = useThemeColor();

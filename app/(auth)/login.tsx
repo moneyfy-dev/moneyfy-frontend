@@ -1,22 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Dimensions, ScrollView, Animated } from 'react-native';
-import { Link } from 'expo-router';
-import { ThemedView } from '@/shared/components/ui/ThemedView';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { ThemedInput } from '@/shared/components/ui/ThemedInput';
-import { useAuth } from '@/core/context/AuthContext';
-import { BackgroundCircles } from '@/shared/components/images/BackgroundCircles';
-import { Logo } from '@/shared/components/ui/Logo';
+import { useRouter, Link } from 'expo-router';
+import { ROUTES } from '@/core/types';
+import { login } from '@/core/services';
+import { ThemedView, ThemedText, ThemedInput, ThemedButton, MessageModal, Logo, BackgroundCircles, LoadingScreen } from '@/shared/components';
 import { validateEmail, validatePassword } from '@/shared/utils/validations';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { useRouter } from 'expo-router';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
-import { MessageModal } from '@/shared/components/modals/MessageModal';
-import { useCardVisibility } from '@/shared/hooks/useCardVisibility';
+import { useThemeColor, useCardVisibility } from '@/shared/hooks';
+import { useAuth } from '@/core/context';
 import { AnimatedCard } from '@/shared/components/composite/AnimatedCard';
-import { login } from '@/core/services/authService';
-import { LoadingScreen } from '@/shared/components/animations/LoadingScreen';
-import { ROUTES } from '@/core/types/routes';
 
 const { height } = Dimensions.get('window');
 

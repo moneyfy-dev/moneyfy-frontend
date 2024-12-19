@@ -1,7 +1,7 @@
 import React from 'react';
 import Svg, { Path, Styles } from 'react-native-svg';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { ViewStyle } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
 
 interface BgSectionProps {
     width?: number;

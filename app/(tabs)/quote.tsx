@@ -1,20 +1,14 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedInput } from '@/shared/components/ui/ThemedInput';
-import { searchVehicle } from '@/core/services/quoteService';
-import { useAuth } from '@/core/context/AuthContext';
-import axios from 'axios';
-import { NoAccountWarning } from '@/shared/components/features/contextualScreens/NoAccountWarning';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
-import { validateRUT } from '@/shared/utils/validations';
-import { LoadingScreen } from '@/shared/components/animations/LoadingScreen';
-import { MessageModal } from '@/shared/components/modals/MessageModal';
 import { ROUTES } from '@/core/types/routes';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout,ThemedText, ThemedInput, ThemedButton, NoAccountWarning, LoadingScreen, MessageModal } from '@/shared/components';
+import { validateRUT } from '@/shared/utils/validations';
+import axios from 'axios';
+import { useAuth } from '@/core/context';
+import { searchVehicle } from '@/core/services';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function QuoteScreen() {
   const router = useRouter();

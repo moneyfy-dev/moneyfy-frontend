@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, View, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { Link } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { ThemedInput } from '@/shared/components/ui/ThemedInput';
-import { register } from '@/core/services/authService';
+import { useRouter, Link } from 'expo-router';
+import { ROUTES } from '@/core/types';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, MessageModal } from '@/shared/components';
+import { register } from '@/core/services';
 import { validateEmail, validatePassword, validateName, sanitizeName } from '@/shared/utils/validations';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { useRouter } from 'expo-router';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
-import { MessageModal } from '@/shared/components/modals/MessageModal';
-import { ROUTES } from '@/core/types/routes';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function RegisterScreen() {
     const [nombre, setNombre] = useState('');

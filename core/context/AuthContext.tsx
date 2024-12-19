@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login, getUserData, verifyToken } from '@/core/services/authService';
+import { login, getUserData, verifyToken } from '@/core/services';
 import { differenceInMinutes } from 'date-fns';
-import { AuthContextProps, User, LoginResponse } from '@/core/types/auth';
+import { AuthContextProps, User, LoginResponse } from '@/core/types';
 
 const AuthContext = createContext<AuthContextProps>({
   isAuthenticated: false,

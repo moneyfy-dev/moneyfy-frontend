@@ -1,10 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, FlatList, Animated } from 'react-native';
-import { useOnboarding } from '@/core/context/OnboardingContext';
-import { ThemedText } from '../../ui/ThemedText';
-import { ThemedButton } from '../../ui/ThemedButton';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { LottieAnimation } from '../../animations/LottieAnimation';
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, Dimensions, FlatList } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedText, ThemedButton, LottieAnimation } from '@/shared/components';
+import { useOnboarding } from '@/core/context';
 import { animations } from '@/assets/animations';
 
 const { width } = Dimensions.get('window');

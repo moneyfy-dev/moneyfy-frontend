@@ -1,19 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { QuoteCard } from '@/shared/components/composite/QuoteCard';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { format } from 'date-fns';
-import { Quoter, QuoterStatus } from '@/core/types/quoter';
-import { VehicleCard } from '@/shared/components/composite/VehicleCard';
-import { IconContainer } from '@/shared/components/ui/IconContainer';
-import { useAuth } from '@/core/context/AuthContext';
+import { Quoter, QuoterStatus, InsurancePlan } from '@/core/types';
+import { View, StyleSheet } from 'react-native';
 import Colors from '@/constants/Colors';
-import { InsurancePlan } from '@/core/types/quote';
-import { QuoterInfoCard } from '@/shared/components/composite/QuoterInfoCard';
-import { LoadingScreen } from '@/shared/components/animations/LoadingScreen';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedText, QuoteCard, VehicleCard, IconContainer, QuoterInfoCard, LoadingScreen } from '@/shared/components';
+import { format } from 'date-fns';
+import { useAuth } from '@/core/context';
 
 export default function QuoterDetailScreen() {
   const router = useRouter();

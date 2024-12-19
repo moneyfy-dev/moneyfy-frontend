@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
+import { useTheme } from '@/core/context';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { useTheme } from '@/core/context/ThemeContext';
+import { ThemedLayout, ThemedText } from '@/shared/components';
+import { useThemeColor } from '@/shared/hooks';
 
 interface ThemeOption {
   id: 'light' | 'dark' | 'system';

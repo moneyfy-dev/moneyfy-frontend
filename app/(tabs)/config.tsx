@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Href } from 'expo-router';
-import { LogoutModal } from '@/shared/components/modals/LogoutModal';
-import { useAuth } from '@/core/context/AuthContext';
-import { AvatarIcon } from '@/shared/components/images/AvatarIcon';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { ROUTES } from '@/core/types/routes';
+import { ROUTES } from '@/core/types';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedText, LogoutModal } from '@/shared/components';
+import { useAuth } from '@/core/context';
+import { Ionicons } from '@expo/vector-icons';
+
 const ConfigScreen = () => {
   const themeColors = useThemeColor();
   const router = useRouter();

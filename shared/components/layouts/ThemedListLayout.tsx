@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeAreaView, View, StyleSheet, ViewStyle } from 'react-native';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { useThemeColor } from '@/shared/hooks';
 
 interface ThemedListLayoutProps {
   children: React.ReactNode;

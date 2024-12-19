@@ -1,9 +1,8 @@
-import { View, StyleSheet } from 'react-native';
-import { LottieAnimation } from '@/shared/components/animations/LottieAnimation';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
-import { useColorScheme } from '@/shared/hooks/useColorScheme';
-import { ThemeProvider } from '@/core/context/ThemeContext';
+import { ThemeProvider } from '@/core/context';
+import { View, StyleSheet } from 'react-native';
+import { LottieAnimation } from '@/shared/components';
+import { useThemeColor, useColorScheme } from '@/shared/hooks';
 
 export default function SplashScreenMoneyfy() {
     const colorScheme = useColorScheme();

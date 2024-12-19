@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Modal, StyleSheet } from 'react-native';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedText, ThemedButton } from '@/shared/components';
 
 interface LogoutModalProps {
   isVisible: boolean;

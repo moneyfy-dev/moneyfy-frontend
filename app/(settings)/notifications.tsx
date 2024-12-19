@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Switch, TouchableOpacity, Alert } from 'react-native';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { Notifications } from '@/core/types';
+import { View, StyleSheet, Switch, TouchableOpacity } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedText } from '@/shared/components';
+import { useAuth } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
-import { updateNotificationSetting } from '@/core/services/notificationService';
-import { useAuth } from '@/core/context/AuthContext';
-import { Notifications } from '@/core/types/useNotifications';
 
 interface NotificationSetting {
   id: keyof Notifications;

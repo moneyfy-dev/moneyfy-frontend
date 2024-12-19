@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedText } from '@/shared/components';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
 
 interface VehicleCardProps {
   brand: string;

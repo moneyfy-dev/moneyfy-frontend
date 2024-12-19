@@ -1,8 +1,8 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedText } from '@/shared/components';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
 
 type ButtonSize = 'lg' | 'sm';
 type ButtonWidth = 'full' | 'auto' | 'half' | 'third' | 'quarter';

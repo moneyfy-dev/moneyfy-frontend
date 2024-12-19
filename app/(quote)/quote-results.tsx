@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Pressable, Alert, FlatList } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { InsurancePlan, Vehicle } from '@/core/types/quote';
-import { ThemedText } from "@/shared/components/ui/ThemedText";
-import { ThemedInput } from "@/shared/components/ui/ThemedInput";
-import { FiltersModal } from '@/shared/components/modals/FiltersModal';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { InsurancePlan, Vehicle, ROUTES } from '@/core/types';
+import { View, StyleSheet, Pressable, FlatList } from 'react-native';
 import Colors from '@/constants/Colors';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedText, ThemedInput, FiltersModal, QuoteCard, ThemedLayoutFlatList, CarIcon, MessageModal } from "@/shared/components";
 import { Ionicons } from '@expo/vector-icons';
-import { QuoteCard } from '@/shared/components/composite/QuoteCard';
-import { ThemedLayoutFlatList } from '@/shared/components/layouts/ThemedLayoutFlatList';
-import { useRouter } from 'expo-router';
-import { CarIcon } from '@/shared/components/images/vehicles/CarIcon';
-import { MessageModal } from '@/shared/components/modals/MessageModal';
-import { ROUTES } from '@/core/types/routes';
 
 interface Filters {
   insuranceType: string;

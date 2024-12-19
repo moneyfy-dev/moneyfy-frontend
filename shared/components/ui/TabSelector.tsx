@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import Colors from '@/constants/Colors';
+import { ThemedText } from '@/shared/components';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import Colors from '@/constants/Colors';
 
 type TabItem = {
     type: string;

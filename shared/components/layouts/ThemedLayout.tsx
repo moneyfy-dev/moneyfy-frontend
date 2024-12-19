@@ -1,9 +1,8 @@
 import React from 'react';
 import { KeyboardAvoidingView, ScrollView, Platform, StyleSheet, ViewStyle, RefreshControl, RefreshControlProps } from 'react-native';
-import { ThemedSafeAreaView } from './ThemedSafeAreaView';
-import { BgSection } from '../images/BgSection';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedSafeAreaView, BgSection } from '@/shared/components';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
 
 type PaddingProp = [number, number] | number;
 

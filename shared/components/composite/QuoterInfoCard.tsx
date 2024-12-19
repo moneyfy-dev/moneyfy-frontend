@@ -1,9 +1,9 @@
 import React from 'react';
+import { QuoterPersonalData, QuoterAddressData } from '@/core/types';
 import { View, StyleSheet } from 'react-native';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedText } from '@/shared/components';
 import { Ionicons } from '@expo/vector-icons';
-import { QuoterPersonalData, QuoterAddressData } from '@/core/types/quoter';
 
 interface QuoterInfoCardProps {
   personalData: QuoterPersonalData;

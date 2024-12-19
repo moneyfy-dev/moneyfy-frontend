@@ -1,7 +1,6 @@
 import React from 'react';
 import { KeyboardAvoidingView, ScrollView, Platform, StyleSheet, ViewStyle, View } from 'react-native';
-import { ThemedSafeAreaView } from './ThemedSafeAreaView';
-import BgSection from '../images/BgSection';
+import { ThemedSafeAreaView, BgSection } from '@/shared/components';
 
 type PaddingProp = [number, number] | number;
 

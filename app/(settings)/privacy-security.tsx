@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Switch, TouchableOpacity, Alert } from 'react-native';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Href } from 'expo-router';
-import { getLocalSecuritySettings, updateLocalSecuritySettings } from '@/core/services/securityService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MessageModal } from '@/shared/components/modals/MessageModal';
 import { ROUTES } from '@/core/types/routes';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StyleSheet, View, Switch, TouchableOpacity } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedText, MessageModal } from '@/shared/components';
+import { getLocalSecuritySettings, updateLocalSecuritySettings } from '@/core/services/securityService';
+import { Ionicons } from '@expo/vector-icons';
 
 interface SecurityOption {
     id: string;

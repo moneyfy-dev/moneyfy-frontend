@@ -1,16 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { ThemedInput } from '@/shared/components/ui/ThemedInput';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useAuth } from '@/core/context/AuthContext';
-import { selectPlan } from '@/core/services/quoteService';
-import { LoadingScreen } from '@/shared/components/animations/LoadingScreen';
-import { MessageModal } from '@/shared/components/modals/MessageModal';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { ROUTES } from '@/core/types/routes';
+import { View, StyleSheet } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, LoadingScreen, MessageModal } from '@/shared/components';
+import { useAuth } from '@/core/context';
+import { selectPlan } from '@/core/services';
 
 export default function ConfirmAddressScreen() {
   const { quoterId: quoterIdParam, plan: planParam, vehicle: vehicleParam } = useLocalSearchParams();

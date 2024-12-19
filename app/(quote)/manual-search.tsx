@@ -1,22 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { ThemedLayout } from "@/shared/components/layouts/ThemedLayout";
-import { ThemedText } from "@/shared/components/ui/ThemedText";
-import { ThemedInput } from "@/shared/components/ui/ThemedInput";
-import { ThemedAutocomplete } from "@/shared/components/ui/ThemedAutocomplete";
-import { ThemedButton } from "@/shared/components/ui/ThemedButton";
-import { ThemedView } from '@/shared/components/ui/ThemedView';
-import { validateRUT } from '@/shared/utils/validations';
-import { Alert } from 'react-native';
-import { getAvailableVehicles } from '@/core/services/vehicleService';
-import { VehicleModel } from '@/core/types/vehicles';
-import { useAuth } from '@/core/context/AuthContext';
 import { useRouter } from 'expo-router';
-import { OWNER_OPTIONS_MAP } from '@/core/types/quote';
-import { startQuotationFlow } from '@/core/services/quotationFlowService';
-import { MessageModal } from '@/shared/components/modals/MessageModal';
-import { ROUTES } from '@/core/types/routes';
+import { VehicleModel, OWNER_OPTIONS_MAP, ROUTES } from '@/core/types';
+import { View, StyleSheet } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedView, ThemedLayout, ThemedText, ThemedInput, ThemedAutocomplete, ThemedButton, MessageModal } from "@/shared/components";
+import { validateRUT } from '@/shared/utils/validations';
+import { getAvailableVehicles, startQuotationFlow } from '@/core/services';
+import { useAuth } from '@/core/context';
+import {  } from '@/core/types';
 
 
 export default function ManualSearchScreen() {

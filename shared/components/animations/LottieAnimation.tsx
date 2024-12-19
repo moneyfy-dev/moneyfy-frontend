@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { animations } from '@/assets/animations';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { useThemeColor } from '@/shared/hooks';
 import { getLottieColorFilters } from '@/constants/lottieColorConfigs';
 
 interface LottieAnimationProps {

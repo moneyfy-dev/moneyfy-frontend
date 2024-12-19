@@ -1,10 +1,9 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { ROUTES } from '@/core/types';
+import { View, StyleSheet } from 'react-native';
+import { ThemedText, ThemedLayout } from '@/shared/components';
+import { useThemeColor } from '@/shared/hooks';
 import { Ionicons } from '@expo/vector-icons';
-import { ROUTES } from '@/core/types/routes';
 
 export default function TermsAndConditions() {
   const themeColors = useThemeColor();

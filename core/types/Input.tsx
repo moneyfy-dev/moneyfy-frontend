@@ -1,4 +1,4 @@
-import { TextInputProps, NativeSyntheticEvent, TextInputFocusEventData } from 'react-native';
+import { TextInputProps } from 'react-native';
 
 export interface BaseInputProps {
   error?: string;

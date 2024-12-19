@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedText } from '@/shared/components';
 import { Ionicons } from '@expo/vector-icons';
 
 interface ThemedAutocompleteProps {

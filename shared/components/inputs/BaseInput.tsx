@@ -1,8 +1,8 @@
 import React from 'react';
+import { BaseInputProps } from '@/core/types';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { ThemedText } from '@/shared/components';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '../ui/ThemedText';
-import { BaseInputProps } from '@/core/types/Input';
 
 interface Props extends BaseInputProps {
   isFocused: boolean;

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import getEnvVars from '../../config';
-import { SearchResponse, QuoteVehicleParams, QuoteVehicleResponse, SelectPlanParams } from '@/core/types/quote';
+import { SearchResponse, QuoteVehicleParams, QuoteVehicleResponse, SelectPlanParams } from '@/core/types';
 
 const { apiUrl } = getEnvVars();
 

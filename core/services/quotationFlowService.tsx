@@ -1,5 +1,5 @@
 import { searchCompanies, quoteVehicle } from './quoteService';
-import { QuoteVehicleParams, InsurancePlan, Company, Vehicle } from '@/core/types/quote';
+import { QuoteVehicleParams, InsurancePlan, Company, Vehicle } from '@/core/types';
 
 interface QuotationFlowResponse {
   plans: InsurancePlan[];

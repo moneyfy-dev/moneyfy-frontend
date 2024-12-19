@@ -1,12 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, FlatList, Pressable } from 'react-native';
-import { ThemedListLayout } from '@/shared/components/layouts/ThemedListLayout';
-import { ThemedInput } from '@/shared/components/ui/ThemedInput';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { IconContainer } from '@/shared/components/ui/IconContainer';
-import { Ionicons } from '@expo/vector-icons';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedListLayout, ThemedInput, ThemedText, IconContainer } from '@/shared/components';
 import { format } from 'date-fns';
+import { Ionicons } from '@expo/vector-icons';
 
 type WithdrawalRecord = {
     id: string;

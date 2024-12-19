@@ -1,22 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Alert, TouchableOpacity, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedInput } from '@/shared/components/ui/ThemedInput';
-import { AvatarIcon } from '@/shared/components/images/AvatarIcon';
-import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { useAuth } from '@/core/context/AuthContext';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { ThemedDatePicker } from '@/shared/components/ui/ThemedDatePicker';
+import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedDatePicker, ThemedText, ThemedInput, ThemedButton, ProfilePictureModal, AvatarIcon, MessageModal } from '@/shared/components';
 import { validateName, validatePhoneNumber, validateAddress } from '@/shared/utils/validations';
+import { useAuth } from '@/core/context';
 import axios from 'axios';
-import { updateUserProfile } from '@/core/services/userService';
+import { updateUserProfile } from '@/core/services';
 import * as FileSystem from 'expo-file-system';
-import { ProfilePictureModal } from '@/shared/components/composite/ProfilePictureModal';
-import { MessageModal } from '@/shared/components/modals/MessageModal';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function PersonalInfoScreen() {
     const { user, updateUserData } = useAuth();

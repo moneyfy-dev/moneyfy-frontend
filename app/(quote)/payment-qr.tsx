@@ -1,20 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { View, StyleSheet, TouchableOpacity, Alert, Share, Clipboard, } from 'react-native';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { IconContainer } from '@/shared/components/ui/IconContainer';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
-import { VehicleCard } from '@/shared/components/composite/VehicleCard';
-import { QuoteCard } from '@/shared/components/composite/QuoteCard';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedText, ThemedButton, IconContainer, VehicleCard, QuoteCard, TicketEdge, Logo, MessageModal } from '@/shared/components';
+import { InsurancePlan, Vehicle } from '@/core/types';
 import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
-import { TicketEdge } from '@/shared/components/images/TicketEdge';
-import { Logo } from '@/shared/components/ui/Logo';
-import { useLocalSearchParams } from 'expo-router';
-import { InsurancePlan, Vehicle } from '@/core/types/quote';
-import { useRouter } from 'expo-router';
-import { MessageModal } from '@/shared/components/modals/MessageModal';
 
 export default function PaymentQRScreen() {
   const router = useRouter();

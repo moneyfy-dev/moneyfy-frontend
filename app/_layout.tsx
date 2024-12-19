@@ -1,26 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { ThemeProvider as NavigationThemeProvider, DarkTheme, DefaultTheme, } from '@react-navigation/native';
-import SplashScreenMoneyfy from './splash-screen';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
+import SplashScreenMoneyfy from './splash-screen';
+import { PersistentAuthWrapper } from '@/shared/components';
 import { Stack } from 'expo-router';
-import { useColorScheme } from '@/shared/hooks/useColorScheme';
-import { AuthProvider, useAuth } from '@/core/context/AuthContext';
-import { ThemeProvider } from '@/core/context/ThemeContext';
-import { PersistentAuthWrapper } from '@/shared/components/features/auth/PersistentAuthWrapper';
-import { OnboardingProvider } from '@/core/context/OnboardingContext';
-import { ROUTES, screens } from '@/core/types/routes';
+import { screens } from '@/core/types';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useColorScheme } from '@/shared/hooks';
+import { ThemeProvider, OnboardingProvider, AuthProvider, useAuth } from '@/core/context';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const { isAuthenticated, isLoading } = useAuth();
   const [minimumLoadingComplete, setMinimumLoadingComplete] = useState(false);
-
-  console.log('RootLayout Render:', {
-    isAuthenticated,
-    isLoading,
-    minimumLoadingComplete
-  });
 
   const [fontsLoaded, fontError] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -35,10 +27,6 @@ export default function RootLayout() {
   }, []);
 
   if (!minimumLoadingComplete || !fontsLoaded) {
-    console.log('Loading State:', {
-      minimumLoadingComplete,
-      fontsLoaded
-    });
     return (
       <ThemeProvider>
         <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -47,10 +35,6 @@ export default function RootLayout() {
       </ThemeProvider>
     );
   }
-
-  console.log('Main Return:', {
-    screens: screens.map(s => s.name)
-  });
 
   return (
     <ThemeProvider>

@@ -1,15 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput, ScrollView } from 'react-native';
-import { useRouter, Href, useLocalSearchParams } from 'expo-router';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { ThemedInput } from '@/shared/components/ui/ThemedInput';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { useAuth } from '@/core/context/AuthContext';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
-import { confirmRegistration, resendConfirmationCode, confirmDeviceChange } from '@/core/services/authService';
-import { MessageModal } from '@/shared/components/modals/MessageModal';
-import { ROUTES } from '@/core/types/routes';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { ROUTES } from '@/core/types';
+import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, MessageModal } from '@/shared/components';
+import { confirmRegistration, resendConfirmationCode, confirmDeviceChange } from '@/core/services';
+import { useAuth } from '@/core/context';
+
 export default function ConfirmationCodeScreen() {
     const route = useLocalSearchParams();
     const { email, flow } = route;

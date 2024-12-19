@@ -1,4 +1,4 @@
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { useThemeColor } from '@/shared/hooks';
 import Colors from '../constants/Colors';
 
 export const getLottieColorFilters = (themeColors: ReturnType<typeof useThemeColor>) => ({

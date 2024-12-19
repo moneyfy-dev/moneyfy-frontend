@@ -1,22 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Vehicle, OWNER_OPTIONS_MAP, ROUTES } from '@/core/types';
+import { View, StyleSheet } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedText, ThemedLayout, ThemedInput, ThemedButton, ThemedView, VehicleCard, MessageModal, LoadingScreen } from '@/shared/components';
+import { startQuotationFlow } from '@/core/services';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedInput } from '@/shared/components/ui/ThemedInput';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
-import { ThemedView } from '@/shared/components/ui/ThemedView';
-import { Vehicle, OWNER_OPTIONS_MAP } from '@/core/types/quote';
-import { quoteVehicle } from '@/core/services/quoteService';
-import { useAuth } from '@/core/context/AuthContext';
-import { searchCompanies } from '@/core/services/quoteService';
-import { VehicleCard } from '@/shared/components/composite/VehicleCard';
-import { startQuotationFlow } from '@/core/services/quotationFlowService';
-import { LoadingScreen } from '@/shared/components/animations/LoadingScreen';
-import { MessageModal } from '@/shared/components/modals/MessageModal';
-import { ROUTES } from '@/core/types/routes';
 
 export default function SearchResultsScreen() {
   const { value, vehicle: initialVehicle, quoterId: initialQuoterId } = useLocalSearchParams();

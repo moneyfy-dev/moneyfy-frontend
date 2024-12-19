@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View, FlatList, Modal, Alert } from 'react-native';
-import { ThemedText } from '../ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { ThemedText } from '@/shared/components';
+import { useThemeColor } from '@/shared/hooks';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
-import { Account } from '@/core/types/useAccounts';
+import { Account } from '@/core/types';
 import { useRouter } from 'expo-router';
-import { deleteAccount } from '@/core/services/accountService';
-import { MessageModal } from '../modals/MessageModal';
+import { deleteAccount } from '@/core/services';
+import { MessageModal } from '@/shared/components';
 
 interface AccountListScreenProps {
     accounts: Account[];

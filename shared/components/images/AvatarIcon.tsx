@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ViewStyle } from 'react-native';
 import Svg, { Rect, Path, Circle, G, Defs, ClipPath } from 'react-native-svg';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { useThemeColor } from '@/shared/hooks';
 
 interface AvatarIconProps {
   width?: number;

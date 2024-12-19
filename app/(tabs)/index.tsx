@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Dimensions, RefreshControl } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import Colors from '@/constants/Colors';
-import { LineChart } from 'react-native-chart-kit';
-import { useAuth } from '@/core/context/AuthContext';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { LinearGradient } from 'expo-linear-gradient';
-import { AvatarIcon } from '@/shared/components/images/AvatarIcon';
-import { User, Wallet } from '@/core/types/auth';
-import { useOnboarding } from '@/core/context/OnboardingContext';
-import { Onboarding } from '@/shared/components/features/onboarding/Onboarding';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { LoadingScreen } from '@/shared/components/animations/LoadingScreen';
-import { ROUTES } from '@/core/types/routes';
+import { User, ROUTES } from '@/core/types';
+import { View, StyleSheet, TouchableOpacity, Image, Dimensions, RefreshControl } from 'react-native';
+import Colors from '@/constants/Colors';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedText, AvatarIcon, LoadingScreen, Onboarding } from '@/shared/components';
+import { LinearGradient } from 'expo-linear-gradient';
+import { LineChart } from 'react-native-chart-kit';
+import { useAuth, useOnboarding } from '@/core/context';
+import { Ionicons } from '@expo/vector-icons';
 
 const FORCE_SHOW_ONBOARDING = true; // Mantenemos esto para desarrollo
 

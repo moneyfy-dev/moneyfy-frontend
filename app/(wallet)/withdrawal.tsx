@@ -1,19 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Dimensions, FlatList } from 'react-native';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { AccountListScreen } from '@/shared/components/composite/AccountListScreen';
-import { useAuth } from '@/core/context/AuthContext';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { TabSelector } from '@/shared/components/ui/TabSelector';
-import { AnimatedCard } from '@/shared/components/composite/AnimatedCard';
-import { format } from 'date-fns';
+import { View, StyleSheet, TouchableOpacity, Dimensions, FlatList } from 'react-native';
+import { useThemeColor, useCardVisibility } from '@/shared/hooks';
+import { ThemedView, ThemedLayoutFlatList, ThemedText, IconContainer, TabSelector, AccountListScreen, AnimatedCard } from '@/shared/components';
 import { es } from 'date-fns/locale';
-import { useCardVisibility } from '@/shared/hooks/useCardVisibility';
-import { ThemedView } from '@/shared/components/ui/ThemedView';
-import { ThemedLayoutFlatList } from '@/shared/components/layouts/ThemedLayoutFlatList';
-import { IconContainer } from '@/shared/components/ui/IconContainer';
+import { format } from 'date-fns';
+import { useAuth } from '@/core/context';
+import { Ionicons } from '@expo/vector-icons';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 

@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, AppState } from 'react-native';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
-import { ThemedInput } from '@/shared/components/ui/ThemedInput';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { isBiometricAvailable, authenticateBiometric } from '@/core/services/biometricService';
+import { useRouter } from 'expo-router';
+import { View, StyleSheet, AppState } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, Logo, ThemedInput, ThemedButton, MessageModal } from '@/shared/components';
+import { useAuth } from '@/core/context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from "@react-native-community/netinfo";
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { Logo } from '@/shared/components/ui/Logo';
-import { useRouter } from 'expo-router';
-import { useAuth } from '@/core/context/AuthContext';
-import { MessageModal } from '@/shared/components/modals/MessageModal';
+import { isBiometricAvailable, authenticateBiometric } from '@/core/services';
 
 interface PersistentAuthProps {
   onAuthSuccess: () => void;

@@ -1,7 +1,7 @@
 import React from 'react';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { ViewStyle } from 'react-native';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
+import { useThemeColor } from '@/shared/hooks';
 
 interface MotorcycleIconProps {
   width?: number;

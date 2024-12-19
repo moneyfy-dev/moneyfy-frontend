@@ -1,10 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ThemedText } from '../../ui/ThemedText';
-import { ThemedButton } from '../../ui/ThemedButton';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { LottieAnimation } from '../../animations/LottieAnimation';
+import { View, StyleSheet, Dimensions } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedText, ThemedButton, LottieAnimation } from '@/shared/components';
 
 const { width } = Dimensions.get('window');
 

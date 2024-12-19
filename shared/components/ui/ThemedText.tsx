@@ -1,7 +1,7 @@
 import React from 'react';
+import { Href, useRouter } from 'expo-router';
 import { Text, TextStyle, StyleSheet, TouchableOpacity } from 'react-native';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { Href, Link, useRouter } from 'expo-router';
+import { useThemeColor } from '@/shared/hooks';
 
 type TextVariant = 'gigaTitle' | 'jumboTitle' | 'superTitle' | 'title' | 'jumboSubTitle' | 'subTitleBold' | 'subTitle' | 'paragraph' | 'paragraphBold' | 'textLink' | 'notes' | 'default';
 

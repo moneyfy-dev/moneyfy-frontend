@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
-import { ThemedText } from '@/shared/components/ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { AccountListScreen } from '@/shared/components/composite/AccountListScreen';
-import { useAuth } from '@/core/context/AuthContext';
-import { LinearGradient } from 'expo-linear-gradient';
-import Colors from '@/constants/Colors';
-import { TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { TabSelector } from '@/shared/components/ui/TabSelector';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import Colors from '@/constants/Colors';
+import { useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedText, ThemedButton, AccountListScreen, TabSelector } from '@/shared/components';
+import { useAuth } from '@/core/context';
+import { Ionicons } from '@expo/vector-icons';
 import WithdrawalHistory  from '@/app/(wallet)/withdrawal-history';
-import { ThemedButton } from '@/shared/components/ui/ThemedButton';
 
 type TabType = 'account' | 'history';
 
