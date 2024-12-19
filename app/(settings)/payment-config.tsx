@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ThemedLayoutFlatList } from '@/shared/components/ThemedLayoutFlatList';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { ThemedButton } from '@/shared/components/ThemedButton';
+import { ThemedLayoutFlatList } from '@/shared/components/layouts/ThemedLayoutFlatList';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
+import { ThemedButton } from '@/shared/components/ui/ThemedButton';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { CreditCardIcon } from '@/shared/components/images/CreditCardIcon';
 import { selectAccount } from '@/core/services/accountService';
 import { useAuth } from '@/core/context/AuthContext';
 import { Account } from '@/core/types/useAccounts';
-import { AccountListScreen } from '@/shared/components/AccountListScreen';
+import { AccountListScreen } from '@/shared/components/composite/AccountListScreen';
 import axios from 'axios';
-import { MessageModal } from '@/shared/components/MessageModal';
+import { MessageModal } from '@/shared/components/modals/MessageModal';
 import { ROUTES } from '@/core/types/routes';
 
 export default function PaymentConfigScreen() {

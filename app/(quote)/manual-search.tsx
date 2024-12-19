@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { ThemedLayout } from "@/shared/components/ThemedLayout";
-import { ThemedText } from "@/shared/components/ThemedText";
-import { ThemedInput } from "@/shared/components/ThemedInput";
-import { ThemedAutocomplete } from "@/shared/components/ThemedAutocomplete";
-import { ThemedButton } from "@/shared/components/ThemedButton";
-import { ThemedView } from '@/shared/components/ThemedView';
+import { ThemedLayout } from "@/shared/components/layouts/ThemedLayout";
+import { ThemedText } from "@/shared/components/ui/ThemedText";
+import { ThemedInput } from "@/shared/components/ui/ThemedInput";
+import { ThemedAutocomplete } from "@/shared/components/ui/ThemedAutocomplete";
+import { ThemedButton } from "@/shared/components/ui/ThemedButton";
+import { ThemedView } from '@/shared/components/ui/ThemedView';
 import { validateRUT } from '@/shared/utils/validations';
 import { Alert } from 'react-native';
 import { getAvailableVehicles } from '@/core/services/vehicleService';
@@ -15,7 +15,7 @@ import { useAuth } from '@/core/context/AuthContext';
 import { useRouter } from 'expo-router';
 import { OWNER_OPTIONS_MAP } from '@/core/types/quote';
 import { startQuotationFlow } from '@/core/services/quotationFlowService';
-import { MessageModal } from '@/shared/components/MessageModal';
+import { MessageModal } from '@/shared/components/modals/MessageModal';
 import { ROUTES } from '@/core/types/routes';
 
 
@@ -100,12 +100,12 @@ export default function ManualSearchScreen() {
                 purchaserId: formData.rut,
                 ownerOption: OWNER_OPTIONS_MAP[formData.isDueño as keyof typeof OWNER_OPTIONS_MAP]
             });
-            console.log('response', response.referredId);
+            console.log('response', response.quoterId);
             router.push({
                 pathname: ROUTES.QUOTE.QUOTE_RESULTS,
                 params: {
                     plans: encodeURIComponent(JSON.stringify(response.plans)),
-                    referredId: response.referredId,
+                    quoterId: response.quoterId,
                     vehicle: encodeURIComponent(JSON.stringify(response.vehicle))
                 }
             });

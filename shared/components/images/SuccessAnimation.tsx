@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TouchableOpacity, Animated } from 'react-native';
-import { ThemedLayout } from '@/shared/components/ThemedLayout';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { ThemedButton } from '@/shared/components/ThemedButton';
+import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
+import { ThemedButton } from '@/shared/components/ui/ThemedButton';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
 

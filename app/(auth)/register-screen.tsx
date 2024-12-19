@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, View, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedLayout } from '@/shared/components/ThemedLayout';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { ThemedInput } from '@/shared/components/ThemedInput';
+import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
+import { ThemedInput } from '@/shared/components/ui/ThemedInput';
 import { register } from '@/core/services/authService';
 import { validateEmail, validatePassword, validateName, sanitizeName } from '@/shared/utils/validations';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
-import { ThemedButton } from '@/shared/components/ThemedButton';
-import { MessageModal } from '@/shared/components/MessageModal';
+import { ThemedButton } from '@/shared/components/ui/ThemedButton';
+import { MessageModal } from '@/shared/components/modals/MessageModal';
 import { ROUTES } from '@/core/types/routes';
 
 export default function RegisterScreen() {
@@ -225,7 +225,7 @@ export default function RegisterScreen() {
 
                 <View style={styles.referralContainer}>
                     <ThemedInput
-                        label="¿Tienes un código de sugerido?"
+                        label="¿Tienes un código de referido?"
                         placeholder="Ingresa el código aquí"
                         value={referralCode}
                         onChangeText={setReferralCode}

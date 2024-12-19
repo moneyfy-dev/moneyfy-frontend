@@ -1,19 +1,19 @@
 import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
-import { ThemedLayout } from '@/shared/components/ThemedLayout';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { ThemedInput } from '@/shared/components/ThemedInput';
-import { ThemedButton } from '@/shared/components/ThemedButton';
+import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
+import { ThemedInput } from '@/shared/components/ui/ThemedInput';
+import { ThemedButton } from '@/shared/components/ui/ThemedButton';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/core/context/AuthContext';
 import { selectPlan } from '@/core/services/quoteService';
-import { LoadingScreen } from '@/shared/components/LoadingScreen';
-import { MessageModal } from '@/shared/components/MessageModal';
+import { LoadingScreen } from '@/shared/components/animations/LoadingScreen';
+import { MessageModal } from '@/shared/components/modals/MessageModal';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { ROUTES } from '@/core/types/routes';
 
 export default function ConfirmAddressScreen() {
-  const { referredId: referredIdParam, plan: planParam, vehicle: vehicleParam } = useLocalSearchParams();
+  const { quoterId: quoterIdParam, plan: planParam, vehicle: vehicleParam } = useLocalSearchParams();
   const router = useRouter();
   const { updateUserData } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -45,7 +45,7 @@ export default function ConfirmAddressScreen() {
 
       // Extraemos solo los datos necesarios para la solicitud
       const selectPlanData = {
-        referredId: referredIdParam as string,
+        quoterId: quoterIdParam as string,
         planId: parsedPlan.planId,
         insuranceCompany: parsedPlan.insuranceCompany,
         planName: parsedPlan.planName,
@@ -67,7 +67,7 @@ export default function ConfirmAddressScreen() {
       router.push({
         pathname: ROUTES.QUOTE.PAYMENT_QR,
         params: {
-          referredId: response.data.referredId,
+          quoterId: response.data.quoterId,
           plan: planParam, // Mantenemos el plan completo original
           vehicle: vehicleParam
         }

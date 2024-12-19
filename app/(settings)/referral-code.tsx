@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Image, Share, Clipboard, TouchableOpacity } from 'react-native';
-import { ThemedLayout } from '@/shared/components/ThemedLayout';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { ThemedButton } from '@/shared/components/ThemedButton';
+import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
+import { ThemedButton } from '@/shared/components/ui/ThemedButton';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { useAuth } from '@/core/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,7 +16,7 @@ export default function ReferralCodeScreen() {
     try {
       await Share.share({
         title: '¡Únete a Moneyfy!',
-        message: `¡Hola! Te invito a unirte a Moneyfy. Usa mi código de sugerido: ${user?.codeToSuggest}\n\nDescarga la app aquí: https://play.google.com/store/apps/details?id=cl.moneyfy.app.&hl=es_9393`,
+        message: `¡Hola! Te invito a unirte a Moneyfy. Usa mi código de referido: ${user?.codeToSuggest}\n\nDescarga la app aquí: https://play.google.com/store/apps/details?id=cl.moneyfy.app.&hl=es_9393`,
       });
     } catch (error) {
       console.error('Error al compartir:', error);

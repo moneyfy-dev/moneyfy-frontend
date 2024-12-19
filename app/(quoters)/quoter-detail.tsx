@@ -1,60 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ThemedLayout } from '@/shared/components/ThemedLayout';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { QuoteCard } from '@/shared/components/QuoteCard';
+import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
+import { QuoteCard } from '@/shared/components/composite/QuoteCard';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { format } from 'date-fns';
-import { Referral, ReferralStatus } from '@/core/types/referral';
-import { VehicleCard } from '@/shared/components/VehicleCard';
-import { IconContainer } from '@/shared/components/IconContainer';
+import { Quoter, QuoterStatus } from '@/core/types/quoter';
+import { VehicleCard } from '@/shared/components/composite/VehicleCard';
+import { IconContainer } from '@/shared/components/ui/IconContainer';
 import { useAuth } from '@/core/context/AuthContext';
 import Colors from '@/constants/Colors';
 import { InsurancePlan } from '@/core/types/quote';
-import { ReferralInfoCard } from '@/shared/components/ReferralInfoCard';
-import { LoadingScreen } from '@/shared/components/LoadingScreen';
+import { QuoterInfoCard } from '@/shared/components/composite/QuoterInfoCard';
+import { LoadingScreen } from '@/shared/components/animations/LoadingScreen';
 
-export default function ReferralDetailScreen() {
+export default function QuoterDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const themeColors = useThemeColor();
-  const [referral, setReferral] = useState<Referral | null>(null);
+  const [quoter, setQuoter] = useState<Quoter | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { user, hydrateUserData } = useAuth();
 
   useEffect(() => {
     let isMounted = true;
 
-    const loadReferralData = async () => {
+    const loadQuoterData = async () => {
       setIsLoading(true);
       try {
         await hydrateUserData(true);
-        if (isMounted && user?.referredPeople) {
-          const referralData = user.referredPeople.find(r => r.referredId === params.id);
-          setReferral(referralData || null);
-          console.log('referralData', referralData?.referredPlanData);
+        if (isMounted && user?.quoterPeople) {
+          const quoterData = user.quoterPeople.find(r => r.quoterId === params.id);
+          setQuoter(quoterData || null);
+          console.log('quoterData', quoterData?.quoterPlanData);
         }
       } catch (error) {
-        console.error('Error loading referral data:', error);
+        console.error('Error loading quoter data:', error);
       }
     };
 
-    loadReferralData();
+    loadQuoterData();
     setIsLoading(false);
     return () => {
       isMounted = false;
     };
   }, [params.id]);
 
-  if (!referral) {
+  if (!quoter) {
     return (
       <LoadingScreen />
     );
   }
 
-  const getStatusColor = (status: ReferralStatus) => {
-    const colors: Record<ReferralStatus, string> = {
+  const getStatusColor = (status: QuoterStatus) => {
+    const colors: Record<QuoterStatus, string> = {
       'Iniciando': themeColors.green4to5,
       'Cotizando': themeColors.green3to4,
       'Recopilando': themeColors.green2to3,
@@ -66,26 +66,26 @@ export default function ReferralDetailScreen() {
     return colors[status];
   };
 
-  const getTextColor = (status: ReferralStatus) => {
+  const getTextColor = (status: QuoterStatus) => {
     return status === 'Caducado' ? Colors.common.black : Colors.common.white;
   };
 
-  const mapToPlanFormat = (referredPlan: typeof referral.referredPlanData): InsurancePlan => {
+  const mapToPlanFormat = (quoterPlan: typeof quoter.quoterPlanData): InsurancePlan => {
     return {
-      planId: referredPlan.referredPlanId || '',
-      planName: referredPlan.planName || '',
-      insuranceCompany: referredPlan.insuranceCompany || '',
-      deductible: referredPlan.deductible || 0,
-      price: referredPlan.price || 0,
-      priceUf: referredPlan.priceUf || 0,
-      discount: referredPlan.discount as unknown as number || 0,
-      stolenVehicle: referredPlan.stolenVehicle || '',
-      workshopType: referredPlan.workshopType || '',
-      totalLoss: referredPlan.totalLoss || '',
-      damageThirdParty: referredPlan.damageThirdParty || '',
-      details: referredPlan.details || [],
-      createdDate: referredPlan.createdDate || '',
-      updatedDate: referredPlan.updatedDate || '',
+      planId: quoterPlan.quoterPlanId || '',
+      planName: quoterPlan.planName || '',
+      insuranceCompany: quoterPlan.insuranceCompany || '',
+      deductible: quoterPlan.deductible || 0,
+      price: quoterPlan.price || 0,
+      priceUf: quoterPlan.priceUf || 0,
+      discount: quoterPlan.discount as unknown as number || 0,
+      stolenVehicle: quoterPlan.stolenVehicle || '',
+      workshopType: quoterPlan.workshopType || '',
+      totalLoss: quoterPlan.totalLoss || '',
+      damageThirdParty: quoterPlan.damageThirdParty || '',
+      details: quoterPlan.details || [],
+      createdDate: quoterPlan.createdDate || '',
+      updatedDate: quoterPlan.updatedDate || '',
     };
   };
 
@@ -93,45 +93,45 @@ export default function ReferralDetailScreen() {
     <ThemedLayout padding={[0, 24]}>
       <View style={styles.content}>
         {/* Header con avatar y estado */}
-        <View style={styles.referralHeader}>
+        <View style={styles.quoterHeader}>
           <IconContainer
             icon="person-outline"
             size={24}
-            style={[{ backgroundColor: getStatusColor(referral.referredStatus) }]}
+            style={[{ backgroundColor: getStatusColor(quoter.quoterStatus) }]}
           />
-          <View style={styles.referralInfo}>
+          <View style={styles.quoterInfo}>
             <View style={styles.nameContainer}>
               <ThemedText variant="subTitleBold">
-                {referral.referredCarData.brand || 'Sin marca'} {' '}
-                {referral.referredCarData.model || 'registrado'}
+                {quoter.quoterCarData.brand || 'Sin marca'} {' '}
+                {quoter.quoterCarData.model || 'registrado'}
               </ThemedText>
 
               <ThemedText variant="notes">
-                Actualización: {format(new Date(referral.updatedDate), 'dd/MM/yyyy')}
+                Actualización: {format(new Date(quoter.updatedDate), 'dd/MM/yyyy')}
               </ThemedText>
             </View>
 
             <View style={styles.statusContainer}>
               <View style={[
                 styles.statusBadge,
-                { backgroundColor: getStatusColor(referral.referredStatus) }
+                { backgroundColor: getStatusColor(quoter.quoterStatus) }
               ]}>
                 <ThemedText
                   variant="paragraph"
-                  style={{ color: getTextColor(referral.referredStatus) }}
+                  style={{ color: getTextColor(quoter.quoterStatus) }}
                 >
-                  {referral.referredStatus}
+                  {quoter.quoterStatus}
                 </ThemedText>
               </View>
             </View>
 
             <ThemedText variant="notes">
-              Cotizado el: {format(new Date(referral.createdDate), 'dd/MM/yyyy')}
+              Cotizado el: {format(new Date(quoter.createdDate), 'dd/MM/yyyy')}
             </ThemedText>
 
-            {referral.referredPersonalData.purchaserId && (
+            {quoter.quoterPersonalData.purchaserId && (
               <ThemedText variant="notes">
-                RUT: {referral.referredPersonalData.purchaserId}
+                RUT: {quoter.quoterPersonalData.purchaserId}
               </ThemedText>
             )}
           </View>
@@ -139,28 +139,28 @@ export default function ReferralDetailScreen() {
 
         {/* Información del vehículo */}
         <VehicleCard
-          brand={referral.referredCarData.brand}
-          model={referral.referredCarData.model}
-          ppu={referral.referredCarData.ppu}
-          year={referral.referredCarData.year}
+          brand={quoter.quoterCarData.brand}
+          model={quoter.quoterCarData.model}
+          ppu={quoter.quoterCarData.ppu}
+          year={quoter.quoterCarData.year}
           isSelected={true}
         />
 
         {/* Plan seleccionado */}
-        {referral.referredPlanData && 
-         referral.referredPlanData.planName && (
+        {quoter.quoterPlanData && 
+            quoter.quoterPlanData.planName && (
           <View style={styles.section}>
             <QuoteCard
-              plan={mapToPlanFormat(referral.referredPlanData)}
+              plan={mapToPlanFormat(quoter.quoterPlanData)}
               showButton={false}
             />
           </View>
         )}
 
         {/* Información adicional */}
-        <ReferralInfoCard
-          personalData={referral.referredPersonalData}
-          addressData={referral.referredAddressData}
+        <QuoterInfoCard
+          personalData={quoter.quoterPersonalData}
+          addressData={quoter.quoterAddressData}
         />
       </View>
       {isLoading && <LoadingScreen />}
@@ -172,11 +172,11 @@ const styles = StyleSheet.create({
   content: {
     gap: 24,
   },
-  referralHeader: {
+  quoterHeader: {
     flexDirection: 'row',
     gap: 10,
   },
-  referralInfo: {
+  quoterInfo: {
     flex: 1,
   },
   nameContainer: {

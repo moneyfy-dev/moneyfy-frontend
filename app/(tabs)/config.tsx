@@ -3,11 +3,11 @@ import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Href } from 'expo-router';
-import { LogoutModal } from '@/shared/components/LogoutModal';
+import { LogoutModal } from '@/shared/components/modals/LogoutModal';
 import { useAuth } from '@/core/context/AuthContext';
 import { AvatarIcon } from '@/shared/components/images/AvatarIcon';
-import { ThemedLayout } from '@/shared/components/ThemedLayout';
-import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
 import { ROUTES } from '@/core/types/routes';
 const ConfigScreen = () => {
   const themeColors = useThemeColor();

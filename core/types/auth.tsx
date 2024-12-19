@@ -38,7 +38,7 @@ export interface LoginResponse {
     notifs: Notifications;
     wallet: Wallet;
     accounts: any[];
-    referredPeople: any[];
+    quoterPeople: any[];
     deleteAccount: null;
   }
   

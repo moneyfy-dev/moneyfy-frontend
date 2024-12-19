@@ -3,14 +3,14 @@ import { QuoteVehicleParams, InsurancePlan, Company, Vehicle } from '@/core/type
 
 interface QuotationFlowResponse {
   plans: InsurancePlan[];
-  referredId: string;
+  quoterId: string;
   vehicle: Vehicle;
 }
 
 // Primero, definimos una interfaz para el resultado de la cotización
 interface QuoteResult {
   plans: InsurancePlan[];
-  referralID: string | null;
+  quoterId: string | null;
 }
 
 export const startQuotationFlow = async (quoteData: Omit<QuoteVehicleParams, 'companyAlias'>): Promise<QuotationFlowResponse> => {
@@ -37,11 +37,11 @@ export const startQuotationFlow = async (quoteData: Omit<QuoteVehicleParams, 'co
             ...plan,
             insuranceCompany: company.name
           })),
-          referralID: response.data.referredId
+          quoterId: response.data.quoterId
         };
       } catch (error) {
         console.log(`Error al cotizar con ${company.name}:`, error);
-        return { plans: [], referralID: null };
+        return { plans: [], quoterId: null };
       }
     });
 
@@ -63,8 +63,8 @@ const results = await Promise.all<QuoteResult>(
       .map((result: QuoteResult) => result.plans)
       .flat()
       .filter(plan => plan !== null);
-    // Obtener el primer referralID válido
-    const referralID = results.find(result => result.referralID)?.referralID;
+    // Obtener el primer quoterID válido
+    const quoterId = results.find(result => result.quoterId)?.quoterId;
     
     if (allPlans.length === 0) {
       throw new Error('No se encontraron planes disponibles');
@@ -84,7 +84,7 @@ const results = await Promise.all<QuoteResult>(
 
     return {
       plans: allPlans,
-      referredId: referralID || quoteData.referredId as string,
+      quoterId: quoterId || quoteData.quoterId as string,
       vehicle
     };
   } catch (error) {

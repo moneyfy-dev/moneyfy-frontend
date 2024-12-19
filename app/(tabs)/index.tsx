@@ -5,15 +5,15 @@ import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import Colors from '@/constants/Colors';
 import { LineChart } from 'react-native-chart-kit';
 import { useAuth } from '@/core/context/AuthContext';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
+import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AvatarIcon } from '@/shared/components/images/AvatarIcon';
 import { User, Wallet } from '@/core/types/auth';
 import { useOnboarding } from '@/core/context/OnboardingContext';
-import { Onboarding } from '@/shared/components/Onboarding';
+import { Onboarding } from '@/shared/components/features/onboarding/Onboarding';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { LoadingScreen } from '@/shared/components/LoadingScreen';
+import { LoadingScreen } from '@/shared/components/animations/LoadingScreen';
 import { ROUTES } from '@/core/types/routes';
 
 const FORCE_SHOW_ONBOARDING = true; // Mantenemos esto para desarrollo

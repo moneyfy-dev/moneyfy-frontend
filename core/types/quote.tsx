@@ -19,7 +19,7 @@ export interface SearchResponse {
   message: string;
   status: number;
   data: {
-    referredId: string | number | (string | number)[] | null | undefined;
+    quoterId: string | number | (string | number)[] | null | undefined;
     companies?: Company[];
     vehicle?: Vehicle;
     tokens: {
@@ -31,7 +31,7 @@ export interface SearchResponse {
 }
 
 export interface QuoteVehicleParams {
-  referredId?: string;
+  quoterId?: string;
   ppu: string;
   brand: string;
   model: string;
@@ -65,7 +65,7 @@ export interface QuoteVehicleResponse {
   message: string;
   status: number;
   data: {
-    referredId: string;
+    quoterId: string;
     plans: InsurancePlan[];
     vehicle: Vehicle;
     user: any;
@@ -77,7 +77,7 @@ export interface QuoteVehicleResponse {
 }
 
 export interface SelectPlanParams {
-  referredId: string;
+  quoterId: string;
   planId: string;
   insuranceCompany: string;
   planName: string;

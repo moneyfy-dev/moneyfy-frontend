@@ -3,8 +3,8 @@ import { View, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-nativ
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { BaseInput } from './BaseInput';
-import { ThemedText } from '../ThemedText';
-import { ThemedButton } from '../ThemedButton';
+import { ThemedText } from '../ui/ThemedText';
+import { ThemedButton } from '../ui/ThemedButton';
 import { SelectInputProps } from '@/core/types/Input';
 
 export const SelectInput = forwardRef<any, SelectInputProps>(

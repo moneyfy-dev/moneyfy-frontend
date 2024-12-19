@@ -2,18 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Pressable, Alert, FlatList } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { InsurancePlan, Vehicle } from '@/core/types/quote';
-import { ThemedText } from "@/shared/components/ThemedText";
-import { ThemedInput } from "@/shared/components/ThemedInput";
-import { FiltersModal } from '@/shared/components/FiltersModal';
-import { ThemedLayout } from '@/shared/components/ThemedLayout';
+import { ThemedText } from "@/shared/components/ui/ThemedText";
+import { ThemedInput } from "@/shared/components/ui/ThemedInput";
+import { FiltersModal } from '@/shared/components/modals/FiltersModal';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
-import { QuoteCard } from '@/shared/components/QuoteCard';
-import { ThemedLayoutFlatList } from '@/shared/components/ThemedLayoutFlatList';
+import { QuoteCard } from '@/shared/components/composite/QuoteCard';
+import { ThemedLayoutFlatList } from '@/shared/components/layouts/ThemedLayoutFlatList';
 import { useRouter } from 'expo-router';
 import { CarIcon } from '@/shared/components/images/vehicles/CarIcon';
-import { MessageModal } from '@/shared/components/MessageModal';
+import { MessageModal } from '@/shared/components/modals/MessageModal';
 import { ROUTES } from '@/core/types/routes';
 
 interface Filters {
@@ -26,7 +25,7 @@ interface Filters {
 export default function QuoteResults() {
     const themeColors = useThemeColor();
     const [showFilters, setShowFilters] = useState(false);
-    const { plans: plansParam, referredId: referredIdParam, vehicle: vehicleParam } = useLocalSearchParams();
+    const { plans: plansParam, quoterId: quoterIdParam, vehicle: vehicleParam } = useLocalSearchParams();
     const router = useRouter();
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
@@ -42,11 +41,11 @@ export default function QuoteResults() {
 
     // Función para manejar la selección del plan
     const handleSelectPlan = (plan: InsurancePlan) => {
-        console.log('referredIdParam', referredIdParam);
+        console.log('quoterIdParam', quoterIdParam);
         router.push({
             pathname: ROUTES.QUOTE.CONFIRM_ADDRESS,
             params: {
-                referredId: referredIdParam,
+                quoterId: quoterIdParam,
                 plan: JSON.stringify(plan),
                 vehicle: vehicleParam
             }

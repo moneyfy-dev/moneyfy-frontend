@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, FlatList, Pressable } from 'react-native';
-import { ThemedListLayout } from '@/shared/components/ThemedListLayout';
-import { ThemedInput } from '@/shared/components/ThemedInput';
-import { ThemedText } from '@/shared/components/ThemedText';
+import { ThemedListLayout } from '@/shared/components/layouts/ThemedListLayout';
+import { ThemedInput } from '@/shared/components/ui/ThemedInput';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { IconContainer } from '@/shared/components/IconContainer';
+import { IconContainer } from '@/shared/components/ui/IconContainer';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 

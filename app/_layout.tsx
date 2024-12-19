@@ -7,7 +7,7 @@ import { Stack } from 'expo-router';
 import { useColorScheme } from '@/shared/hooks/useColorScheme';
 import { AuthProvider, useAuth } from '@/core/context/AuthContext';
 import { ThemeProvider } from '@/core/context/ThemeContext';
-import { PersistentAuthWrapper } from '@/shared/components/PersistentAuthWrapper';
+import { PersistentAuthWrapper } from '@/shared/components/features/auth/PersistentAuthWrapper';
 import { OnboardingProvider } from '@/core/context/OnboardingContext';
 import { ROUTES, screens } from '@/core/types/routes';
 

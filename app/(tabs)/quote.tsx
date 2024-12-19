@@ -3,17 +3,17 @@ import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { ThemedLayout } from '@/shared/components/ThemedLayout';
-import { ThemedInput } from '@/shared/components/ThemedInput';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
+import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
+import { ThemedInput } from '@/shared/components/ui/ThemedInput';
 import { searchVehicle } from '@/core/services/quoteService';
 import { useAuth } from '@/core/context/AuthContext';
 import axios from 'axios';
-import { NoAccountWarning } from '@/shared/components/NoAccountWarning';
-import { ThemedButton } from '@/shared/components/ThemedButton';
+import { NoAccountWarning } from '@/shared/components/features/contextualScreens/NoAccountWarning';
+import { ThemedButton } from '@/shared/components/ui/ThemedButton';
 import { validateRUT } from '@/shared/utils/validations';
-import { LoadingScreen } from '@/shared/components/LoadingScreen';
-import { MessageModal } from '@/shared/components/MessageModal';
+import { LoadingScreen } from '@/shared/components/animations/LoadingScreen';
+import { MessageModal } from '@/shared/components/modals/MessageModal';
 import { ROUTES } from '@/core/types/routes';
 
 export default function QuoteScreen() {
@@ -86,7 +86,7 @@ export default function QuoteScreen() {
           params: {
             value: JSON.stringify(value),
             vehicle: encodeURIComponent(JSON.stringify(response.data.vehicle)),
-            referredId: response.data.referredId
+            quoterId: response.data.quoterId
           }
         });
       } else {

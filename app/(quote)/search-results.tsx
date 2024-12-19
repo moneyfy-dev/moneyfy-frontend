@@ -3,23 +3,23 @@ import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { ThemedLayout } from '@/shared/components/ThemedLayout';
-import { ThemedInput } from '@/shared/components/ThemedInput';
-import { ThemedButton } from '@/shared/components/ThemedButton';
-import { ThemedView } from '@/shared/components/ThemedView';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
+import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
+import { ThemedInput } from '@/shared/components/ui/ThemedInput';
+import { ThemedButton } from '@/shared/components/ui/ThemedButton';
+import { ThemedView } from '@/shared/components/ui/ThemedView';
 import { Vehicle, OWNER_OPTIONS_MAP } from '@/core/types/quote';
 import { quoteVehicle } from '@/core/services/quoteService';
 import { useAuth } from '@/core/context/AuthContext';
 import { searchCompanies } from '@/core/services/quoteService';
-import { VehicleCard } from '@/shared/components/VehicleCard';
+import { VehicleCard } from '@/shared/components/composite/VehicleCard';
 import { startQuotationFlow } from '@/core/services/quotationFlowService';
-import { LoadingScreen } from '@/shared/components/LoadingScreen';
-import { MessageModal } from '@/shared/components/MessageModal';
+import { LoadingScreen } from '@/shared/components/animations/LoadingScreen';
+import { MessageModal } from '@/shared/components/modals/MessageModal';
 import { ROUTES } from '@/core/types/routes';
 
 export default function SearchResultsScreen() {
-  const { type, value, vehicle: initialVehicle, referredId: initialReferredId } = useLocalSearchParams();
+  const { value, vehicle: initialVehicle, quoterId: initialQuoterId } = useLocalSearchParams();
   const themeColors = useThemeColor();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -27,39 +27,39 @@ export default function SearchResultsScreen() {
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [buyerRut, setBuyerRut] = useState('');
   const [ownerOption, setOwnerOption] = useState(Object.keys(OWNER_OPTIONS_MAP)[0]);
-  const [referredId, setReferredId] = useState<string>('');
+  const [quoterId, setQuoterId] = useState<string>('');
   const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     try {
-      if (initialVehicle && initialReferredId) {
+      if (initialVehicle && initialQuoterId) {
         const vehicleString = decodeURIComponent(initialVehicle as string);
         const parsedVehicle = JSON.parse(vehicleString);
 
         setVehicle(parsedVehicle);
         setSelectedVehicle(parsedVehicle);
-        setReferredId(initialReferredId as string);
+        setQuoterId(initialQuoterId as string);
       }
     } catch (error) {
       console.error('Error al procesar el vehículo:', error);
       setErrorMessage('Hubo un problema al cargar los resultados');
       setIsErrorModalVisible(true);
     }
-  }, [initialVehicle, initialReferredId]);
+  }, [initialVehicle, initialQuoterId]);
 
   const handleQuote = async () => {
     setIsLoading(true);
-    if (!selectedVehicle || !buyerRut || !ownerOption || !referredId) {
+    if (!selectedVehicle || !buyerRut || !ownerOption || !quoterId) {
       setErrorMessage('Por favor complete todos los campos requeridos');
       setIsErrorModalVisible(true);
       return;
     }
 
     try {
-      console.log('referredId', referredId);
+      console.log('quoterId', quoterId);
       const response = await startQuotationFlow({
-        referredId: referredId,
+        quoterId: quoterId,
         ppu: selectedVehicle.ppu,
         brand: selectedVehicle.brand,
         model: selectedVehicle.model,
@@ -76,7 +76,7 @@ export default function SearchResultsScreen() {
         pathname: ROUTES.QUOTE.QUOTE_RESULTS,
         params: {
           plans: encodeURIComponent(JSON.stringify(response.plans)),
-          referredId: response.referredId,
+          quoterId: response.quoterId,
           vehicle: encodeURIComponent(JSON.stringify(response.vehicle))
         }
       });
@@ -171,7 +171,7 @@ export default function SearchResultsScreen() {
         text="Siguiente"
         onPress={handleQuote}
         style={styles.nextButton}
-        disabled={!selectedVehicle || !buyerRut || !ownerOption || !referredId}
+        disabled={!selectedVehicle || !buyerRut || !ownerOption || !quoterId}
       />
 
       <MessageModal

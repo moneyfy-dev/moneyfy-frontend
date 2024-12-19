@@ -1,25 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert, Share, Clipboard, } from 'react-native';
-import { ThemedLayout } from '@/shared/components/ThemedLayout';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { IconContainer } from '@/shared/components/IconContainer';
+import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
+import { IconContainer } from '@/shared/components/ui/IconContainer';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { ThemedButton } from '@/shared/components/ThemedButton';
-import { VehicleCard } from '@/shared/components/VehicleCard';
-import { QuoteCard } from '@/shared/components/QuoteCard';
+import { ThemedButton } from '@/shared/components/ui/ThemedButton';
+import { VehicleCard } from '@/shared/components/composite/VehicleCard';
+import { QuoteCard } from '@/shared/components/composite/QuoteCard';
 import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { TicketEdge } from '@/shared/components/images/TicketEdge';
-import Svg, { Path } from 'react-native-svg';
-import { Logo } from '@/shared/components/Logo';
+import { Logo } from '@/shared/components/ui/Logo';
 import { useLocalSearchParams } from 'expo-router';
 import { InsurancePlan, Vehicle } from '@/core/types/quote';
 import { useRouter } from 'expo-router';
-import { MessageModal } from '@/shared/components/MessageModal';
+import { MessageModal } from '@/shared/components/modals/MessageModal';
 
 export default function PaymentQRScreen() {
   const router = useRouter();
-  const { referredId: referredIdParam, plan: planParam, vehicle: vehicleParam } = useLocalSearchParams();
+  const { quoterId: quoterIdParam, plan: planParam, vehicle: vehicleParam } = useLocalSearchParams();
 
   const [plan, setPlan] = useState<InsurancePlan | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
@@ -52,7 +51,7 @@ export default function PaymentQRScreen() {
       setIsErrorModalVisible(true);
     }
   }, [planParam, vehicleParam]);
-  const link = `https://bci.cl/id=${referredIdParam}`;
+  const link = `https://bci.cl/id=${quoterIdParam}`;
 
   const handleShareLink = async () => {
     try {
@@ -160,13 +159,13 @@ export default function PaymentQRScreen() {
               <Logo style={{ marginBottom: 24 }} />
             </View>
 
-            <View style={styles.referralHeader}>
+            <View style={styles.quoterHeader}>
               <IconContainer
                 icon="person-outline"
                 size={24}
                 style={{ backgroundColor: themeColors.textColorAccent }}
               />
-              <View style={styles.referralInfo}>
+              <View style={styles.quoterInfo}>
                 <View style={styles.nameContainer}>
                   <ThemedText variant="subTitleBold">
                     Alejandro Osses
@@ -245,12 +244,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
-  referralHeader: {
+  quoterHeader: {
     flexDirection: 'row',
     gap: 10,
     marginBottom: 24,
   },
-  referralInfo: {
+  quoterInfo: {
     flex: 1,
   },
   nameContainer: {

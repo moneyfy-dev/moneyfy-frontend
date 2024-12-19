@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput, ScrollView } from 'react-native';
 import { useRouter, Href, useLocalSearchParams } from 'expo-router';
-import { ThemedLayout } from '@/shared/components/ThemedLayout';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { ThemedInput } from '@/shared/components/ThemedInput';
+import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
+import { ThemedInput } from '@/shared/components/ui/ThemedInput';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { useAuth } from '@/core/context/AuthContext';
-import { ThemedButton } from '@/shared/components/ThemedButton';
+import { ThemedButton } from '@/shared/components/ui/ThemedButton';
 import { confirmRegistration, resendConfirmationCode, confirmDeviceChange } from '@/core/services/authService';
-import { MessageModal } from '@/shared/components/MessageModal';
+import { MessageModal } from '@/shared/components/modals/MessageModal';
 import { ROUTES } from '@/core/types/routes';
 export default function ConfirmationCodeScreen() {
     const route = useLocalSearchParams();

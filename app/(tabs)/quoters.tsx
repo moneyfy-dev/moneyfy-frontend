@@ -1,22 +1,22 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ThemedListLayout } from '@/shared/components/ThemedListLayout';
-import { ThemedInput } from '@/shared/components/ThemedInput';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { FiltersModal } from '@/shared/components/FiltersModal';
+import { ThemedListLayout } from '@/shared/components/layouts/ThemedListLayout';
+import { ThemedInput } from '@/shared/components/ui/ThemedInput';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
+import { FiltersModal } from '@/shared/components/modals/FiltersModal';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
-import { IconContainer } from '@/shared/components/IconContainer';
+import { IconContainer } from '@/shared/components/ui/IconContainer';
 import { format } from 'date-fns';
-import { ThemedDatePicker } from '@/shared/components/ThemedDatePicker';
-import { ThemedButton } from '@/shared/components/ThemedButton';
-import { Referral } from '@/core/types/referral';
+import { ThemedDatePicker } from '@/shared/components/ui/ThemedDatePicker';
+import { ThemedButton } from '@/shared/components/ui/ThemedButton';
+import { Quoter } from '@/core/types/quoter';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
-import { ReferralStatus } from '@/core/types/referral';
-import { ThemedCheckGroup } from '@/shared/components/ThemedCheckGroup';
+import { QuoterStatus } from '@/core/types/quoter';
+import { ThemedCheckGroup } from '@/shared/components/ui/ThemedCheckGroup';
 import { useAuth } from '@/core/context/AuthContext';
-import { LoadingScreen } from '@/shared/components/LoadingScreen';
+import { LoadingScreen } from '@/shared/components/animations/LoadingScreen';
 import { ROUTES } from '@/core/types/routes';
 
 export default function QuotersScreen() {
@@ -24,7 +24,7 @@ export default function QuotersScreen() {
   const themeColors = useThemeColor();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [quoters, setQuoters] = useState<Quoter[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState({
     status: '',
@@ -40,8 +40,8 @@ export default function QuotersScreen() {
     setIsLoading(true);
     const loadInitialData = async () => {
       await hydrateUserData(true);
-      if (user?.referredPeople) {
-        setReferrals(user.referredPeople);
+      if (user?.quoterPeople) {
+        setQuoters(user.quoterPeople);
       }
     };
 
@@ -50,13 +50,13 @@ export default function QuotersScreen() {
   }, []);
 
   useEffect(() => {
-    if (user?.referredPeople) {
-      setReferrals(user.referredPeople);
+    if (user?.quoterPeople) {
+      setQuoters(user.quoterPeople);
     }
-  }, [user?.referredPeople]);
+  }, [user?.quoterPeople]);
 
-  const getStatusColor = (status: ReferralStatus) => {
-    const colors: Record<ReferralStatus, string> = {
+  const getStatusColor = (status: QuoterStatus) => {
+    const colors: Record<QuoterStatus, string> = {
       Iniciando: themeColors.green4to5,
       Cotizando: themeColors.green3to4,
       Recopilando: themeColors.green2to3,
@@ -68,54 +68,54 @@ export default function QuotersScreen() {
     return colors[status];
   };
 
-  const getTextColor = (status: ReferralStatus) => {
+  const getTextColor = (status: QuoterStatus) => {
     return status === 'Caducado' ? Colors.common.black : Colors.common.white;
   };
 
-  const filterReferrals = useCallback(() => {
-    if (!user?.referredPeople) return;
+  const filterQuoters = useCallback(() => {
+    if (!user?.quoterPeople) return;
 
-    let filteredResults = [...user.referredPeople];
+    let filteredResults = [...user.quoterPeople];
 
     // Filtrar por búsqueda
     if (searchQuery) {
-      filteredResults = filteredResults.filter(referral => {
-        const fullName = `${referral.referredCarData.brand} ${referral.referredCarData.model}`.toLowerCase();
+      filteredResults = filteredResults.filter(quoter => {
+        const fullName = `${quoter.quoterCarData.brand} ${quoter.quoterCarData.model}`.toLowerCase();
         return fullName.includes(searchQuery.toLowerCase());
       });
     }
 
     // Filtrar por estado
     if (filters.status) {
-      filteredResults = filteredResults.filter(referral =>
-        referral.referredStatus.toLowerCase() === filters.status.toLowerCase()
+      filteredResults = filteredResults.filter(quoter =>
+        quoter.quoterStatus.toLowerCase() === filters.status.toLowerCase()
       );
     }
 
     // Filtrar por rango de fechas
     if (filters.dateRange.start || filters.dateRange.end) {
-      filteredResults = filteredResults.filter(referral => {
-        const referralDate = new Date(referral.createdDate);
+      filteredResults = filteredResults.filter(quoter => {
+        const quoterDate = new Date(quoter.createdDate);
 
         if (filters.dateRange.start && filters.dateRange.end) {
-          return referralDate >= filters.dateRange.start &&
-            referralDate <= filters.dateRange.end;
+          return quoterDate >= filters.dateRange.start &&
+              quoterDate <= filters.dateRange.end;
         }
 
         if (filters.dateRange.start) {
-          return referralDate >= filters.dateRange.start;
+          return quoterDate >= filters.dateRange.start;
         }
 
         if (filters.dateRange.end) {
-          return referralDate <= filters.dateRange.end;
+          return quoterDate <= filters.dateRange.end;
         }
 
         return true;
       });
     }
 
-    setReferrals(filteredResults);
-  }, [searchQuery, filters, user?.referredPeople]);
+    setQuoters(filteredResults);
+  }, [searchQuery, filters, user?.quoterPeople]);
 
   const handleSearch = (text: string) => {
     setSearchQuery(text);
@@ -127,12 +127,12 @@ export default function QuotersScreen() {
   };
 
   const applyFilters = () => {
-    filterReferrals();
+    filterQuoters();
     setShowFilters(false);
   };
 
   useEffect(() => {
-    filterReferrals();
+    filterQuoters();
   }, [searchQuery]);
 
   const resetFilters = () => {
@@ -143,13 +143,13 @@ export default function QuotersScreen() {
         end: null
       }
     });
-    if (user?.referredPeople) {
-      setReferrals(user.referredPeople);
+    if (user?.quoterPeople) {
+      setQuoters(user.quoterPeople);
     }
   };
 
-  const normalizeStatus = (status: string): ReferralStatus => {
-    const statusMap: { [key: string]: ReferralStatus } = {
+  const normalizeStatus = (status: string): QuoterStatus => {
+    const statusMap: { [key: string]: QuoterStatus } = {
       'Iniciando': 'Iniciando',
       'Cotizando': 'Cotizando',
       'Recopilando': 'Recopilando',
@@ -162,7 +162,7 @@ export default function QuotersScreen() {
     return statusMap[status] || 'Iniciando';
   };
 
-  const ReferralItem = ({ item, index, isLast }: { item: Referral, index: number, isLast: boolean }) => (
+  const QuoterItem = ({ item, index, isLast }: { item: Quoter, index: number, isLast: boolean }) => (
     <View style={[{
       borderBottomWidth: isLast ? 0 : 1,
       borderBottomColor: themeColors.borderBackgroundColor
@@ -170,23 +170,23 @@ export default function QuotersScreen() {
       <Pressable
         onPress={() => router.push({
           pathname: ROUTES.QUOTERS.DETAIL,
-          params: { id: item.referredId }
+          params: { id: item.quoterId }
         })}
-        style={styles.referralContent}
+        style={styles.quoterContent}
       >
-        <View style={styles.referralHeader}>
+        <View style={styles.quoterHeader}>
 
           <IconContainer
             icon="person-outline"
             size={24}
           />
-          <View style={styles.referralInfo}>
+          <View style={styles.quoterInfo}>
 
             <View style={styles.nameContainer}>
               <ThemedText variant="subTitleBold">
-                {item.referredCarData.brand} {' '}
+                {item.quoterCarData.brand} {' '}
                 <ThemedText variant="subTitleBold" color={themeColors.textColorAccent}>
-                  {item.referredCarData.model}
+                  {item.quoterCarData.model}
                 </ThemedText>
               </ThemedText>
 
@@ -198,13 +198,13 @@ export default function QuotersScreen() {
             <View style={styles.statusContainer}>
               <View style={[
                 styles.statusBadge,
-                { backgroundColor: getStatusColor(normalizeStatus(item.referredStatus)) }
+                { backgroundColor: getStatusColor(normalizeStatus(item.quoterStatus)) }
               ]}>
                 <ThemedText
                   variant="paragraph"
-                  style={{ color: getTextColor(normalizeStatus(item.referredStatus)) }}
+                  style={{ color: getTextColor(normalizeStatus(item.quoterStatus)) }}
                 >
-                  {item.referredStatus}
+                  {item.quoterStatus}
                 </ThemedText>
               </View>
 
@@ -216,7 +216,7 @@ export default function QuotersScreen() {
                   Vehiculo:
                 </ThemedText>
                 <ThemedText variant="paragraph">
-                  {item.referredCarData.ppu}
+                  {item.quoterCarData.ppu}
                 </ThemedText>
               </View>
             </View>
@@ -251,7 +251,7 @@ export default function QuotersScreen() {
 
       <View style={styles.resultsContainer}>
         <ThemedText variant="paragraph">
-          {referrals.length} resultados
+          {quoters.length} resultados
         </ThemedText>
 
         <Pressable
@@ -279,9 +279,9 @@ export default function QuotersScreen() {
       headerComponent={HeaderComponent}
     >
       <FlatList
-        data={referrals}
-        renderItem={({ item, index }) => (<ReferralItem item={item} index={index} isLast={index === referrals.length - 1} />)}
-        keyExtractor={(item) => item.referredId}
+        data={quoters}
+        renderItem={({ item, index }) => (<QuoterItem item={item} index={index} isLast={index === quoters.length - 1} />)}
+        keyExtractor={(item) => item.quoterId}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         style={[styles.list, { borderTopColor: themeColors.borderBackgroundColor }]}
@@ -382,17 +382,17 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 16,
   },
-  referralItem: {
+  quoterItem: {
     borderBottomWidth: 1,
   },
-  referralContent: {
+  quoterContent: {
     paddingVertical: 16,
   },
-  referralHeader: {
+  quoterHeader: {
     flexDirection: 'row',
     gap: 10,
   },
-  referralInfo: {
+  quoterInfo: {
     flex: 1,
   },
   nameContainer: {

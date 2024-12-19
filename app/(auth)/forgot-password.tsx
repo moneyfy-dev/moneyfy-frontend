@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View, Alert } from 'react-native';
-import { ThemedLayout } from '@/shared/components/ThemedLayout';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { ThemedInput } from '@/shared/components/ThemedInput';
+import { ThemedLayout } from '@/shared/components/layouts/ThemedLayout';
+import { ThemedText } from '@/shared/components/ui/ThemedText';
+import { ThemedInput } from '@/shared/components/ui/ThemedInput';
 import { validateEmail } from '@/shared/utils/validations';
 import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { useRouter } from 'expo-router';
-import { ThemedButton } from '@/shared/components/ThemedButton';
+import { ThemedButton } from '@/shared/components/ui/ThemedButton';
 import { Ionicons } from '@expo/vector-icons';
-import { MessageModal } from '@/shared/components/MessageModal';
+import { MessageModal } from '@/shared/components/modals/MessageModal';
 
 export default function ForgotPasswordScreen() {
     const [email, setEmail] = useState('');
