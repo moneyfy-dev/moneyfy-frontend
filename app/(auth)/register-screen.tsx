@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, Link } from 'expo-router';
-import { ROUTES } from '@/core/types';
+import { RegisterRequest, ROUTES } from '@/core/types';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, MessageModal } from '@/shared/components';
-import { register } from '@/core/services';
+import { authService } from '@/core/services';
 import { validateEmail, validatePassword, validateName, sanitizeName } from '@/shared/utils/validations';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -128,13 +128,15 @@ export default function RegisterScreen() {
         }
 
         try {
-            const response = await register(
-                sanitizedNombre, 
-                sanitizedApellido, 
-                email.trim(), 
-                password,
-                referralCode.trim() || undefined
-            );
+            const formData: RegisterRequest = {
+                name: sanitizedNombre,
+                surname: sanitizedApellido,
+                email: email.trim(),
+                password: password,
+                referralCode: referralCode.trim() || undefined
+            };
+
+            const response = await authService.register(formData);
             
             if (response.status === 200) {
                 router.push({

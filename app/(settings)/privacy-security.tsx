@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, Href } from 'expo-router';
-import { ROUTES } from '@/core/types/routes';
+import { ROUTES } from '@/core/types/utils/routes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleSheet, View, Switch, TouchableOpacity } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';

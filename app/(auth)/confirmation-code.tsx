@@ -1,16 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ROUTES } from '@/core/types';
+import { ROUTES, ConfirmationFlowType } from '@/core/types';
 import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, MessageModal } from '@/shared/components';
-import { confirmRegistration, resendConfirmationCode, confirmDeviceChange } from '@/core/services';
 import { useAuth } from '@/core/context';
 
 export default function ConfirmationCodeScreen() {
     const route = useLocalSearchParams();
-    const { email, flow } = route;
-    const { updateUserData } = useAuth();
+    const { email, flow, newPassword } = route;
+    const { confirmCode, resendCode } = useAuth();
     const router = useRouter();
     const [code, setCode] = useState(['', '', '', '', '', '']);
     const inputRefs = useRef<Array<React.RefObject<TextInput>>>([
@@ -59,19 +58,22 @@ export default function ConfirmationCodeScreen() {
 
     const handleConfirmCode = async (code: string) => {
         try {
-            let response;
-            
-            if (flow === 'device-change') {
-                response = await confirmDeviceChange(email as string, code);
-                await updateUserData(response.data.user);
-                router.push(ROUTES.TABS.INDEX);
-            } else {
-                response = await confirmRegistration(email as string, code);
-                await updateUserData(response.data.user);
-                router.push(ROUTES.TABS.INDEX);
+            const response = await confirmCode(
+                email as string, 
+                code, 
+                flow as ConfirmationFlowType,
+                flow === 'restorePassword' ? JSON.parse(newPassword as string) : undefined
+            );
+
+            if (response.status === 200) {
+                if (flow === 'restorePassword') {
+                    router.replace(ROUTES.AUTH.LOGIN);
+                } else {
+                    router.replace(ROUTES.TABS.INDEX);
+                }
             }
-        } catch (error) {
-            setErrorMessage('Código inválido. Por favor intente nuevamente.');
+        } catch (error: any) {
+            setErrorMessage(error.message || 'Código inválido. Por favor intente nuevamente.');
             setIsErrorModalVisible(true);
         }
     };
@@ -83,22 +85,18 @@ export default function ConfirmationCodeScreen() {
         setResendTimer(60);
 
         try {
-            if(flow === 'device-change') {
-                const response = await resendConfirmationCode(email as string, 'changeDevice');
-                if (response.status === 200) {
-                    setSuccessMessage('Se ha enviado un nuevo código de confirmación.');
-                    setSuccessModalVisible(true);
-                }
-            } else {
-                const response = await resendConfirmationCode(email as string, 'registerUser');
-                if (response.status === 200) {
-                    setSuccessMessage('Se ha enviado un nuevo código de confirmación.');
-                    setSuccessModalVisible(true);
-                }
+            const response = await resendCode(
+                email as string, 
+                flow as ConfirmationFlowType
+            );
+
+            if (response.status === 200) {
+                setSuccessMessage('Se ha enviado un nuevo código de confirmación.');
+                setSuccessModalVisible(true);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error al reenviar el código:', error);
-            setErrorMessage('No se pudo reenviar el código. Inténtalo de nuevo.');
+            setErrorMessage(error.message || 'No se pudo reenviar el código. Inténtalo de nuevo.');
             setIsErrorModalVisible(true);
         }
     };

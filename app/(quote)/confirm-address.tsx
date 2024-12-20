@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ROUTES } from '@/core/types/routes';
+import { ROUTES } from '@/core/types/utils/routes';
 import { View, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, LoadingScreen, MessageModal } from '@/shared/components';

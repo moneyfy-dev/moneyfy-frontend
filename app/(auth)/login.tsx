@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Dimensions, ScrollView, Animated } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { ROUTES } from '@/core/types';
-import { login } from '@/core/services';
 import { ThemedView, ThemedText, ThemedInput, ThemedButton, MessageModal, Logo, BackgroundCircles, LoadingScreen } from '@/shared/components';
 import { validateEmail, validatePassword } from '@/shared/utils/validations';
 import { useThemeColor, useCardVisibility } from '@/shared/hooks';
@@ -13,7 +12,7 @@ const { height } = Dimensions.get('window');
 
 export default function LoginScreen() {
     const [isLoading, setIsLoading] = useState(false);
-    const { isVisible, showCard, hideCard } = useCardVisibility();
+    //const { isVisible, showCard, hideCard } = useCardVisibility();
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [email, setEmail] = useState('');
@@ -27,7 +26,6 @@ export default function LoginScreen() {
     const router = useRouter();
     const [touchedFields, setTouchedFields] = useState({ email: false, password: false });
     const [errorMessage, setErrorMessage] = useState('');
-    const [serviceLog, setServiceLog] = useState<string>('Iniciando logs...\n');
 
     const showLoginForm = () => {
         setIsFormVisible(true);
@@ -63,62 +61,47 @@ export default function LoginScreen() {
 
     const validateField = (field: 'email' | 'password') => {
         if (field === 'email' && touchedFields.email) {
-            if (!validateEmail(email)) {
-                setEmailError('Email inválido');
-            } else {
-                setEmailError('');
-            }
+            setEmailError(validateEmail(email) ? '' : 'Email inválido');
         }
         if (field === 'password' && touchedFields.password) {
-            if (!validatePassword(password)) {
-                setPasswordError('La contraseña debe tener al menos 8 caracteres');
-            } else {
-                setPasswordError('');
-            }
+            setPasswordError(validatePassword(password) ? '' : 'La contraseña debe tener al menos 8 caracteres');
         }
     };
 
     const handleLogin = async () => {
-        setTouchedFields({ email: true, password: true });
-        validateField('email');
-        validateField('password');
-
-        if (!validateEmail(email) || !validatePassword(password)) {
-            setErrorMessage('Por favor, corrija los errores en el formulario.');
-            setIsErrorModalVisible(true);
-            return;
-        }
-
         try {
-            setIsLoading(true);
-            const response = await login(email, password);
-            if (response && response.data) {
+            setTouchedFields({ email: true, password: true });
+            validateField('email');
+            validateField('password');
 
-                await loginContext(response.data);
-                router.replace(ROUTES.TABS.INDEX);
-            } else {
-                throw new Error('Respuesta inesperada del servidor');
+            if (!validateEmail(email) || !validatePassword(password)) {
+                setErrorMessage('Por favor, corrija los errores en el formulario.');
+                setIsErrorModalVisible(true);
+                return;
             }
+
+            setIsLoading(true);
+            await loginContext({ 
+                data: {
+                    user: null,
+                    tokens: {
+                        jwtRefresh: '',
+                        jwtSession: ''
+                    }
+                },
+                message: '',
+                status: 200
+            });
+            router.replace(ROUTES.TABS.INDEX);
+
         } catch (error: any) {
-            if (error.response?.status === 226) {
+            if (error.status === 226) {
                 router.push({
                     pathname: ROUTES.AUTH.CONFIRMATION,
-                    params: {
-                        email: email,
-                        flow: 'device-change'
-                    }
+                    params: { email, flow: 'device-change' }
                 });
-            } else if (error.response?.status === 403) {
-                setErrorMessage(error.response.status + ' ' + error.message);
-                setIsErrorModalVisible(true);
-            } else if (error.response?.status === 404) {
-                setErrorMessage(error.response.status + ' ' + error.message);
-                setIsErrorModalVisible(true);
-            } else if (error.response?.status === 400) {
-                setErrorMessage(error.response.status + ' ' + error.message);
-                setIsErrorModalVisible(true);
             } else {
-                setErrorMessage(error.response.status + ' ' + error.message);
+                setErrorMessage(error.message || 'Error al iniciar sesión');
                 setIsErrorModalVisible(true);
             }
         } finally {

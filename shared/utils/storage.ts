@@ -3,7 +3,7 @@ import { STORAGE_KEYS } from '@/core/types';
 
 export const storage = {
   // Métodos genéricos
-  async get<T>(key: string): Promise<T | null> {
+  async get<T>(key: keyof typeof STORAGE_KEYS | string): Promise<T | null> {
     try {
       const value = await AsyncStorage.getItem(key);
       return value ? JSON.parse(value) : null;
@@ -86,5 +86,7 @@ export const storage = {
       const sessionKeys = Object.values(STORAGE_KEYS.SESSION);
       await storage.multiRemove(sessionKeys);
     },
-  }
+  },
+
+  STORAGE_KEYS,
 };

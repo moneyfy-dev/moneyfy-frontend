@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ROUTES } from '@/core/types/routes';
+import { ROUTES } from '@/core/types/utils/routes';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout,ThemedText, ThemedInput, ThemedButton, NoAccountWarning, LoadingScreen, MessageModal } from '@/shared/components';
 import { validateRUT } from '@/shared/utils/validations';

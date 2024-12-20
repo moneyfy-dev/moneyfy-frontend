@@ -7,7 +7,7 @@ import { Stack } from 'expo-router';
 import { screens } from '@/core/types';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/shared/hooks';
-import { ThemeProvider, OnboardingProvider, AuthProvider, useAuth } from '@/core/context';
+import { ThemeProvider, OnboardingProvider, AuthProvider, useAuth, UserProvider } from '@/core/context';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -41,15 +41,17 @@ export default function RootLayout() {
       <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <SafeAreaProvider>
           <AuthProvider>
-            <PersistentAuthWrapper>
-              <OnboardingProvider>
-                <Stack initialRouteName={isAuthenticated ? '(tabs)' : '(auth)'}>
+            <UserProvider>
+              <PersistentAuthWrapper>
+                <OnboardingProvider>
+                  <Stack initialRouteName={isAuthenticated ? '(tabs)' : '(auth)'}>
                   {screens.map(screen => (
                     <Stack.Screen key={screen.name} name={screen.name} options={screen.options} />
                   ))}
                 </Stack>
               </OnboardingProvider>
             </PersistentAuthWrapper>
+            </UserProvider>
           </AuthProvider>
         </SafeAreaProvider>
       </NavigationThemeProvider>

@@ -16,7 +16,6 @@ const AuthContext = createContext<AuthContextProps>({
   updateUserData: async () => {},
   isPersistentAuthRequired: false,
   handlePersistentAuthSuccess: async () => {},
-  userEmail: '',
   isPersistentAuthConfigured: false,
   checkPersistentAuth: async () => false,
   checkAuthStatus: async () => {},
@@ -28,7 +27,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isPersistentAuthRequired, setIsPersistentAuthRequired] = useState<boolean>(false);
-  const [userEmail, setUserEmail] = useState('');
   const [isPersistentAuthConfigured, setIsPersistentAuthConfigured] = useState(false);
   const [lastHydrationTime, setLastHydrationTime] = useState<Date | null>(null);
 
@@ -236,7 +234,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateUserData,
       isPersistentAuthRequired,
       handlePersistentAuthSuccess,
-      userEmail,
       isPersistentAuthConfigured,
       checkPersistentAuth,
       checkAuthStatus,
