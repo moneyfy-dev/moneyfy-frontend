@@ -6,6 +6,7 @@ export * from './auth/restorePassword';
 export * from './user/user';
 export * from './user/useNotifications';
 export * from './user/useAccounts';
+export * from './user/settings';
 export * from './quote/vehicles';
 export * from './quoter/quoter';
 export * from './quote/quote';

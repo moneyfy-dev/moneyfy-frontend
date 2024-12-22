@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import Colors from '@/constants/Colors';
-import { ThemedText } from '@/shared/components';
+import { ThemedText } from '../ui/ThemedText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 

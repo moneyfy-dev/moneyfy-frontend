@@ -1,6 +1,7 @@
 export * from './api';
 export * from './auth';
 export * from './user';
+export * from './settings';
 export * from './accountService';
 export * from './vehicleService';
 export * from './notificationService';

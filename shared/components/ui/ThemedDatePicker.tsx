@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTheme } from '@/core/context';
 import { View, StyleSheet, Platform } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedInput } from '@/shared/components';
+import { ThemedInput } from '../ui/ThemedInput';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 interface ThemedDatePickerProps {

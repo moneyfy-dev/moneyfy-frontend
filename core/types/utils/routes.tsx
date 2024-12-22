@@ -10,6 +10,7 @@ export const ROUTES = {
     REGISTER: '/(auth)/register-screen',
     CONFIRMATION: '/(auth)/confirmation-code',
     FORGOT_PASSWORD: '/(auth)/forgot-password',
+    RESET_PASSWORD: '/(auth)/reset-password',
     PERSISTENT_AUTH: '/(auth)/persistent-auth',
   },
   WALLET: {

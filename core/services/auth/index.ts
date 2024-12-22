@@ -51,14 +51,6 @@ export const authService = {
         return await api.post('/auth/confirm/device/change', { email, code });
       case 'registerUser':
         return await api.post('/auth/confirm/registration', { email, code });
-      case 'restorePassword':
-        if (!newPassword) throw new Error('Password required for reset');
-        return await api.post('/auth/confirm/password/reset', {
-          email,
-          code,
-          newPwd: newPassword.pwd,
-          repeatedPwd: newPassword.repeatedPwd
-        });
       default:
         throw new Error('Invalid flow type');
     }

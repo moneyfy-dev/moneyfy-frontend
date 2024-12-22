@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@/shared/components';
+import { ThemedText } from '../ui/ThemedText';
 import { useThemeColor } from '@/shared/hooks';
 import { useRouter } from 'expo-router';
 

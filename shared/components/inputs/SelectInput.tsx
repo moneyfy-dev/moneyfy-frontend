@@ -2,7 +2,9 @@ import React, { forwardRef, useState } from 'react';
 import { SelectInputProps } from '@/core/types';
 import { View, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { BaseInput, ThemedText, ThemedButton } from '@/shared/components';
+import { BaseInput } from '../inputs/BaseInput';
+import { ThemedText } from '../ui/ThemedText';
+import { ThemedButton } from '../ui/ThemedButton';
 import { Ionicons } from '@expo/vector-icons';
 
 export const SelectInput = forwardRef<any, SelectInputProps>(

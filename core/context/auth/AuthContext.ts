@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { ConfirmationFlowType, LoginResponse } from '@/core/types';
+import { ConfirmationFlowType, LoginResponse, PasswordResetResponse } from '@/core/types';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -14,16 +14,22 @@ interface AuthContextType extends AuthState {
   handlePersistentAuthSuccess: () => Promise<void>;
   checkPersistentAuth: () => Promise<boolean>;
   checkAuthStatus: () => Promise<void>;
+  confirmPasswordReset: (
+    email: string, 
+    code: string,
+    newPwd: string,
+    repeatedPwd: string
+  ) => Promise<any>;
   confirmCode: (
     email: string, 
     code: string, 
-    flow: ConfirmationFlowType,
-    newPassword?: { pwd: string, repeatedPwd: string }
+    flow: ConfirmationFlowType
   ) => Promise<any>;
   resendCode: (
     email: string, 
     type: ConfirmationFlowType
   ) => Promise<any>;
+  requestPasswordReset: (email: string) => Promise<PasswordResetResponse>;
 }
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType);

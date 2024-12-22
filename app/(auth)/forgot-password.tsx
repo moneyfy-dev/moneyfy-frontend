@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { useRouter } from 'expo-router';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { ROUTES } from '@/core/types';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, MessageModal } from '@/shared/components';
 import { validateEmail } from '@/shared/utils/validations';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/core/context';
 
 export default function ForgotPasswordScreen() {
     const [email, setEmail] = useState('');
@@ -16,6 +18,7 @@ export default function ForgotPasswordScreen() {
     const router = useRouter();
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+    const { requestPasswordReset } = useAuth();
 
     const handleEmailChange = (text: string) => {
         setEmail(text);
@@ -41,12 +44,27 @@ export default function ForgotPasswordScreen() {
             setIsErrorModalVisible(true);
             return;
         }
+
+        try {
+            const response = await requestPasswordReset(email);
+            
+            if (response.status === 200) {
+                // Navegar a la pantalla de reset con el email
+                router.push({
+                    pathname: ROUTES.AUTH.RESET_PASSWORD,
+                    params: { email }
+                });
+            }
+        } catch (error: any) {
+            setErrorMessage(error.message || 'Error al enviar el código de recuperación');
+            setIsErrorModalVisible(true);
+        }
     };
 
     return (
         <ThemedLayout>
             <View style={styles.content}>
-                <ThemedText variant='title' marginBottom={4}>
+                <ThemedText variant='title' textAlign='center' marginBottom={4}>
                     Recuperar contraseña
                 </ThemedText>
                 
@@ -60,7 +78,7 @@ export default function ForgotPasswordScreen() {
 
                 <View style={styles.iconContainer}>
                     <Ionicons
-                        name="lock-open-outline"
+                        name="lock-closed-outline"
                         size={64}
                         color={themeColors.textColorAccent}
                     />
@@ -133,7 +151,6 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
     content: {
         flex: 1,
-        alignItems: 'center',
     },
     iconContainer: {
         marginBottom: 32,
@@ -143,7 +160,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'flex-start',
         marginTop: 16,
-        paddingHorizontal: 16,
     },
     infoIcon: {
         marginRight: 8,

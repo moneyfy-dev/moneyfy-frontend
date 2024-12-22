@@ -14,4 +14,10 @@ export interface LoginResponse {
     status: number;
   }
 
+  export interface PasswordResetResponse {
+    message: string;
+    status?: number;
+    data?: any;
+  }
+
   export type ConfirmationFlowType = 'changeDevice' | 'registerUser' | 'restorePassword';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import { Modal } from '@/shared/components';
+import { Modal } from './Modal';
 
 interface FiltersModalProps {
   visible: boolean;

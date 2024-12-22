@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TouchableOpacity, Animated } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedLayout, ThemedText, ThemedButton } from '@/shared/components';
+import { ThemedLayout } from '../layouts/ThemedLayout';
+import { ThemedText } from '../ui/ThemedText';
+import { ThemedButton } from '../ui/ThemedButton';
 import { Ionicons } from '@expo/vector-icons';
 
 interface SuccessAnimationProps {
@@ -9,7 +11,7 @@ interface SuccessAnimationProps {
   onBackPress: () => void;
 }
 
-const SuccessAnimation: React.FC<SuccessAnimationProps> = ({ message, onBackPress }) => {
+export const SuccessAnimation: React.FC<SuccessAnimationProps> = ({ message, onBackPress }) => {
   const themeColors = useThemeColor();
   const scaleValue = new Animated.Value(0);
   
@@ -55,5 +57,3 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
 });
-
-export default SuccessAnimation;

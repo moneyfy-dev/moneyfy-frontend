@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Modal, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedText, ThemedButton } from '@/shared/components';
+import { ThemedText } from '../ui/ThemedText';
+import { ThemedButton } from '../ui/ThemedButton';
 
 interface ProfilePictureModalProps {
   isVisible: boolean;

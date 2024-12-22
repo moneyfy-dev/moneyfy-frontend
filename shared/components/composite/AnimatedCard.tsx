@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Animated, PanResponder, Dimensions, ViewStyle, StyleSheet, TouchableWithoutFeedback } from 'react-native';
-import { ThemedView } from '@/shared/components';
+import { ThemedView } from '../ui/ThemedView';
 import { useThemeColor } from '@/shared/hooks';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');

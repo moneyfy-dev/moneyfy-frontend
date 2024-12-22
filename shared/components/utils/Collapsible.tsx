@@ -2,7 +2,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { PropsWithChildren, useState } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 
-import { ThemedView, ThemedText } from '@/shared/components';
+import { ThemedView } from '../ui/ThemedView';
+import { ThemedText } from '../ui/ThemedText';
 import { useThemeColor } from '@/shared/hooks';
 
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {

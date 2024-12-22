@@ -98,7 +98,7 @@ export default function LoginScreen() {
             if (error.status === 226) {
                 router.push({
                     pathname: ROUTES.AUTH.CONFIRMATION,
-                    params: { email, flow: 'device-change' }
+                    params: { email, flow: 'changeDevice' }
                 });
             } else {
                 setErrorMessage(error.message || 'Error al iniciar sesión');

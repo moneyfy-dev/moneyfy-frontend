@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedText } from '@/shared/components';
+import { ThemedText } from '../ui/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 interface ModalProps {
   visible: boolean;

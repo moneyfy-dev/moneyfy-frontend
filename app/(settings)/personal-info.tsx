@@ -1,276 +1,207 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedLayout, ThemedDatePicker, ThemedText, ThemedInput, ThemedButton, ProfilePictureModal, AvatarIcon, MessageModal } from '@/shared/components';
+import { ThemedLayout, ThemedDatePicker, ThemedInput, ThemedButton, ProfilePictureModal, AvatarIcon, MessageModal } from '@/shared/components';
 import { validateName, validatePhoneNumber, validateAddress } from '@/shared/utils/validations';
-import { useAuth } from '@/core/context';
-import axios from 'axios';
-import { updateUserProfile } from '@/core/services';
-import * as FileSystem from 'expo-file-system';
+import { useSettings } from '@/core/context';
+import { PersonalData } from '@/core/types';
 import { Ionicons } from '@expo/vector-icons';
 
+interface FormData extends Omit<PersonalData, 'dateOfBirth' | 'email' | 'enable'> {
+    dateOfBirth: Date | null;
+}
+
+interface FormErrors {
+    name: string;
+    surname: string;
+    phone: string;
+    address: string;
+}
+
 export default function PersonalInfoScreen() {
-    const { user, updateUserData } = useAuth();
+    const { personalInfo, updatePersonalInfo } = useSettings();
     const themeColors = useThemeColor();
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [successModalVisible, setSuccessModalVisible] = useState(false);
-    const [personalInfo, setPersonalInfo] = useState({
-        nombre: '',
-        apellido: '',
-        telefono: '',
-        direccion: '',
-        fechaNacimiento: new Date(),
-        profilePicture: '',
-    });
-    const [errors, setErrors] = useState({
-        nombre: '',
-        apellido: '',
-        telefono: '',
-        direccion: '',
-    });
     const [isModalVisible, setModalVisible] = useState(false);
-
-    useEffect(() => {
-        if (user) {
-            setPersonalInfo({
-                nombre: user.personalData.name || '',
-                apellido: user.personalData.surname || '',
-                telefono: user.personalData.phone || '',
-                direccion: user.personalData.address || '',
-                fechaNacimiento: user.personalData.dateOfBirth ? new Date(user.personalData.dateOfBirth) : new Date(),
-                profilePicture: user.personalData.profilePicture ? `data:image/jpeg;base64,${user.personalData.profilePicture}` : '',
-            });
-        }
-    }, [user]);
-
-    const pickImage = async () => {
-        setModalVisible(false);
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-        });
     
-        if (!result.canceled && result.assets && result.assets.length > 0) {
-            const selectedAsset = result.assets[0];
-            const manipResult = await ImageManipulator.manipulateAsync(
-                selectedAsset.uri,
-                [{ resize: { width: 300 } }],
-                { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
-            );
-    
-            setPersonalInfo(prev => ({ ...prev, profilePicture: manipResult.uri }));
-        }
-    };
+    const [formData, setFormData] = useState<FormData>({
+        name: personalInfo.name || '',
+        surname: personalInfo.surname || '',
+        phone: personalInfo.phone || '',
+        address: personalInfo.address || '',
+        dateOfBirth: personalInfo.dateOfBirth ? new Date(personalInfo.dateOfBirth) : null,
+        profilePicture: personalInfo.profilePicture || '',
+    });
 
-    const validateForm = () => {
-        let isValid = true;
-        const newErrors = {
-            nombre: '',
-            apellido: '',
-            telefono: '',
-            direccion: '',
+    const [errors, setErrors] = useState<FormErrors>({
+        name: '',
+        surname: '',
+        phone: '',
+        address: '',
+    });
+
+    const handleSave = async () => {
+        const newErrors: FormErrors = {
+            name: '',
+            surname: '',
+            phone: '',
+            address: '',
         };
 
-        if (!validateName(personalInfo.nombre)) {
-            newErrors.nombre = 'Nombre inválido';
-            isValid = false;
+        let hasErrors = false;
+
+        if (!validateName(formData.name)) {
+            newErrors.name = 'Nombre inválido';
+            hasErrors = true;
         }
 
-        if (!validateName(personalInfo.apellido)) {
-            newErrors.apellido = 'Apellido inválido';
-            isValid = false;
+        if (!validateName(formData.surname)) {
+            newErrors.surname = 'Apellido inválido';
+            hasErrors = true;
         }
 
-        if (!validatePhoneNumber(personalInfo.telefono)) {
-            newErrors.telefono = 'Número de teléfono inválido';
-            isValid = false;
+        if (!validatePhoneNumber(formData.phone)) {
+            newErrors.phone = 'Teléfono inválido';
+            hasErrors = true;
         }
 
-        if (!validateAddress(personalInfo.direccion)) {
-            newErrors.direccion = 'La dirección inválida';
-            isValid = false;
+        if (!validateAddress(formData.address)) {
+            newErrors.address = 'Dirección inválida';
+            hasErrors = true;
         }
 
         setErrors(newErrors);
-        return isValid;
-    };
 
-    const handleSave = async () => {
-        if (!validateForm()) {
-            setErrorMessage('Por favor, corrija los errores en el formulario.');
-            setIsErrorModalVisible(true);
+        if (hasErrors) {
             return;
         }
 
         try {
-            let profilePicture = personalInfo.profilePicture;
-
-            // Si la imagen de perfil no ha cambiado y está en base64, convertirla a un archivo JPEG
-            if (profilePicture.startsWith('data:image')) {
-                const base64Data = profilePicture.split(',')[1];
-                const filePath = `${FileSystem.documentDirectory}profilePicture.jpg`;
-                await FileSystem.writeAsStringAsync(filePath, base64Data, { encoding: FileSystem.EncodingType.Base64 });
-                profilePicture = filePath;
-            } else if (!profilePicture) {
-                // Si el usuario ha eliminado la imagen, enviar una cadena vacía
-                profilePicture = '';
-            }
-
-            const userData: {
-                name: string;
-                surname: string;
-                phone: string;
-                address: string;
-                dateOfBirth: string;
-                profilePicture?: string;
-            } = {
-                name: personalInfo.nombre,
-                surname: personalInfo.apellido,
-                phone: personalInfo.telefono,
-                address: personalInfo.direccion,
-                dateOfBirth: personalInfo.fechaNacimiento.toISOString().split('T')[0],
-            };
+            await updatePersonalInfo({
+                ...formData,
+                dateOfBirth: formData.dateOfBirth?.toISOString() || '',
+                email: personalInfo.email,
+                enable: personalInfo.enable,
+            });
             
-            if (profilePicture !== '') {
-                userData.profilePicture = profilePicture;
-            }
-
-            const response = await updateUserProfile(userData);
-            
-            if (response && response.data && response.data.user) {
-                // Actualizar los datos del usuario en el contexto de autenticación
-                await updateUserData(response.data.user);
-                setSuccessMessage('Información personal actualizada correctamente');
-                setSuccessModalVisible(true);
-            } else {
-                throw new Error('Respuesta inesperada del servidor');
-            }
+            setSuccessMessage('Información personal actualizada correctamente');
+            setSuccessModalVisible(true);
         } catch (error) {
-            console.error('Error al actualizar la información personal:', error);
-            if (axios.isAxiosError(error)) {
-                console.error('Error response:', error.response?.data);
-                console.error('Error status:', error.response?.status);
-                console.error('Error headers:', error.response?.headers);
-            }
             setErrorMessage('No se pudo actualizar la información personal');
             setIsErrorModalVisible(true);
         }
     };
 
-    const handleDeleteProfilePicture = () => {
-        setPersonalInfo(prev => ({ ...prev, profilePicture: '' }));
-        setModalVisible(false); // Cierra el modal después de la acción
+    const handleImagePicker = async () => {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.5,
+            });
+
+            if (!result.canceled) {
+                const manipulatedImage = await ImageManipulator.manipulateAsync(
+                    result.assets[0].uri,
+                    [{ resize: { width: 300, height: 300 } }],
+                    { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+                );
+
+                setFormData(prev => ({
+                    ...prev,
+                    profilePicture: manipulatedImage.uri
+                }));
+                setModalVisible(false);
+            }
+        } catch (error) {
+            setErrorMessage('Error al procesar la imagen');
+            setIsErrorModalVisible(true);
+        }
     };
 
-    const thereIsprofilePicture = () => {
-        if (personalInfo.profilePicture !== '') {
-            setModalVisible(true);
-        } else {
-            pickImage();
-        }
-    }
-
-    const handleCloseModal = () => {
+    const handleDeleteImage = () => {
+        setFormData(prev => ({
+            ...prev,
+            profilePicture: ''
+        }));
         setModalVisible(false);
     };
 
     return (
-        <ThemedLayout padding={[0, 40]}>
+        <ThemedLayout>
             <View style={styles.content}>
                 <View style={styles.profileSection}>
-                    <TouchableOpacity onPress={thereIsprofilePicture} style={styles.profileImageContainer}>
-                        {personalInfo.profilePicture ? (
-                            <Image source={{ uri: personalInfo.profilePicture }} style={styles.profileImage} />
+                    <TouchableOpacity 
+                        style={styles.profileImageContainer}
+                        onPress={() => setModalVisible(true)}
+                    >
+                        {formData.profilePicture ? (
+                            <Image
+                                source={{ uri: formData.profilePicture }}
+                                style={styles.profileImage}
+                            />
                         ) : (
                             <AvatarIcon width={120} height={120} style={styles.profileImage} />
                         )}
-                        <View style={[styles.editButton, { backgroundColor: themeColors.buttonBackgroundColor }]}>
-                            <Ionicons name="camera-outline" size={22} color={themeColors.white} />
+                        <View style={[styles.editButton, { backgroundColor: themeColors.textColorAccent }]}>
+                            <Ionicons name="camera" size={20} color={themeColors.textColor} />
                         </View>
                     </TouchableOpacity>
-                    <View>
-                        <ThemedText variant="title" textAlign="center" marginBottom={4}>{personalInfo.nombre} {personalInfo.apellido}</ThemedText>
-                        <ThemedText variant="paragraph" textAlign="center">{user?.personalData.email || 'No email'}</ThemedText>
-                    </View>
                 </View>
+
                 <ThemedInput
                     label="Nombre"
-                    value={personalInfo.nombre}
-                    onChangeText={(value) => setPersonalInfo({ ...personalInfo, nombre: value })}
-                    placeholder="Ingrese su nombre"
-                    error={errors.nombre}
+                    value={formData.name}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
+                    error={errors.name}
                 />
 
                 <ThemedInput
                     label="Apellido"
-                    value={personalInfo.apellido}
-                    onChangeText={(value) => setPersonalInfo({ ...personalInfo, apellido: value })}
-                    placeholder="Ingrese su apellido"
-                    error={errors.apellido}
+                    value={formData.surname}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, surname: text }))}
+                    error={errors.surname}
                 />
 
                 <ThemedInput
                     label="Teléfono"
-                    value={personalInfo.telefono}
-                    onChangeText={(value) => setPersonalInfo({ ...personalInfo, telefono: value })}
-                    placeholder="+56912345678"
+                    value={formData.phone}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))}
+                    error={errors.phone}
                     keyboardType="phone-pad"
-                    error={errors.telefono}
                 />
 
                 <ThemedInput
                     label="Dirección"
-                    value={personalInfo.direccion}
-                    onChangeText={(value) => {
-                        setPersonalInfo({ ...personalInfo, direccion: value });
-                        if (value && !validateAddress(value)) {
-                            setErrors(prev => ({ ...prev, direccion: 'La dirección solo puede contener letras, números, espacios, comas y puntos' }));
-                        } else {
-                            setErrors(prev => ({ ...prev, direccion: '' }));
-                        }
-                    }}
-                    placeholder="Ingrese su dirección"
-                    error={errors.direccion}
+                    value={formData.address}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, address: text }))}
+                    error={errors.address}
                 />
 
                 <ThemedDatePicker
-                    label="Fecha de Nacimiento"
-                    value={personalInfo.fechaNacimiento}
-                    onChange={(date) => setPersonalInfo({ ...personalInfo, fechaNacimiento: date })}
-                    placeholder="Seleccione su fecha de nacimiento"
+                    label="Fecha de nacimiento"
+                    value={formData.dateOfBirth}
+                    onChange={(date) => setFormData(prev => ({ ...prev, dateOfBirth: date }))}
                 />
 
+                <ThemedButton
+                    text="Guardar cambios"
+                    onPress={handleSave}
+                    style={styles.Button}
+                />
             </View>
-            <ThemedButton
-                text="Guardar"
-                onPress={handleSave}
-            />
+
             <ProfilePictureModal
                 isVisible={isModalVisible}
-                onClose={handleCloseModal}
-                onDelete={handleDeleteProfilePicture}
-                onChange={pickImage}
-            />
-
-            <MessageModal
-                isVisible={isErrorModalVisible}
-                onClose={() => setIsErrorModalVisible(false)}
-                title="Error"
-                message={errorMessage}
-                icon={{
-                    name: "alert-circle-outline",
-                    color: themeColors.status.error
-                }}
-                primaryButton={{
-                    text: "Entendido",
-                    onPress: () => setIsErrorModalVisible(false)
-                }}
+                onClose={() => setModalVisible(false)}
+                onDelete={handleDeleteImage}
+                onChange={handleImagePicker}
             />
 
             <MessageModal
@@ -285,6 +216,21 @@ export default function PersonalInfoScreen() {
                 primaryButton={{
                     text: "Entendido",
                     onPress: () => setSuccessModalVisible(false)
+                }}
+            />
+
+            <MessageModal
+                isVisible={isErrorModalVisible}
+                onClose={() => setIsErrorModalVisible(false)}
+                title="Error"
+                message={errorMessage}
+                icon={{
+                    name: "alert-circle-outline",
+                    color: themeColors.status.error
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsErrorModalVisible(false)
                 }}
             />
         </ThemedLayout>
@@ -323,5 +269,8 @@ const styles = StyleSheet.create({
         position: 'absolute',
         right: 0,
         bottom: 0,
+    },
+    Button: {
+        marginTop: 24,
     },
 });

@@ -1,6 +1,10 @@
 import React, { forwardRef } from 'react';
 import { TextInput } from 'react-native';
-import { ThemedTextInput, PasswordInput, SelectInput, RutInput, SearchInput } from '@/shared/components';
+import { ThemedTextInput } from '../inputs/TextInput';
+import { PasswordInput } from '../inputs/PasswordInput';
+import { SelectInput } from '../inputs/SelectInput';
+import { RutInput } from '../inputs/RutInput';
+import { SearchInput } from '../inputs/SearchInput';
 import { ThemedInputCommonProps } from '@/core/types';
 
 interface ThemedInputProps extends ThemedInputCommonProps {

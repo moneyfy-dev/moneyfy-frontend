@@ -143,7 +143,7 @@ export default function RegisterScreen() {
                     pathname: ROUTES.AUTH.CONFIRMATION,
                     params: { 
                         email: email,
-                        flow: 'regular-register'
+                        flow: 'registerUser'
                     }
                 });
             }

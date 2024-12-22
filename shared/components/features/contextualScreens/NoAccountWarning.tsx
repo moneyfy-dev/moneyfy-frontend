@@ -2,7 +2,9 @@ import React from 'react';
 import { useRouter } from 'expo-router';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedText, ThemedButton, LottieAnimation } from '@/shared/components';
+import { ThemedText } from '../../ui/ThemedText';
+import { ThemedButton } from '../../ui/ThemedButton';
+import { LottieAnimation } from '../../animations/LottieAnimation';
 
 const { width } = Dimensions.get('window');
 

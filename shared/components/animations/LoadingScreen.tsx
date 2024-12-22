@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedView, ThemedText, LottieAnimation } from '@/shared/components';
+import { ThemedView } from '../ui/ThemedView';
+import { ThemedText } from '../ui/ThemedText';
+import { LottieAnimation } from '../animations/LottieAnimation';
 
 export const LoadingScreen = () => {
   const themeColors = useThemeColor();

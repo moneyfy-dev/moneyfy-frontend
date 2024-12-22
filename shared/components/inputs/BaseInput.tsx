@@ -1,7 +1,7 @@
 import React from 'react';
 import { BaseInputProps } from '@/core/types';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { ThemedText } from '@/shared/components';
+import { ThemedText } from '../ui/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 
 interface Props extends BaseInputProps {

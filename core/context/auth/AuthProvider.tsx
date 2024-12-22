@@ -141,15 +141,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsPersistentAuthRequired(false);
     setIsAuthenticated(true);
   }, []);
+  
+    const requestPasswordReset = async (email: string) => {
+      try {
+        const response = await authService.requestPasswordReset(email);
+        return response;
+      } catch (error) {
+        throw error;
+      }
+    };
+
+  const confirmPasswordReset = async (
+    email: string, 
+    code: string, 
+    newPwd: string,
+    repeatedPwd: string
+  ) => {
+    console.log('confirmPasswordReset', email, code, newPwd, repeatedPwd);
+    try {
+      const response = await authService.confirmPasswordReset({
+        email,
+        code,
+        newPwd: newPwd,
+        repeatedPwd: repeatedPwd
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
 
   const confirmCode = async (
     email: string, 
     code: string, 
     flow: ConfirmationFlowType,
-    newPassword?: { pwd: string, repeatedPwd: string }
   ) => {
     try {
-      const response = await authService.confirmCode(email, code, flow, newPassword);
+      const response = await authService.confirmCode(email, code, flow );
       return response;
     } catch (error) {
       throw error;
@@ -177,8 +205,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isPersistentAuthConfigured,
         checkPersistentAuth,
         checkAuthStatus,
+        requestPasswordReset,
+        confirmPasswordReset,
         confirmCode,
-        resendCode
+        resendCode,
       }}
     >
       {children}

@@ -7,7 +7,7 @@ import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, AvatarIcon, LoadingScreen, Onboarding } from '@/shared/components';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LineChart } from 'react-native-chart-kit';
-import { useAuth, useOnboarding } from '@/core/context';
+import { useUser, useOnboarding } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 
 const FORCE_SHOW_ONBOARDING = true; // Mantenemos esto para desarrollo
@@ -15,7 +15,7 @@ const FORCE_SHOW_ONBOARDING = true; // Mantenemos esto para desarrollo
 export default function HomeScreen() {
   const themeColors = useThemeColor();
   const router = useRouter();
-  const { user, updateUserData, hydrateUserData } = useAuth();
+  const { user, updateUserData, hydrateUserData } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const typedUser = user as User;
   const [showBalance, setShowBalance] = useState(false);

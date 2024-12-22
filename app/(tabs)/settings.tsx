@@ -4,13 +4,13 @@ import { ROUTES } from '@/core/types';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, LogoutModal } from '@/shared/components';
-import { useAuth } from '@/core/context';
+import { useAuth, useUser } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 
-const ConfigScreen = () => {
+export default function SettingsScreen() {
   const themeColors = useThemeColor();
   const router = useRouter();
-  const { logout, user } = useAuth(); // Cambiamos userEmail por user
+  const { logout } = useAuth();
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
 
   const handleLogout = () => {
@@ -144,5 +144,3 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   }
 });
-
-export default ConfigScreen;

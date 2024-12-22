@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { View, StyleSheet, Dimensions, FlatList } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedText, ThemedButton, LottieAnimation } from '@/shared/components';
+import { ThemedText } from '../../ui/ThemedText';
+import { ThemedButton } from '../../ui/ThemedButton';
+import { LottieAnimation } from '../../animations/LottieAnimation';
 import { useOnboarding } from '@/core/context';
 import { animations } from '@/assets/animations';
 

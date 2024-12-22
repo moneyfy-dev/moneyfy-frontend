@@ -14,7 +14,7 @@ export interface ThemedInputCommonProps extends TextInputProps {
   icon?: string;
   onIconPress?: () => void;
   style?: any;
-  placeholder: string;
+  placeholder?: string;
   value: string;
   onChangeText: (text: string) => void;
 }

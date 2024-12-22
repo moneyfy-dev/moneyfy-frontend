@@ -2,7 +2,7 @@ import React from 'react';
 import { QuoterPersonalData, QuoterAddressData } from '@/core/types';
 import { View, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedText } from '@/shared/components';
+import { ThemedText } from '../ui/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 
 interface QuoterInfoCardProps {

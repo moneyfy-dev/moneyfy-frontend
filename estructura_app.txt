@@ -20,6 +20,7 @@
 ./core/types/quoter/quoter.tsx
 ./core/types/auth
 ./core/types/auth/register.ts
+./core/types/auth/restorePassword.ts
 ./core/types/auth/auth.ts
 ./core/types/quote
 ./core/types/quote/vehicles.tsx
@@ -41,8 +42,8 @@
 ./core/context/OnboardingContext.tsx
 ./core/context/auth
 ./core/context/auth/useAuth.ts
-./core/context/auth/AuthContext.tsx
 ./core/context/auth/AuthProvider.tsx
+./core/context/auth/AuthContext.ts
 ./core/context/user
 ./core/context/user/userContext.tsx
 ./core/context/user/UserProvider.tsx
@@ -95,6 +96,7 @@
 ./app/(auth)/register-screen.tsx
 ./app/(auth)/persistent-auth.tsx
 ./app/(auth)/.persistent-auth.tsx.swp
+./app/(auth)/reset-password.tsx
 ./app/(auth)/_layout.tsx
 ./app/(auth)/confirmation-code.tsx
 ./app/(auth)/forgot-password.tsx
@@ -188,7 +190,9 @@
 ./shared/components/composite/VehicleCard.tsx
 ./shared/components/composite/QuoterInfoCard.tsx
 ./shared/components/composite/AnimatedCard.tsx
+./shared/components/composite/ResendCode.tsx
 ./shared/components/composite/QuoteCard.tsx
+./shared/components/composite/VerificationCode.tsx
 ./shared/components/composite/AccountListScreen.tsx
 ./shared/components/composite/index.ts
 ./shared/components/composite/ProfilePictureModal.tsx

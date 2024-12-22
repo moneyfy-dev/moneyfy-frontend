@@ -2,7 +2,7 @@ import React, { forwardRef, useState } from 'react';
 import { ThemedInputCommonProps } from '@/core/types';
 import { TextInput, StyleSheet, NativeSyntheticEvent, TextInputFocusEventData } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { BaseInput } from '@/shared/components';
+import { BaseInput } from '../inputs/BaseInput';
 
 export const SearchInput = forwardRef<TextInput, ThemedInputCommonProps>(
   ({ value, onChangeText, onIconPress, ...props }, ref) => {

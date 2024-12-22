@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { View, Text, ActivityIndicator } from 'react-native';
-import { useAuth } from '@/core/context';
-import PersistentAuth from '@/app/(auth)/persistent-auth';
+import { useAuth } from '../../../../core/context/auth/useAuth';
+import PersistentAuth from '../../../../app/(auth)/persistent-auth';
 
 const PUBLIC_ROUTES = ['(legal)'];
 const PUBLIC_AUTH_ROUTES = [

@@ -1,17 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ROUTES, ConfirmationFlowType } from '@/core/types';
-import { View, StyleSheet, TouchableOpacity, Keyboard, TextInput } from 'react-native';
+import { View, StyleSheet, TextInput } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, MessageModal } from '@/shared/components';
+import { ThemedLayout, ThemedText, ThemedButton, MessageModal, VerificationCode, ResendCode } from '@/shared/components';
 import { useAuth } from '@/core/context';
 
 export default function ConfirmationCodeScreen() {
     const route = useLocalSearchParams();
-    const { email, flow, newPassword } = route;
+    const { email, flow } = route;
     const { confirmCode, resendCode } = useAuth();
     const router = useRouter();
-    const [code, setCode] = useState(['', '', '', '', '', '']);
+    const [code, setCode] = useState('');
     const inputRefs = useRef<Array<React.RefObject<TextInput>>>([
         React.createRef(), React.createRef(), React.createRef(), React.createRef(), React.createRef(), React.createRef()
     ]);
@@ -23,46 +23,12 @@ export default function ConfirmationCodeScreen() {
     const [successModalVisible, setSuccessModalVisible] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
 
-    useEffect(() => {
-        let interval: NodeJS.Timeout;
-        if (resendTimer > 0) {
-            interval = setInterval(() => {
-                setResendTimer((prevTimer) => prevTimer - 1);
-            }, 1000);
-        } else if (resendTimer === 0) {
-            setIsResendDisabled(false);
-        }
-        return () => clearInterval(interval);
-    }, [resendTimer]);
-
-    const handleCodeChange = (text: string, index: number) => {
-        if (text.length <= 1 && /^\d*$/.test(text)) {
-            const newCode = [...code];
-            newCode[index] = text;
-            setCode(newCode);
-
-            if (text.length === 1 && index < 5) {
-                inputRefs.current[index + 1].current?.focus();
-            }
-        }
-    };
-
-    const handleKeyPress = (e: any, index: number) => {
-        if (e.nativeEvent.key === 'Backspace' && index > 0 && code[index] === '') {
-            const newCode = [...code];
-            newCode[index - 1] = '';
-            setCode(newCode);
-            inputRefs.current[index - 1].current?.focus();
-        }
-    };
-
     const handleConfirmCode = async (code: string) => {
         try {
             const response = await confirmCode(
                 email as string, 
                 code, 
                 flow as ConfirmationFlowType,
-                flow === 'restorePassword' ? JSON.parse(newPassword as string) : undefined
             );
 
             if (response.status === 200) {
@@ -101,16 +67,6 @@ export default function ConfirmationCodeScreen() {
         }
     };
 
-    useEffect(() => {
-        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-            inputRefs.current.forEach(ref => ref.current?.blur());
-        });
-
-        return () => {
-            keyboardDidHideListener.remove();
-        };
-    }, []);
-
     return (
         <ThemedLayout>
             <View style={styles.pageContainer}>
@@ -123,41 +79,16 @@ export default function ConfirmationCodeScreen() {
                     {email}
                 </ThemedText>
 
-                <View style={styles.codeContainer}>
-                    {code.map((digit, index) => (
-                        <ThemedInput
-                            key={index}
-                            ref={inputRefs.current[index]}
-                            value={digit}
-                            onChangeText={(text) => handleCodeChange(text, index)}
-                            onKeyPress={(e) => handleKeyPress(e, index)}
-                            keyboardType="numeric"
-                            maxLength={1}
-                            placeholder=""
-                            style={[styles.codeInput, { color: themeColors.textColorAccent }]}
-                        />
-                    ))}
-                </View>
+                <VerificationCode onCodeComplete={setCode} />
             </View>
 
             <View style={styles.buttonContainer}>
 
-                <TouchableOpacity onPress={handleResendCode} disabled={isResendDisabled}>
-                    <ThemedText 
-                        variant='paragraph' 
-                        textAlign='center' 
-                        marginBottom={24}
-                        style={isResendDisabled ? styles.disabledText : {color: themeColors.textColorAccent}}
-                    >
-                        {isResendDisabled 
-                            ? `Reenviar código en ${resendTimer}s` 
-                            : 'Reenviar código'}
-                    </ThemedText>
-                </TouchableOpacity>
+            <ResendCode onResend={handleResendCode} />
 
                 <ThemedButton
                     text="Continuar"
-                    onPress={() => handleConfirmCode(code.join(''))}
+                    onPress={() => handleConfirmCode(code)}
                 />
             </View>
 

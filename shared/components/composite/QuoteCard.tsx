@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { InsurancePlan } from '@/core/types';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedText, ThemedButton, LogoBci } from '@/shared/components';
+import { ThemedText } from '../ui/ThemedText';
+import { ThemedButton } from '../ui/ThemedButton';
+import { LogoBci } from '../images/LogoBci';
 import { Ionicons } from '@expo/vector-icons';
 
 interface QuoteCardProps {
