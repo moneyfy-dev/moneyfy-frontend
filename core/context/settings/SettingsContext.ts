@@ -12,6 +12,7 @@ interface SettingsContextType {
   addAccount: (account: Omit<BankAccount, 'accountId'>) => Promise<void>;
   deleteAccount: (accountId: string) => Promise<void>;
   updateNotifications: (prefs: Partial<NotificationPreferences>) => Promise<void>;
+  changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
 }
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined); 

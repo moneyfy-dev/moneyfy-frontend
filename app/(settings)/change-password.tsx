@@ -1,77 +1,118 @@
 import React, { useState } from 'react';
-import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useRouter } from 'expo-router';
+import { useSettings } from '@/core/context';
 import { ThemedLayout, ThemedInput, ThemedButton, MessageModal } from '@/shared/components';
-import { changePassword } from '@/core/services';
+import { useThemeColor } from '@/shared/hooks';
+import { validatePassword } from '@/shared/utils/validations';
 
 export default function ChangePasswordScreen() {
-    const [currentPassword, setCurrentPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const router = useRouter();
+    const themeColors = useThemeColor();
+    const { changePassword } = useSettings();
+    const [formData, setFormData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+    });
+    const [errors, setErrors] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+    });
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-    const [successModalVisible, setSuccessModalVisible] = useState(false);
+    const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
 
-    const themeColors = useThemeColor();
-    const router = useRouter();
+    const handleSubmit = async () => {
+        // Validar campos
+        const newErrors = {
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+        };
+        let hasErrors = false;
 
-    const handleSave = async () => {
-        if (newPassword !== confirmPassword) {
-            setErrorMessage('Las nuevas contraseñas no coinciden');
-            setIsErrorModalVisible(true);
-            return;
+        if (!formData.currentPassword) {
+            newErrors.currentPassword = 'Ingresa tu contraseña actual';
+            hasErrors = true;
         }
 
+        if (!validatePassword(formData.newPassword)) {
+            newErrors.newPassword = 'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número';
+            hasErrors = true;
+        }
+
+        if (formData.newPassword !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'Las contraseñas no coinciden';
+            hasErrors = true;
+        }
+
+        setErrors(newErrors);
+
+        if (hasErrors) return;
+
         try {
-            const response = await changePassword(currentPassword, newPassword);
-            if (response.status === 200) {
-                setSuccessMessage(response.message || 'Contraseña cambiada correctamente');
-                setSuccessModalVisible(true);
-                router.back();
-            } else {
-                setErrorMessage(response.message || 'No se pudo cambiar la contraseña');
-                setIsErrorModalVisible(true);
-            }
+            await changePassword(formData.currentPassword, formData.newPassword);
+            setIsSuccessModalVisible(true);
         } catch (error) {
-            setErrorMessage('No se pudo cambiar la contraseña. Por favor, intente de nuevo.');
+            setErrorMessage('No se pudo actualizar la contraseña');
             setIsErrorModalVisible(true);
         }
     };
 
+    const handleSuccessClose = () => {
+        setIsSuccessModalVisible(false);
+        router.back();
+    };
+
     return (
-        <ThemedLayout padding={[0, 40]}>
-            <View style={styles.content}>
+        <ThemedLayout>
+            <View style={styles.container}>
                 <ThemedInput
                     label="Contraseña actual"
-                    value={currentPassword}
-                    onChangeText={setCurrentPassword}
-                    placeholder="Ingrese su contraseña actual"
+                    value={formData.currentPassword}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, currentPassword: text }))}
+                    error={errors.currentPassword}
                     secureTextEntry
                 />
 
                 <ThemedInput
                     label="Nueva contraseña"
-                    value={newPassword}
-                    onChangeText={setNewPassword}
-                    placeholder="Ingrese su nueva contraseña"
+                    value={formData.newPassword}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, newPassword: text }))}
+                    error={errors.newPassword}
                     secureTextEntry
                 />
 
                 <ThemedInput
-                    label="Repetir contraseña"
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    placeholder="Repita su nueva contraseña"
+                    label="Confirmar nueva contraseña"
+                    value={formData.confirmPassword}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, confirmPassword: text }))}
+                    error={errors.confirmPassword}
                     secureTextEntry
+                />
+
+                <ThemedButton
+                    text="Cambiar contraseña"
+                    onPress={handleSubmit}
+                    style={styles.button}
                 />
             </View>
 
-            <ThemedButton
-                text="Guardar contraseña"
-                onPress={handleSave}
-                style={styles.button}
+            <MessageModal
+                isVisible={isSuccessModalVisible}
+                onClose={handleSuccessClose}
+                title="¡Éxito!"
+                message="Tu contraseña ha sido actualizada correctamente"
+                icon={{
+                    name: "checkmark-circle-outline",
+                    color: themeColors.status.success
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: handleSuccessClose
+                }}
             />
 
             <MessageModal
@@ -88,30 +129,16 @@ export default function ChangePasswordScreen() {
                     onPress: () => setIsErrorModalVisible(false)
                 }}
             />
-
-            <MessageModal
-                isVisible={successModalVisible}
-                onClose={() => setSuccessModalVisible(false)}
-                title="Éxito"
-                message={successMessage}
-                icon={{
-                    name: "checkmark-circle-outline",
-                    color: themeColors.status.success
-                }}
-                primaryButton={{
-                    text: "Entendido",
-                    onPress: () => setSuccessModalVisible(false)
-                }}
-            />
         </ThemedLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    content: {
+    container: {
         flex: 1,
+        gap: 16,
     },
     button: {
         marginTop: 24,
-    },
+    }
 });

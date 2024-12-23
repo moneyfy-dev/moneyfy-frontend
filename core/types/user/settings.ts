@@ -14,13 +14,27 @@ export interface BankAccount {
   selected: boolean;
 }
 
+export interface ThemeOption {
+  id: 'light' | 'dark' | 'system';
+  title: string;
+  description: string;
+}
+
+export interface NotificationSetting {
+  id: keyof NotificationPreferences;
+  title: string;
+  description: string;
+  isEnabled: boolean;
+  type: 'switch' | 'checkbox';
+}
+
 export interface NotificationPreferences {
   byEmail: boolean;
   byPush: boolean;
   commissionUpdate: boolean;
-  saleState: boolean;
-  withdrawalAvailability: boolean;
-  referredAccepted: boolean;
-  specialOffers: boolean;
   paymentProblems: boolean;
+  referredAccepted: boolean;
+  saleState: boolean;
+  specialOffers: boolean;
+  withdrawalAvailability: boolean;
 } 

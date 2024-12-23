@@ -96,6 +96,15 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  const changePassword = async (oldPassword: string, newPassword: string) => {
+    try {
+      await settingsService.changePassword(oldPassword, newPassword);
+    } catch (error) {
+      console.error('Error al cambiar la contraseña:', error);
+      throw error;
+    }
+  };
+
   const updateNotifications = async (prefs: Partial<NotificationPreferences>) => {
     try {
       const updatedPrefs = await settingsService.updateNotifications(prefs);
@@ -118,6 +127,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         updateAccount,
         addAccount,
         deleteAccount,
+        changePassword,
         updateNotifications,
       }}
     >

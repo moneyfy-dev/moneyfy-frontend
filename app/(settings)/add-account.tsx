@@ -4,9 +4,8 @@ import { StyleSheet } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, ThemedCheckGroup, MessageModal } from '@/shared/components';
 import { validateName, validateEmail, validateRUT } from '@/shared/utils/validations';
-import { useAuth } from '@/core/context';
-import axios from 'axios';
-import { addAccount, updateAccount } from '@/core/services';
+import { useSettings } from '@/core/context';
+import { BankAccount } from '@/core/types';
 
 const BANKS = [
   "Banco Scotiabank", "Banco BBVA", "Banco Itau", "Banco BICE", "Banco HSBC",
@@ -19,62 +18,68 @@ const BANKS = [
 
 export default function AddAccountScreen() {
     const { accountId } = useLocalSearchParams<{ accountId: string }>();
-    const [personalId, setPersonalId] = useState('');
-    const [holderName, setHolderName] = useState('');
-    const [alias, setAlias] = useState('');
-    const [email, setEmail] = useState('');
-    const [bank, setBank] = useState('');
-    const [accountType, setAccountType] = useState('');
-    const [accountNumber, setAccountNumber] = useState('');
-    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-    const [successModalVisible, setSuccessModalVisible] = useState(false);
+    const router = useRouter();
+    const themeColors = useThemeColor();
+    const { accounts, addAccount, updateAccount } = useSettings();
+
+    const [formData, setFormData] = useState<Omit<BankAccount, 'accountId' | 'selected'>>({
+        personalId: '',
+        holderName: '',
+        alias: '',
+        email: '',
+        bank: '',
+        accountType: '',
+        accountNumber: '',
+    });
+
     const [errors, setErrors] = useState({
         personalId: '',
         holderName: '',
         email: '',
     });
 
-    const themeColors = useThemeColor();
-    const router = useRouter();
-    const { user, updateUserData } = useAuth();
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [successModalVisible, setSuccessModalVisible] = useState(false);
 
     useEffect(() => {
-        if (accountId && user) {
-            const account = user.accounts.find(acc => acc.accountId === accountId);
+        if (accountId) {
+            const account = accounts.find(acc => acc.accountId === accountId);
             if (account) {
-                setPersonalId(account.personalId);
-                setHolderName(account.holderName);
-                setAlias(account.alias);
-                setEmail(account.email);
-                setBank(account.bank);
-                setAccountType(account.accountType.toUpperCase());
-                setAccountNumber(account.accountNumber);
+                setFormData({
+                    personalId: account.personalId,
+                    holderName: account.holderName,
+                    alias: account.alias,
+                    email: account.email,
+                    bank: account.bank,
+                    accountType: account.accountType.toUpperCase(),
+                    accountNumber: account.accountNumber,
+                });
             }
         }
-    }, [accountId, user]);
+    }, [accountId, accounts]);
 
     const validateForm = () => {
-        let isValid = true;
         const newErrors = {
             personalId: '',
             holderName: '',
             email: '',
         };
+        let isValid = true;
 
-        if (!validateName(holderName)) {
+        if (!validateRUT(formData.personalId)) {
+            newErrors.personalId = 'RUT inválido';
+            isValid = false;
+        }
+
+        if (!validateName(formData.holderName)) {
             newErrors.holderName = 'Nombre inválido';
             isValid = false;
         }
 
-        if (!validateEmail(email)) {
+        if (!validateEmail(formData.email)) {
             newErrors.email = 'Correo electrónico inválido';
-            isValid = false;
-        }
-
-        if (!validateRUT(personalId)) {
-            newErrors.personalId = 'RUT inválido';
             isValid = false;
         }
 
@@ -90,36 +95,17 @@ export default function AddAccountScreen() {
         }
 
         try {
-            const accountData = {
-                personalId,
-                holderName,
-                alias,
-                email,
-                bank,
-                accountType,
-                accountNumber
-            };
-            
-            let response;
             if (accountId) {
-                response = await updateAccount(accountId, accountData);
+                await updateAccount(accountId, formData);
+                setSuccessMessage('Cuenta actualizada correctamente');
             } else {
-                response = await addAccount(accountData);
+                await addAccount({...formData, selected: false});
+                setSuccessMessage('Cuenta agregada correctamente');
             }
-
-            if (response && response.data && response.data.user) {
-                await updateUserData(response.data.user);
-                setSuccessMessage(accountId ? 'Cuenta actualizada correctamente' : 'Cuenta agregada correctamente');
-                setSuccessModalVisible(true);
-                router.back();
-            } else {
-                throw new Error('Respuesta inesperada del servidor');
-            }
+            setSuccessModalVisible(true);
+            router.back();
         } catch (error) {
             console.error('Error al procesar la cuenta:', error);
-            if (axios.isAxiosError(error)) {
-                console.error('Error response:', error);
-            }
             setErrorMessage(accountId ? 'No se pudo actualizar la cuenta' : 'No se pudo agregar la cuenta');
             setIsErrorModalVisible(true);
         }
@@ -132,11 +118,11 @@ export default function AddAccountScreen() {
     ];
 
     return (
-        <ThemedLayout padding={[0 ,40]}>
+        <ThemedLayout padding={[0, 40]}>
             <ThemedInput
                 label="RUT"
-                value={personalId}
-                onChangeText={setPersonalId}
+                value={formData.personalId}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, personalId: text }))}
                 placeholder="Ingrese su RUT"
                 error={errors.personalId}
                 isRUT={true}
@@ -144,23 +130,23 @@ export default function AddAccountScreen() {
 
             <ThemedInput
                 label="Nombre"
-                value={holderName}
-                onChangeText={setHolderName}
+                value={formData.holderName}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, holderName: text }))}
                 placeholder="Ingrese su nombre"
                 error={errors.holderName}
             />
 
             <ThemedInput
                 label="Alias"
-                value={alias}
-                onChangeText={setAlias}
+                value={formData.alias}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, alias: text }))}
                 placeholder="Ingrese un alias para la cuenta"
             />
 
             <ThemedInput
                 label="Correo electrónico"
-                value={email}
-                onChangeText={setEmail}
+                value={formData.email}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
                 placeholder="Ingrese su correo electrónico"
                 keyboardType="email-address"
                 error={errors.email}
@@ -170,8 +156,8 @@ export default function AddAccountScreen() {
 
             <ThemedInput
                 label="Banco"
-                value={bank}
-                onChangeText={setBank}
+                value={formData.bank}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, bank: text }))}
                 placeholder="Seleccione su banco"
                 isSelect={true}
                 options={BANKS}
@@ -181,15 +167,15 @@ export default function AddAccountScreen() {
 
             <ThemedCheckGroup
                 options={accountTypeOptions}
-                selectedValue={accountType}
-                onSelect={setAccountType}
+                selectedValue={formData.accountType}
+                onSelect={(value) => setFormData(prev => ({ ...prev, accountType: value }))}
                 containerStyle={styles.accountTypeContainer}
             />
 
             <ThemedInput
                 label="Número de cuenta"
-                value={accountNumber}
-                onChangeText={setAccountNumber}
+                value={formData.accountNumber}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, accountNumber: text }))}
                 placeholder="Ingrese el número de cuenta"
                 keyboardType="numeric"
             />
@@ -197,7 +183,7 @@ export default function AddAccountScreen() {
             <ThemedButton
                 text="Guardar"
                 onPress={handleSave}
-                style={styles.Button}
+                style={styles.button}
             />
 
             <MessageModal
@@ -239,7 +225,7 @@ const styles = StyleSheet.create({
         gap: 16,
         marginBottom: 20,
     },
-    Button: {
+    button: {
         marginTop: 24,
     }
 });

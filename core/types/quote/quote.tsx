@@ -1,3 +1,4 @@
+// Tipos base
 export interface Vehicle {
   ppu: string;
   type: string;
@@ -15,21 +16,24 @@ export interface Company {
   alias: string;
 }
 
-export interface SearchResponse {
-  message: string;
-  status: number;
-  data: {
-    quoterId: string | number | (string | number)[] | null | undefined;
-    companies?: Company[];
-    vehicle?: Vehicle;
-    tokens: {
-      jwtSession: string;
-      jwtRefresh: string;
-    };
-    user: any;
-  };
+export interface InsurancePlan {
+  planId: string;
+  insuranceCompany: string;
+  planName: string;
+  price: number;
+  priceUf: number;
+  deductible: number;
+  discount: number;
+  stolenVehicle: string;
+  workshopType: string;
+  totalLoss: string;
+  damageThirdParty: string;
+  details: string[];
+  createdDate: string;
+  updatedDate: string;
 }
 
+// Parámetros de solicitud
 export interface QuoteVehicleParams {
   quoterId?: string;
   ppu: string;
@@ -42,38 +46,6 @@ export interface QuoteVehicleParams {
   colour?: string;
   engineNum?: string;
   chassisNum?: string;
-}
-
-export interface InsurancePlan {
-  planId: string;
-  insuranceCompany: string;
-  planName: string;
-  price: number;
-  priceUf: number;
-  deductible: number;
-  discount: number;
-  stolenVehicle: string;
-  workshopType: string;
-  totalLoss: string;
-  damageThirdParty: string
-  details: string[];
-  createdDate: string;
-  updatedDate: string;
-}
-
-export interface QuoteVehicleResponse {
-  message: string;
-  status: number;
-  data: {
-    quoterId: string;
-    plans: InsurancePlan[];
-    vehicle: Vehicle;
-    user: any;
-    tokens: {
-      jwtSession: string;
-      jwtRefresh: string;
-    };
-  };
 }
 
 export interface SelectPlanParams {
@@ -89,10 +61,64 @@ export interface SelectPlanParams {
   department: string;
 }
 
+// Respuestas de API
+export interface SearchResponse {
+  message: string;
+  status: number;
+  data: {
+      quoterId: string | number | (string | number)[] | null | undefined;
+      companies?: Company[];
+      vehicle?: Vehicle;
+      tokens: {
+          jwtSession: string;
+          jwtRefresh: string;
+      };
+      user: any;
+  };
+}
+
+export interface QuoteVehicleResponse {
+  message: string;
+  status: number;
+  data: {
+      quoterId: string;
+      plans: InsurancePlan[];
+      vehicle: Vehicle;
+      user: any;
+  };
+}
+
+export interface QuoteResult {
+  plans: InsurancePlan[];
+  quoterId: string | null;
+  vehicle: Vehicle | null;
+  user: any;
+}
+
+export interface VehicleModel {
+  id: string;
+  name: string;
+  models: string[];
+}
+
+export interface VehiclesResponse {
+  message: string;
+  status: number;
+  data: {
+      vehicles: VehicleModel[];
+      tokens: {
+          jwtSession: string;
+          jwtRefresh: string;
+      };
+      user: any;
+  };
+}
+
+// Constantes
 export const OWNER_OPTIONS_MAP = {
   "Si, soy el dueño del vehículo": "0",
   "No, soy el padre/madre del dueño": "1",
   "No, soy el conviviente civil del dueño": "2",
   "No, soy el cónyuge del dueño": "3",
   "No, soy el hijo(a) del dueño": "4"
-} as const; 
+} as const;

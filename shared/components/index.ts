@@ -10,7 +10,7 @@ export { ThemedAutocomplete } from './ui/ThemedAutocomplete';
 export { Logo } from './ui/Logo';
 export { ThemedInput } from './ui/ThemedInput';
 export { ThemedButton } from './ui/ThemedButton';
-
+export { PinInput } from './ui/PinInput';
 // Images
 export { SuccessAnimation } from './images/SuccessAnimation';
 export { TicketEdge } from './images/TicketEdge';

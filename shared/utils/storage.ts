@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { STORAGE_KEYS } from '@/core/types';
 
 export const storage = {
@@ -37,26 +38,54 @@ export const storage = {
     }
   },
 
-  // Métodos específicos para Auth
+  // Métodos seguros para datos sensibles
+  async getSecure(key: string): Promise<string | null> {
+    try {
+      return await SecureStore.getItemAsync(key);
+    } catch (error) {
+      console.error(`Error getting secure ${key}:`, error);
+      return null;
+    }
+  },
+
+  async setSecure(key: string, value: string): Promise<void> {
+    try {
+      await SecureStore.setItemAsync(key, value);
+    } catch (error) {
+      console.error(`Error setting secure ${key}:`, error);
+      throw error;
+    }
+  },
+
+  async removeSecure(key: string): Promise<void> {
+    try {
+      await SecureStore.deleteItemAsync(key);
+    } catch (error) {
+      console.error(`Error removing secure ${key}:`, error);
+      throw error;
+    }
+  },
+
+  // Métodos específicos para Auth usando SecureStore
   auth: {
     async getTokens() {
       const [token, sessionToken] = await Promise.all([
-        storage.get<string>(STORAGE_KEYS.AUTH.TOKEN),
-        storage.get<string>(STORAGE_KEYS.AUTH.SESSION_TOKEN),
+        storage.getSecure(STORAGE_KEYS.AUTH.TOKEN),
+        storage.getSecure(STORAGE_KEYS.AUTH.SESSION_TOKEN),
       ]);
       return { token, sessionToken };
     },
     
     async setTokens(token: string, sessionToken: string) {
       await Promise.all([
-        storage.set(STORAGE_KEYS.AUTH.TOKEN, token),
-        storage.set(STORAGE_KEYS.AUTH.SESSION_TOKEN, sessionToken),
+        storage.setSecure(STORAGE_KEYS.AUTH.TOKEN, token),
+        storage.setSecure(STORAGE_KEYS.AUTH.SESSION_TOKEN, sessionToken),
       ]);
     },
 
     async clearAuth() {
       const authKeys = Object.values(STORAGE_KEYS.AUTH);
-      await storage.multiRemove(authKeys);
+      await Promise.all(authKeys.map(key => storage.removeSecure(key)));
     }
   },
 

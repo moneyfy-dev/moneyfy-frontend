@@ -1,14 +1,10 @@
-import React, { useEffect } from 'react';
-import { useTheme } from '@/core/context';
+import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTheme } from '@/core/context';
 import { ThemedLayout, ThemedText } from '@/shared/components';
 import { useThemeColor } from '@/shared/hooks';
-
-interface ThemeOption {
-  id: 'light' | 'dark' | 'system';
-  title: string;
-  description: string;
-}
+import { ThemeOption } from '@/core/types';
+import { storage } from '@/shared/utils/storage';
 
 export default function AppearanceScreen() {
   const themeColors = useThemeColor();
@@ -32,14 +28,10 @@ export default function AppearanceScreen() {
     },
   ];
 
-  const selectTheme = (id: 'light' | 'dark' | 'system') => {
+  const selectTheme = async (id: 'light' | 'dark' | 'system') => {
     setThemeMode(id);
+    await storage.set('theme', id);
   };
-
-  useEffect(() => {
-    console.log('Current theme mode:', themeMode);
-    console.log('Current theme:', currentTheme);
-  }, [themeMode, currentTheme]);
 
   const renderThemeOption = (option: ThemeOption, index: number) => (
     <TouchableOpacity
@@ -112,8 +104,5 @@ const styles = StyleSheet.create({
   },
   optionTextContainer: {
     flex: 1,
-  },
-  debugText: {
-    marginTop: 20,
   },
 });

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Account } from '@/core/types';
+import { BankAccount } from '@/core/types';
 import Colors from '@/constants/Colors';
 import { StyleSheet, TouchableOpacity, View, FlatList, Modal, Alert } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { deleteAccount } from '@/core/services';
 
 interface AccountListScreenProps {
-    accounts: Account[];
+    accounts: BankAccount[];
     onSelectAccount: (accountId: string) => void;
     onAccountUpdated: () => void;
 }
@@ -19,13 +19,13 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
     const themeColors = useThemeColor();
     const router = useRouter();
     const [menuVisible, setMenuVisible] = useState(false);
-    const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+    const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [successModalVisible, setSuccessModalVisible] = useState(false);
 
-    const handleMenuPress = (account: Account) => {
+    const handleMenuPress = (account: BankAccount) => {
         setSelectedAccount(account);
         setMenuVisible(true);
     };
@@ -58,7 +58,7 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
         setMenuVisible(false);
     };
 
-    const renderAccount = ({ item }: { item: Account }) => (
+    const renderAccount = ({ item }: { item: BankAccount }) => (
         <TouchableOpacity 
             style={[styles.accountItem, { borderColor: themeColors.borderBackgroundColor }]}
             onPress={() => onSelectAccount(item.accountId)}
