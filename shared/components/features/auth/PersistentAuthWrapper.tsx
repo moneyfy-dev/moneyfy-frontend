@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { View, Text, ActivityIndicator } from 'react-native';
-import { useAuth } from '../../../../core/context/auth/useAuth';
-import PersistentAuth from '../../../../app/(auth)/persistent-auth';
+import { useAuth } from '@/core/context/auth/useAuth';
+import { storage } from '@/shared/utils/storage';
+import { STORAGE_KEYS } from '@/core/types';
+import PersistentAuth from '@/app/(auth)/persistent-auth';
+import { useUser } from '@/core/context/user/useUser';
 
 const PUBLIC_ROUTES = ['(legal)'];
 const PUBLIC_AUTH_ROUTES = [
@@ -15,7 +18,9 @@ const PUBLIC_AUTH_ROUTES = [
 
 export function PersistentAuthWrapper({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isPersistentAuthRequired, isLoading, handlePersistentAuthSuccess, checkAuthStatus } = useAuth();
+  const { hydrateUserData } = useUser();
   const [isReady, setIsReady] = useState(false);
+  const [authMethod, setAuthMethod] = useState<'pin' | 'biometric' | null>(null);
   const router = useRouter();
   const segments = useSegments();
   const rootNavigationState = useRootNavigationState();
@@ -24,6 +29,9 @@ export function PersistentAuthWrapper({ children }: { children: React.ReactNode 
     const prepare = async () => {
       try {
         await checkAuthStatus();
+        if (isAuthenticated) {
+          await hydrateUserData();
+        }
         setIsReady(true);
       } catch (error) {
         console.error('Error checking auth status:', error);
@@ -41,32 +49,28 @@ export function PersistentAuthWrapper({ children }: { children: React.ReactNode 
     const isPublicRoute = PUBLIC_ROUTES.includes(segments[0]);
     const isPublicAuthRoute = inAuthGroup && PUBLIC_AUTH_ROUTES.includes(segments[1] || '');
 
-    console.log('Navigation State:', {
-      isReady,
-      isAuthenticated,
-      isPersistentAuthRequired,
-      segments,
-      inAuthGroup: segments[0] === '(auth)',
-      currentSegment: segments[0]
-    });
-
-    setTimeout(() => {
-      if (isPublicRoute || isPublicAuthRoute) {
-        return;
-      }
-
-      try {
-        if (isAuthenticated && !isPersistentAuthRequired && (inAuthGroup || inPersistentAuth)) {
-          router.replace('/(tabs)');
-        } else if (!isAuthenticated && !inAuthGroup) {
-          router.replace('/(auth)/login');
-        } else if (isAuthenticated && isPersistentAuthRequired && !inPersistentAuth) {
-          router.replace('/(auth)/persistent-auth');
+    try {
+        // Si no está autenticado -> Login
+        if (!isAuthenticated && !inAuthGroup) {
+            router.replace('/(auth)/login');
+            return;
         }
-      } catch (error) {
+
+        // Si está autenticado y requiere auth persistente -> Persistent Auth
+        if (isAuthenticated && isPersistentAuthRequired && !inPersistentAuth) {
+            router.replace('/(auth)/persistent-auth');
+            return;
+        }
+
+        // Si está autenticado y no requiere auth persistente -> Index
+        if (isAuthenticated && !isPersistentAuthRequired && (inAuthGroup || inPersistentAuth)) {
+            router.replace('/(tabs)');
+            return;
+        }
+
+    } catch (error) {
         console.error('Navigation error:', error);
-      }
-    }, 0);
+    }
   }, [isReady, isAuthenticated, isPersistentAuthRequired, segments, rootNavigationState?.key]);
 
   if (!isReady || isLoading) {
@@ -79,7 +83,10 @@ export function PersistentAuthWrapper({ children }: { children: React.ReactNode 
   }
 
   if (isAuthenticated && isPersistentAuthRequired) {
-    return <PersistentAuth onAuthSuccess={handlePersistentAuthSuccess} />;
+    return <PersistentAuth 
+      onAuthSuccess={handlePersistentAuthSuccess}
+      authMethod={authMethod}
+    />;
   }
 
   return <>{children}</>;

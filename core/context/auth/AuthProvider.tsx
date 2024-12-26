@@ -3,7 +3,7 @@ import { AuthContext } from './AuthContext';
 import { STORAGE_KEYS } from '@/core/types';
 import { storage } from '@/shared/utils/storage';
 import { authService } from '@/core/services';
-import type { ConfirmationFlowType, LoginResponse } from '@/core/types';
+import type { ConfirmationFlowType, LoginResponse, RegisterResponse } from '@/core/types';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -65,31 +65,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginContext = async (response: LoginResponse) => {
     try {
-      // Validar que la respuesta tenga la estructura correcta
       if (!response.data?.tokens || !response.data?.user) {
         throw new Error('Respuesta de login inválida');
       }
 
-      // Guardar tokens
       await storage.auth.setTokens(
         response.data.tokens.jwtRefresh,
         response.data.tokens.jwtSession
       );
       
-      // Guardar datos del usuario
       await storage.user.setData(response.data.user);
       await storage.user.updateLastHydration();
       
-      // Actualizar estado de autenticación
       setIsAuthenticated(true);
-
-      // Retornar los datos del usuario para que el componente login pueda usarlos
+      
       return response.data.user;
     } catch (error: any) {
       console.error('Error en login:', error);
-      if (!error.response || error.response.status !== 226) {
-        setIsAuthenticated(false);
-      }
+      setIsAuthenticated(false);
       throw error;
     }
   };
@@ -202,6 +195,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const handleRegistrationSuccess = async (response: RegisterResponse) => {
+    try {
+      if (!response.data?.tokens || !response.data?.user) {
+        throw new Error('Respuesta de registro inválida');
+      }
+
+      await storage.auth.setTokens(
+        response.data.tokens.jwtRefresh,
+        response.data.tokens.jwtSession
+      );
+      
+      await storage.user.setData(response.data.user);
+      await storage.user.updateLastHydration();
+      
+      setIsAuthenticated(true);
+      
+      return response.data.user;
+    } catch (error) {
+      console.error('Error en registro:', error);
+      setIsAuthenticated(false);
+      throw error;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -218,6 +235,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         confirmPasswordReset,
         confirmCode,
         resendCode,
+        handleRegistrationSuccess,
       }}
     >
       {children}

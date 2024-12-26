@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Dimensions, ScrollView, Animated } from 'react-native';
 import { useRouter, Link } from 'expo-router';
-import { ROUTES } from '@/core/types';
+import { ROUTES, User } from '@/core/types';
 import { ThemedView, ThemedText, ThemedInput, ThemedButton, MessageModal, Logo, BackgroundCircles, LoadingScreen } from '@/shared/components';
 import { validateEmail, validatePassword } from '@/shared/utils/validations';
 import { useThemeColor, useCardVisibility } from '@/shared/hooks';
 import { useAuth } from '@/core/context';
 import { AnimatedCard } from '@/shared/components/composite/AnimatedCard';
 import { authService } from '@/core/services';
+import { useUser } from '@/core/context';
 
 const { height } = Dimensions.get('window');
 
@@ -27,6 +28,7 @@ export default function LoginScreen() {
     const router = useRouter();
     const [touchedFields, setTouchedFields] = useState({ email: false, password: false });
     const [errorMessage, setErrorMessage] = useState('');
+    const { syncWithAuth } = useUser();
 
     const showLoginForm = () => {
         setIsFormVisible(true);
@@ -83,14 +85,12 @@ export default function LoginScreen() {
 
             setIsLoading(true);
             
-            // Llamar al servicio de autenticación directamente
-            const loginResponse = await authService.login(email, password);
-            
-            // Procesar la respuesta con el contexto de auth
-            await loginContext(loginResponse);
+            // Usar el contexto para manejar el login
+            const response = await authService.login(email, password);
+            const userData = await loginContext(response);
+            await syncWithAuth(userData as unknown as User);
             
             router.replace(ROUTES.TABS.INDEX);
-
         } catch (error: any) {
             if (error.status === 226) {
                 router.push({

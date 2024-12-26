@@ -38,11 +38,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const { token, sessionToken } = await storage.auth.getTokens();
+      console.log('token', token);
+      console.log('sessionToken', sessionToken);
       if (!token || !sessionToken) {
         throw new Error('No tokens available');
       }
 
       const response = await userService.getUserData();
+      console.log('response', response);
       if (response?.data?.user) {
         await storage.user.setData(response.data.user);
         setUser(response.data.user);
@@ -91,6 +94,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const syncWithAuth = async (userData: User) => {
     try {
       setIsLoading(true);
+      await storage.user.setData(userData);
       setUser(userData);
       setLastHydrationTime(new Date());
     } catch (error) {

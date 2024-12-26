@@ -4,8 +4,16 @@ export const validateEmail = (email: string): boolean => {
 };
 
 export const validatePassword = (password: string): boolean => {
-    const passwordRegex = /^[a-zA-Z0-9!$&()=<>;,:._-]{8,40}$/;
-    return passwordRegex.test(password);
+    // Validar longitud entre 8 y 40 caracteres
+    if (password.length < 8 || password.length > 40) return false;
+    
+    // Validar que contenga al menos:
+    const hasNumber = /[0-9]/.test(password);         // un número
+    const hasLower = /[a-z]/.test(password);         // una minúscula
+    const hasUpper = /[A-Z]/.test(password);         // una mayúscula
+    const hasSpecial = /[$%&#\-_?]/.test(password);  // un carácter especial permitido
+    
+    return hasNumber && hasLower && hasUpper && hasSpecial;
 };
 
 export const validateName = (name: string): boolean => {

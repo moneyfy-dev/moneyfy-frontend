@@ -92,13 +92,13 @@ export default function ChangePasswordScreen() {
                     error={errors.confirmPassword}
                     secureTextEntry
                 />
+            </View>
 
                 <ThemedButton
                     text="Cambiar contraseña"
                     onPress={handleSubmit}
                     style={styles.button}
                 />
-            </View>
 
             <MessageModal
                 isVisible={isSuccessModalVisible}
@@ -136,7 +136,6 @@ export default function ChangePasswordScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        gap: 16,
     },
     button: {
         marginTop: 24,

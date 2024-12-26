@@ -132,8 +132,8 @@ export default function RegisterScreen() {
                 name: sanitizedNombre,
                 surname: sanitizedApellido,
                 email: email.trim(),
-                password: password,
-                referralCode: referralCode.trim() || undefined
+                pwd: password,
+                codeToRefer: referralCode.trim() || undefined
             };
 
             const response = await authService.register(formData);
@@ -149,13 +149,7 @@ export default function RegisterScreen() {
             }
         } catch (error: any) {
             console.error('Error en el registro:', error);
-            if (error instanceof Error && error.message === "The user is already registered") {
-                setErrorMessage('El usuario ya existe');
-            } else if (error.response && error.response.status === 406) {
-                setErrorMessage(error.response.status + ' ' + error.message);
-            } else {
-                setErrorMessage(error.response.status + ' ' + error.message);
-            }
+            setErrorMessage(error.message || 'Error en el registro');
             setIsErrorModalVisible(true);
         }
     };

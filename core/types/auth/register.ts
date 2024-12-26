@@ -1,13 +1,21 @@
+import { User } from "@/core/types";
+
 export interface RegisterRequest {
     name: string;
     surname: string;
+    pwd: string;
     email: string;
-    password: string;
-    referralCode?: string;
-  }
+    codeToRefer?: string;
+}
 
-export interface RegisterResponse {
+  export interface RegisterResponse {
+    data: {
+      tokens: {
+        jwtRefresh: string;
+        jwtSession: string;
+      };
+      user: User;
+    };
     message: string;
-    status?: number;
-    data?: any;
+    status: number;
   }

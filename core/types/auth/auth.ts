@@ -7,7 +7,7 @@ export interface LoginResponse {
         jwtRefresh: string;
         jwtSession: string;
       };
-      user: User | null;
+      user: User;
       vehicles?: Vehicle[];
     };
     message: string;

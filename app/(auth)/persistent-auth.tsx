@@ -14,74 +14,34 @@ import { isBiometricAvailable, authenticateBiometric } from '@/core/services';
 
 interface PersistentAuthProps {
   onAuthSuccess: () => void;
+  authMethod: 'pin' | 'biometric' | null;
 }
 
-export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
+export default function PersistentAuth({ onAuthSuccess, authMethod }: PersistentAuthProps) {
+  const { handlePersistentAuthSuccess } = useAuth();
   const [pin, setPin] = useState('');
-  const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
-  const [isOffline, setIsOffline] = useState(false);
-  const [canShowAlert, setCanShowAlert] = useState(true);
   const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const themeColors = useThemeColor();
-  const router = useRouter();
-  const { handlePersistentAuthSuccess } = useAuth();
 
   useEffect(() => {
-    checkBiometricAvailability();
-    checkNetworkStatus();
-
-    const unsubscribe = NetInfo.addEventListener(state => {
-      setIsOffline(!state.isConnected);
-    });
-
-    const subscription = AppState.addEventListener('change', nextAppState => {
-      if (nextAppState === 'active') {
-        setCanShowAlert(true);
-        checkNetworkStatus();
-      } else {
-        setCanShowAlert(false);
-      }
-    });
-
-    return () => {
-      unsubscribe();
-      subscription.remove();
-    };
+    // Si está habilitada la biometría, intentar autenticación automáticamente
+    if (authMethod === 'biometric') {
+      handleBiometricAuth();
+    }
   }, []);
 
-  const checkBiometricAvailability = async () => {
-    try {
-      const available = await isBiometricAvailable();
-      setIsBiometricEnabled(available);
-      if (available) {
-        handleBiometricAuth();
-      }
-    } catch (error) {
-      console.error('Error checking biometric availability:', error);
-    }
-  };
-
-  const checkNetworkStatus = async () => {
-    const connection = await NetInfo.fetch();
-    setIsOffline(!connection.isConnected);
-  };
-
-  const showAlert = (title: string, message: string) => {
-    if (canShowAlert) {
-      setErrorMessage(message);
-      setIsErrorModalVisible(true);
-    } else {
-      console.log('No se puede mostrar alerta:', title, message);
-    }
+  const showAlert = (message: string) => {
+    setErrorMessage(message);
+    setIsErrorModalVisible(true);
   };
 
   const handleAuthSuccess = async () => {
     try {
       await handlePersistentAuthSuccess();
+      onAuthSuccess();
     } catch (error) {
-      console.error('Error en handleAuthSuccess:', error);
-      showAlert('Error', 'Hubo un problema con la autenticación');
+      showAlert('Hubo un problema con la autenticación');
     }
   };
 
@@ -89,12 +49,10 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
     try {
       const success = await authenticateBiometric();
       if (success) {
-        console.log('Autenticación biométrica exitosa');
         await handleAuthSuccess();
       }
     } catch (error) {
-      console.error('Error during biometric authentication:', error);
-      showAlert('Error', 'No se pudo autenticar con biometría. Por favor, use el PIN.');
+      showAlert('No se pudo autenticar con biometría');
     }
   };
 
@@ -104,11 +62,10 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
       if (pin === storedPin) {
         await handleAuthSuccess();
       } else {
-        showAlert('Error', 'PIN incorrecto');
+        showAlert('PIN incorrecto');
       }
     } catch (error) {
-      console.error('Error during PIN authentication:', error);
-      showAlert('Error', 'No se pudo verificar el PIN');
+      showAlert('No se pudo verificar el PIN');
     }
   };
 
@@ -116,20 +73,23 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
     <ThemedLayout>
       <View style={styles.pageContainer}>
         <Logo style={styles.loginLogo} />
-        <ThemedInput
-          label="PIN"
-          value={pin}
-          onChangeText={setPin}
-          placeholder="Ingrese su PIN"
-          keyboardType="number-pad"
-          secureTextEntry
-          maxLength={4}
-        />
-      </View>
+        
+        {authMethod === 'pin' && (
+          <>
+            <ThemedInput
+              label="PIN"
+              value={pin}
+              onChangeText={setPin}
+              placeholder="Ingrese su PIN"
+              keyboardType="number-pad"
+              secureTextEntry
+              maxLength={4}
+            />
+            <ThemedButton text="Verificar PIN" onPress={handlePinAuth} />
+          </>
+        )}
 
-      <View style={styles.buttonContainer}>
-        <ThemedButton text="Verificar PIN" onPress={handlePinAuth} />
-        {isBiometricEnabled && (
+        {authMethod === 'biometric' && (
           <ThemedButton
             text="Usar huella digital"
             onPress={handleBiometricAuth}
@@ -151,7 +111,7 @@ export default function PersistentAuth({ onAuthSuccess }: PersistentAuthProps) {
         primaryButton={{
           text: "Entendido",
           onPress: () => setIsErrorModalVisible(false)
-      }}
+        }}
       />
     </ThemedLayout>
   );

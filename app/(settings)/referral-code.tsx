@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Share, Clipboard, TouchableOpacity } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedButton } from '@/shared/components';
@@ -10,11 +10,15 @@ export default function ReferralCodeScreen() {
     const { user } = useUser();
     const [isCopied, setIsCopied] = useState(false);
 
+    useEffect(() => {
+        console.log(user);
+    }, [user]);
+
     const handleShareLink = async () => {
         try {
             await Share.share({
                 title: '¡Únete a Moneyfy!',
-                message: `¡Hola! Te invito a unirte a Moneyfy. Usa mi código de referido: ${user?.codeToSuggest}\n\nDescarga la app aquí: https://play.google.com/store/apps/details?id=cl.moneyfy.app.&hl=es_9393`,
+                message: `¡Hola! Te invito a unirte a Moneyfy. Usa mi código de referido: ${user?.codeToRefer}\n\nDescarga la app aquí: https://play.google.com/store/apps/details?id=cl.moneyfy.app.&hl=es_9393`,
             });
         } catch (error) {
             console.error('Error al compartir:', error);
@@ -23,7 +27,7 @@ export default function ReferralCodeScreen() {
 
     const handleCopyCode = async () => {
         try {
-            await Clipboard.setString(user?.codeToSuggest || '');
+            await Clipboard.setString(user?.codeToRefer || '');
             setIsCopied(true);
             setTimeout(() => {
                 setIsCopied(false);
@@ -65,7 +69,7 @@ export default function ReferralCodeScreen() {
                         color={themeColors.textColorAccent}
                         style={styles.codeText}
                     >
-                        {user?.codeToSuggest}
+                        {user?.codeToRefer}
                     </ThemedText>
                 </View>
 

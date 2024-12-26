@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
     PERSISTENT_AUTH: 'persistentAuthEnabled',
     PERSISTENT_AUTH_CONFIGURED: 'persistentAuthConfigured',
     PIN: 'userPin' as const,
+    BIOMETRIC_ENABLED: 'biometricEnabled',
   },
   USER: {
     DATA: 'user',

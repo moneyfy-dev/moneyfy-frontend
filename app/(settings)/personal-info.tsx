@@ -3,11 +3,12 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedLayout, ThemedDatePicker, ThemedInput, ThemedButton, ProfilePictureModal, AvatarIcon, MessageModal } from '@/shared/components';
+import { ThemedLayout, ThemedDatePicker, ThemedInput, ThemedButton, ProfilePictureModal, AvatarIcon, MessageModal, ThemedText } from '@/shared/components';
 import { validateName, validatePhoneNumber, validateAddress } from '@/shared/utils/validations';
 import { useSettings } from '@/core/context';
 import { PersonalData } from '@/core/types';
 import { Ionicons } from '@expo/vector-icons';
+import Colors from '@/constants/Colors';
 
 interface FormData extends Omit<PersonalData, 'dateOfBirth' | 'email' | 'enable'> {
     dateOfBirth: Date | null;
@@ -134,7 +135,7 @@ export default function PersonalInfoScreen() {
     };
 
     return (
-        <ThemedLayout>
+        <ThemedLayout padding={[0, 40]}>
             <View style={styles.content}>
                 <View style={styles.profileSection}>
                     <TouchableOpacity 
@@ -149,16 +150,21 @@ export default function PersonalInfoScreen() {
                         ) : (
                             <AvatarIcon width={120} height={120} style={styles.profileImage} />
                         )}
-                        <View style={[styles.editButton, { backgroundColor: themeColors.textColorAccent }]}>
-                            <Ionicons name="camera" size={20} color={themeColors.textColor} />
+                        <View style={[styles.editButton, { backgroundColor: Colors.common.green2 }]}>
+                            <Ionicons name="camera" size={20} color={Colors.common.white} />
                         </View>
                     </TouchableOpacity>
+                    <View>
+                        <ThemedText variant="title" textAlign="center" marginBottom={4}>{personalInfo.name} {personalInfo.surname}</ThemedText>
+                        <ThemedText variant="paragraph" textAlign="center">{personalInfo.email || 'No email'}</ThemedText>
+                    </View>
                 </View>
 
                 <ThemedInput
                     label="Nombre"
                     value={formData.name}
                     onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
+                    placeholder="Ingrese su nombre"
                     error={errors.name}
                 />
 
@@ -166,6 +172,7 @@ export default function PersonalInfoScreen() {
                     label="Apellido"
                     value={formData.surname}
                     onChangeText={(text) => setFormData(prev => ({ ...prev, surname: text }))}
+                    placeholder="Ingrese su apellido"
                     error={errors.surname}
                 />
 
@@ -173,6 +180,7 @@ export default function PersonalInfoScreen() {
                     label="Teléfono"
                     value={formData.phone}
                     onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))}
+                    placeholder="Ingrese su teléfono"
                     error={errors.phone}
                     keyboardType="phone-pad"
                 />
@@ -181,6 +189,7 @@ export default function PersonalInfoScreen() {
                     label="Dirección"
                     value={formData.address}
                     onChangeText={(text) => setFormData(prev => ({ ...prev, address: text }))}
+                    placeholder="Ingrese su dirección"
                     error={errors.address}
                 />
 
@@ -188,14 +197,15 @@ export default function PersonalInfoScreen() {
                     label="Fecha de nacimiento"
                     value={formData.dateOfBirth}
                     onChange={(date) => setFormData(prev => ({ ...prev, dateOfBirth: date }))}
+                    placeholder="Seleccione su fecha de nacimiento"
                 />
 
+            </View>
                 <ThemedButton
                     text="Guardar cambios"
                     onPress={handleSave}
                     style={styles.Button}
                 />
-            </View>
 
             <ProfilePictureModal
                 isVisible={isModalVisible}

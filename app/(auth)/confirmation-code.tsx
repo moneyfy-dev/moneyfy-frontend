@@ -4,12 +4,13 @@ import { ROUTES, ConfirmationFlowType } from '@/core/types';
 import { View, StyleSheet, TextInput } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedButton, MessageModal, VerificationCode, ResendCode } from '@/shared/components';
-import { useAuth } from '@/core/context';
+import { useAuth, useUser } from '@/core/context';
 
 export default function ConfirmationCodeScreen() {
     const route = useLocalSearchParams();
     const { email, flow } = route;
-    const { confirmCode, resendCode } = useAuth();
+    const { confirmCode, resendCode, handleRegistrationSuccess } = useAuth();
+    const { syncWithAuth } = useUser();
     const router = useRouter();
     const [code, setCode] = useState('');
     const inputRefs = useRef<Array<React.RefObject<TextInput>>>([
@@ -31,12 +32,19 @@ export default function ConfirmationCodeScreen() {
                 flow as ConfirmationFlowType,
             );
 
-            if (response.status === 200) {
-                if (flow === 'restorePassword') {
+            setSuccessMessage('Verificación exitosa');
+            setSuccessModalVisible(true);
+
+            if (flow === 'registerUser' && response.status === 201) {
+                await handleRegistrationSuccess(response);
+                await syncWithAuth(response.data.user);
+                router.replace(ROUTES.TABS.INDEX);
+            } else if (flow === 'restorePassword' && response.status === 200) {
+                setSuccessMessage('Contraseña restaurada exitosamente');
+                setSuccessModalVisible(true);
+                setTimeout(() => {
                     router.replace(ROUTES.AUTH.LOGIN);
-                } else {
-                    router.replace(ROUTES.TABS.INDEX);
-                }
+                }, 1500);
             }
         } catch (error: any) {
             setErrorMessage(error.message || 'Código inválido. Por favor intente nuevamente.');

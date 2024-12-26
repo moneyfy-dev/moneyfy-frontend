@@ -3,7 +3,7 @@ import { Wallet } from "../wallet/wallet";
 
 export interface User {
     userId: string;
-    codeToSuggest: string;
+    codeToRefer: string;
     personalData: PersonalData;
     notifs: NotificationPreferences;
     wallet: Wallet;

@@ -6,6 +6,9 @@ import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, MessageModal } from '@/shared/components';
 import { useSettings } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
+import { isBiometricAvailable } from '@/core/services/biometricService';
+import { storage } from '@/shared/utils/storage';
+import { STORAGE_KEYS } from '@/core/types';
 
 interface SecurityOption {
     id: string;
@@ -19,8 +22,19 @@ export default function PrivacySecurityScreen() {
     const themeColors = useThemeColor();
     const router = useRouter();
     const { security, updateSecurity } = useSettings();
+    const [isLoading, setIsLoading] = useState(false);
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+
+    useEffect(() => {
+        const checkInitialState = async () => {
+            const biometricEnabled = await storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED);
+            if (!biometricEnabled) {
+                await updateSecurity({ fingerprintEnabled: false });
+            }
+        };
+        checkInitialState();
+    }, []);
 
     const securityOptions: SecurityOption[] = [
         {
@@ -46,13 +60,27 @@ export default function PrivacySecurityScreen() {
     const handleToggle = async (id: string) => {
         try {
             if (id === 'fingerprintEnabled') {
-                await updateSecurity({ 
-                    fingerprintEnabled: !security.fingerprintEnabled 
-                });
+                setIsLoading(true);
+                const newValue = !security.fingerprintEnabled;
+                
+                if (newValue) {
+                    const isAvailable = await isBiometricAvailable();
+                    if (!isAvailable) {
+                        setErrorMessage('La autenticación biométrica no está disponible en este dispositivo');
+                        setIsErrorModalVisible(true);
+                        return;
+                    }
+                }
+
+                await updateSecurity({ fingerprintEnabled: newValue });
+                await storage.set(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED, newValue.toString());
+                await storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH, newValue.toString());
             }
         } catch (error) {
             setErrorMessage('No se pudo actualizar la configuración de seguridad');
             setIsErrorModalVisible(true);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -63,15 +91,17 @@ export default function PrivacySecurityScreen() {
     };
 
     const renderOption = (option: SecurityOption) => (
-        <View key={option.id} style={[
+        <TouchableOpacity key={option.id} style={[
             styles.optionContainer,
             { borderBottomColor: themeColors.borderBackgroundColor }
-        ]}>
+        ]}
+        onPress={() => handleNavigation(option.route)}
+        >
             <View style={styles.optionContent}>
                 <Ionicons
                     name={getIconName(option.id)}
                     size={24}
-                    color={themeColors.textColor}
+                    color={themeColors.textColorAccent}
                     style={styles.icon}
                 />
                 <ThemedText variant="subTitle">{option.title}</ThemedText>
@@ -85,15 +115,13 @@ export default function PrivacySecurityScreen() {
                     value={option.isEnabled}
                 />
             ) : (
-                <TouchableOpacity onPress={() => handleNavigation(option.route)}>
                     <Ionicons
                         name="chevron-forward"
-                        size={24}
-                        color={themeColors.textColor}
+                        size={16}
+                        color={themeColors.textParagraph}
                     />
-                </TouchableOpacity>
             )}
-        </View>
+        </TouchableOpacity>
     );
 
     return (
