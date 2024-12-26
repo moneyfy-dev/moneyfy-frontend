@@ -1,11 +1,11 @@
-import { Notifications } from "./useNotifications";
+import { NotificationPreferences } from "./settings";
 import { Wallet } from "../wallet/wallet";
 
 export interface User {
     userId: string;
     codeToSuggest: string;
     personalData: PersonalData;
-    notifs: Notifications;
+    notifs: NotificationPreferences;
     wallet: Wallet;
     accounts: any[];
     quoterPeople: any[];

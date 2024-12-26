@@ -88,6 +88,19 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await hydrateUserData(true);
   };
 
+  const syncWithAuth = async (userData: User) => {
+    try {
+      setIsLoading(true);
+      setUser(userData);
+      setLastHydrationTime(new Date());
+    } catch (error) {
+      console.error('Error syncing with auth:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -97,6 +110,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateUserData,
         refreshUserData,
         hydrateUserData,
+        syncWithAuth,
       }}
     >
       {children}

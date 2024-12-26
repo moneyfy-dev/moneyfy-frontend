@@ -7,6 +7,7 @@ import { validateEmail, validatePassword } from '@/shared/utils/validations';
 import { useThemeColor, useCardVisibility } from '@/shared/hooks';
 import { useAuth } from '@/core/context';
 import { AnimatedCard } from '@/shared/components/composite/AnimatedCard';
+import { authService } from '@/core/services';
 
 const { height } = Dimensions.get('window');
 
@@ -81,17 +82,13 @@ export default function LoginScreen() {
             }
 
             setIsLoading(true);
-            await loginContext({ 
-                data: {
-                    user: null,
-                    tokens: {
-                        jwtRefresh: '',
-                        jwtSession: ''
-                    }
-                },
-                message: '',
-                status: 200
-            });
+            
+            // Llamar al servicio de autenticación directamente
+            const loginResponse = await authService.login(email, password);
+            
+            // Procesar la respuesta con el contexto de auth
+            await loginContext(loginResponse);
+            
             router.replace(ROUTES.TABS.INDEX);
 
         } catch (error: any) {

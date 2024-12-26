@@ -65,6 +65,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginContext = async (response: LoginResponse) => {
     try {
+      // Validar que la respuesta tenga la estructura correcta
+      if (!response.data?.tokens || !response.data?.user) {
+        throw new Error('Respuesta de login inválida');
+      }
+
       // Guardar tokens
       await storage.auth.setTokens(
         response.data.tokens.jwtRefresh,
@@ -75,7 +80,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await storage.user.setData(response.data.user);
       await storage.user.updateLastHydration();
       
+      // Actualizar estado de autenticación
       setIsAuthenticated(true);
+
+      // Retornar los datos del usuario para que el componente login pueda usarlos
+      return response.data.user;
     } catch (error: any) {
       console.error('Error en login:', error);
       if (!error.response || error.response.status !== 226) {

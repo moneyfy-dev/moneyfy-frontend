@@ -11,6 +11,7 @@ interface UserContextType extends UserState {
   updateUserData: (userData: Partial<User>) => Promise<void>;
   refreshUserData: () => Promise<void>;
   hydrateUserData: (force?: boolean) => Promise<void>;
+  syncWithAuth: (userData: User) => Promise<void>;
 }
 
 export const UserContext = createContext<UserContextType>({} as UserContextType);
