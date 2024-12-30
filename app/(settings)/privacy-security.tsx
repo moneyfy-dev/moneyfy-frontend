@@ -4,7 +4,7 @@ import { ROUTES } from '@/core/types';
 import { StyleSheet, View, Switch, TouchableOpacity } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, MessageModal } from '@/shared/components';
-import { useSettings } from '@/core/context';
+import { useSettings, useAuth } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 import { isBiometricAvailable } from '@/core/services/biometricService';
 import { storage } from '@/shared/utils/storage';
@@ -22,21 +22,11 @@ export default function PrivacySecurityScreen() {
     const themeColors = useThemeColor();
     const router = useRouter();
     const { security, updateSecurity } = useSettings();
+    const { checkAuthStatus } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-
-    useEffect(() => {
-        const checkInitialState = async () => {
-            const biometricEnabled = await storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED);
-            if (!biometricEnabled) {
-                await updateSecurity({ fingerprintEnabled: false });
-            }
-        };
-        checkInitialState();
-    }, []);
-
-    const securityOptions: SecurityOption[] = [
+    const [securityOptions, setSecurityOptions] = useState<SecurityOption[]>([
         {
             id: 'fingerprintEnabled',
             title: 'Autenticación biométrica',
@@ -55,29 +45,68 @@ export default function PrivacySecurityScreen() {
             type: 'navigate',
             route: ROUTES.SETTINGS.PIN_CONFIG
         }
-    ];
+    ]);
+    const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+
+    useEffect(() => {
+        console.log('security', security);
+        setSecurityOptions(prevOptions =>
+            prevOptions.map(option => 
+                option.id === 'fingerprintEnabled' 
+                    ? { ...option, isEnabled: security.fingerprintEnabled }
+                    : option
+            )
+        );
+    }, [security]);
 
     const handleToggle = async (id: string) => {
+        if (isLoading) return;
+        let newValue: boolean;
+        
         try {
             if (id === 'fingerprintEnabled') {
                 setIsLoading(true);
-                const newValue = !security.fingerprintEnabled;
-                
+                newValue = !securityOptions.find(opt => opt.id === id)?.isEnabled;
+
                 if (newValue) {
                     const isAvailable = await isBiometricAvailable();
                     if (!isAvailable) {
-                        setErrorMessage('La autenticación biométrica no está disponible en este dispositivo');
+                        setErrorMessage('La autenticación biométrica no está disponible');
                         setIsErrorModalVisible(true);
                         return;
                     }
                 }
 
+                setSecurityOptions(prevOptions =>
+                    prevOptions.map(option =>
+                        option.id === id ? { ...option, isEnabled: newValue } : option
+                    )
+                );
+
+                await Promise.all([
+                    storage.set(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED, String(newValue)),
+                    storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH, String(newValue)),
+                    storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH_CONFIGURED, String(newValue))
+                ]);
+
                 await updateSecurity({ fingerprintEnabled: newValue });
-                await storage.set(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED, newValue.toString());
-                await storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH, newValue.toString());
+
+                await checkAuthStatus();
+
+                setSuccessMessage(newValue ? 
+                    'Autenticación biométrica activada' : 
+                    'Autenticación biométrica desactivada'
+                );
+                setIsSuccessModalVisible(true);
             }
         } catch (error) {
-            setErrorMessage('No se pudo actualizar la configuración de seguridad');
+            setSecurityOptions(prevOptions =>
+                prevOptions.map(option =>
+                    option.id === id ? { ...option, isEnabled: !newValue } : option
+                )
+            );
+            setErrorMessage('Error al actualizar la configuración');
             setIsErrorModalVisible(true);
         } finally {
             setIsLoading(false);
@@ -113,13 +142,14 @@ export default function PrivacySecurityScreen() {
                     ios_backgroundColor={themeColors.extremeContrastGray}
                     onValueChange={() => handleToggle(option.id)}
                     value={option.isEnabled}
+                    disabled={isLoading}
                 />
             ) : (
-                    <Ionicons
-                        name="chevron-forward"
-                        size={16}
-                        color={themeColors.textParagraph}
-                    />
+                <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color={themeColors.textParagraph}
+                />
             )}
         </TouchableOpacity>
     );
@@ -140,6 +170,21 @@ export default function PrivacySecurityScreen() {
                 primaryButton={{
                     text: "Entendido",
                     onPress: () => setIsErrorModalVisible(false)
+                }}
+            />
+
+            <MessageModal
+                isVisible={isSuccessModalVisible}
+                onClose={() => setIsSuccessModalVisible(false)}
+                title="Éxito"
+                message={successMessage}
+                icon={{
+                    name: "checkmark-circle-outline",
+                    color: themeColors.status.success
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setIsSuccessModalVisible(false)
                 }}
             />
         </ThemedLayout>

@@ -17,7 +17,7 @@ const PUBLIC_AUTH_ROUTES = [
 ];
 
 export function PersistentAuthWrapper({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isPersistentAuthRequired, isLoading, handlePersistentAuthSuccess, checkAuthStatus } = useAuth();
+  const { isAuthenticated, isPersistentAuthRequired, handlePersistentAuthSuccess, checkAuthStatus } = useAuth();
   const { hydrateUserData } = useUser();
   const [isReady, setIsReady] = useState(false);
   const [authMethod, setAuthMethod] = useState<'pin' | 'biometric' | null>(null);
@@ -30,6 +30,15 @@ export function PersistentAuthWrapper({ children }: { children: React.ReactNode 
       try {
         await checkAuthStatus();
         if (isAuthenticated) {
+          const biometricEnabled = await storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED);
+          const hasPin = await storage.getSecure(STORAGE_KEYS.AUTH.PIN);
+
+          if (biometricEnabled === 'true') {
+            setAuthMethod('biometric');
+          } else if (hasPin) {
+            setAuthMethod('pin');
+          }
+
           await hydrateUserData();
         }
         setIsReady(true);
@@ -46,40 +55,28 @@ export function PersistentAuthWrapper({ children }: { children: React.ReactNode 
 
     const inAuthGroup = segments[0] === '(auth)';
     const inPersistentAuth = segments[1] === 'persistent-auth';
-    const isPublicRoute = PUBLIC_ROUTES.includes(segments[0]);
-    const isPublicAuthRoute = inAuthGroup && PUBLIC_AUTH_ROUTES.includes(segments[1] || '');
-
+    
     try {
-        // Si no está autenticado -> Login
-        if (!isAuthenticated && !inAuthGroup) {
-            router.replace('/(auth)/login');
-            return;
+      if (!isAuthenticated) {
+        if (!inAuthGroup || segments[1] !== 'login') {
+          router.replace('/(auth)/login');
         }
-
-        // Si está autenticado y requiere auth persistente -> Persistent Auth
-        if (isAuthenticated && isPersistentAuthRequired && !inPersistentAuth) {
-            router.replace('/(auth)/persistent-auth');
-            return;
+      } else if (isPersistentAuthRequired) {
+        if (!inPersistentAuth) {
+          router.replace('/(auth)/persistent-auth');
         }
-
-        // Si está autenticado y no requiere auth persistente -> Index
-        if (isAuthenticated && !isPersistentAuthRequired && (inAuthGroup || inPersistentAuth)) {
-            router.replace('/(tabs)');
-            return;
+      } else {
+        if (inAuthGroup || inPersistentAuth) {
+          router.replace('/(tabs)');
         }
-
+      }
     } catch (error) {
-        console.error('Navigation error:', error);
+      console.error('Navigation error:', error);
     }
   }, [isReady, isAuthenticated, isPersistentAuthRequired, segments, rootNavigationState?.key]);
 
-  if (!isReady || isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Cargando...</Text>
-      </View>
-    );
+  if (!isReady || !rootNavigationState?.key) {
+    return <>{children}</>;
   }
 
   if (isAuthenticated && isPersistentAuthRequired) {

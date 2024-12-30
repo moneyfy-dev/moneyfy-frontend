@@ -9,7 +9,6 @@ import { ThemedButton } from '../../shared/components/ui/ThemedButton';
 import { MessageModal } from '../../shared/components/modals/MessageModal';
 import { useAuth } from '@/core/context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import NetInfo from "@react-native-community/netinfo";
 import { isBiometricAvailable, authenticateBiometric } from '@/core/services';
 
 interface PersistentAuthProps {
@@ -25,10 +24,19 @@ export default function PersistentAuth({ onAuthSuccess, authMethod }: Persistent
   const themeColors = useThemeColor();
 
   useEffect(() => {
-    // Si está habilitada la biometría, intentar autenticación automáticamente
-    if (authMethod === 'biometric') {
-      handleBiometricAuth();
-    }
+    const authenticate = async () => {
+      try {
+        const success = await authenticateBiometric();
+        if (success) {
+          await handlePersistentAuthSuccess();
+        }
+      } catch (error) {
+        setErrorMessage('No se pudo autenticar con biometría');
+        setIsErrorModalVisible(true);
+      }
+    };
+
+    authenticate();
   }, []);
 
   const showAlert = (message: string) => {
@@ -49,10 +57,11 @@ export default function PersistentAuth({ onAuthSuccess, authMethod }: Persistent
     try {
       const success = await authenticateBiometric();
       if (success) {
-        await handleAuthSuccess();
+        await handlePersistentAuthSuccess();
       }
     } catch (error) {
-      showAlert('No se pudo autenticar con biometría');
+      setErrorMessage('No se pudo autenticar con biometría');
+      setIsErrorModalVisible(true);
     }
   };
 

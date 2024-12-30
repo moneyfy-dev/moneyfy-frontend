@@ -13,13 +13,15 @@ const SPLASH_SCREEN_DURATION = 4000; // Duración fija para la animación de mar
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const { isAuthenticated, isLoading, isPersistentAuthRequired } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, isPersistentAuthRequired } = useAuth();
   const { hydrateUserData } = useUser();
   const [splashScreenComplete, setSplashScreenComplete] = useState(false);
 
   const [fontsLoaded, fontError] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+
+  const isAppReady = fontsLoaded && splashScreenComplete && !authLoading;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -29,15 +31,15 @@ export default function RootLayout() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Efecto para hidratar datos cuando estamos autenticados sin auth persistente
   useEffect(() => {
+    console.log('isAuthenticated', isAuthenticated);
+    console.log('isPersistentAuthRequired', isPersistentAuthRequired);
     if (isAuthenticated && !isPersistentAuthRequired) {
       hydrateUserData();
     }
   }, [isAuthenticated, isPersistentAuthRequired]);
 
-  // Mostrar splash screen mientras se cargan recursos o la animación no termina
-  if (!fontsLoaded || !splashScreenComplete || isLoading) {
+  if (!isAppReady) {
     return (
       <ThemeProvider>
         <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -54,25 +56,46 @@ export default function RootLayout() {
           <AuthProvider>
             <UserProvider>
               <SettingsProvider>
-                {isAuthenticated && isPersistentAuthRequired ? (
-                  <PersistentAuthWrapper>
-                    <OnboardingProvider>
-                      <Stack initialRouteName="(tabs)">
+                <OnboardingProvider>
+                  {isAuthenticated ? (
+                    isPersistentAuthRequired ? (
+                      <Stack
+                        screenOptions={{
+                          headerShown: false,
+                          animation: 'fade'
+                        }}
+                        initialRouteName="(auth)"
+                      >
                         {screens.map(screen => (
                           <Stack.Screen key={screen.name} name={screen.name} options={screen.options} />
                         ))}
                       </Stack>
-                    </OnboardingProvider>
-                  </PersistentAuthWrapper>
-                ) : (
-                  <OnboardingProvider>
-                    <Stack initialRouteName={isAuthenticated ? '(tabs)' : '(auth)'}>
+                    ) : (
+                      <Stack
+                        screenOptions={{
+                          animation: 'fade'
+                        }}
+                        initialRouteName="(tabs)"
+                      >
+                        {screens.map(screen => (
+                          <Stack.Screen key={screen.name} name={screen.name} options={screen.options} />
+                        ))}
+                      </Stack>
+                    )
+                  ) : (
+                    <Stack
+                      screenOptions={{
+                        headerShown: false,
+                        animation: 'fade'
+                      }}
+                      initialRouteName="(auth)"
+                    >
                       {screens.map(screen => (
                         <Stack.Screen key={screen.name} name={screen.name} options={screen.options} />
                       ))}
                     </Stack>
-                  </OnboardingProvider>
-                )}
+                  )}
+                </OnboardingProvider>
               </SettingsProvider>
             </UserProvider>
           </AuthProvider>

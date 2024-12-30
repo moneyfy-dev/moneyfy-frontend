@@ -6,6 +6,8 @@ import { BankAccount } from '../../types/user/settings';
 import { NotificationPreferences } from '../../types/user/settings';
 import { settingsService } from '../../services/settings/index';
 import { useUser } from '../user/useUser';
+import { storage } from '@/shared/utils/storage';
+import { STORAGE_KEYS } from '@/core/types';
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useUser();
@@ -14,13 +16,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
   const [notifications, setNotifications] = useState<NotificationPreferences>({} as NotificationPreferences);
 
-  // Cargar configuraciones iniciales
+  // Un solo useEffect para inicializar
   useEffect(() => {
-    const loadInitialSettings = async () => {
+    const loadSettings = async () => {
       try {
-        // Cargar configuración de seguridad desde storage local
-        const securitySettings = await settingsService.getSecuritySettings();
-        setSecurity(securitySettings);
+        // Cargar configuración de seguridad desde storage
+        const biometricEnabled = await storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED);
+        setSecurity({ fingerprintEnabled: biometricEnabled === 'true' });
 
         // Cargar información personal desde el usuario actual
         if (user?.personalData) {
@@ -37,19 +39,19 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           setNotifications(user.notifs);
         }
       } catch (error) {
-        console.error('Error al cargar configuraciones iniciales:', error);
+        console.error('Error loading settings:', error);
+        setSecurity({ fingerprintEnabled: false });
       }
     };
 
-    loadInitialSettings();
+    loadSettings();
   }, [user]);
 
-  const updateSecurity = async (settings: Partial<SecuritySettings>) => {
+  const updateSecurity = async (updates: Partial<typeof security>) => {
     try {
-      const updatedSettings = await settingsService.updateSecuritySettings(settings);
-      setSecurity(updatedSettings);
+      setSecurity(prev => ({ ...prev, ...updates }));
     } catch (error) {
-      console.error('Error al actualizar configuración de seguridad:', error);
+      console.error('Error updating security settings:', error);
       throw error;
     }
   };

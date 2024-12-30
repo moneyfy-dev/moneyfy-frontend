@@ -4,62 +4,106 @@ import { STORAGE_KEYS } from '@/core/types';
 import { storage } from '@/shared/utils/storage';
 import { authService } from '@/core/services';
 import type { ConfirmationFlowType, LoginResponse, RegisterResponse } from '@/core/types';
+import { useRouter } from 'expo-router';
+import { ROUTES } from '@/core/types';
+
+interface AuthState {
+    isAuthenticated: boolean;
+    isPersistentAuthRequired: boolean;
+    isLoading: boolean;
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isPersistentAuthRequired, setIsPersistentAuthRequired] = useState<boolean>(false);
-  const [isPersistentAuthConfigured, setIsPersistentAuthConfigured] = useState(false);
+  const [authState, setAuthState] = useState<AuthState>({
+    isAuthenticated: false,
+    isPersistentAuthRequired: false,
+    isLoading: true
+  });
+  const router = useRouter();
 
   // Inicialización
   React.useEffect(() => {
     let isMounted = true;
 
     const initializeAuth = async () => {
-      try {
-        const { token, sessionToken } = await storage.auth.getTokens();
-        const userData = await storage.user.getData();
+        try {
+            setAuthState(prev => ({
+                ...prev,
+                isLoading: true
+            }));
+            const { token, sessionToken } = await storage.auth.getTokens();
+            const userData = await storage.user.getData();
 
-        if (!token || !sessionToken || !userData) {
-          if (isMounted) {
-            setIsAuthenticated(false);
-            setIsPersistentAuthRequired(false);
-          }
-          await storage.auth.clearAuth();
-          await storage.user.clearUser();
-        } else {
-          const { isValid } = await authService.verifySession();
-          if (isValid && isMounted) {
-            setIsAuthenticated(true);
-            const persistentAuth = await storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH);
-            setIsPersistentAuthRequired(persistentAuth === 'true');
-          } else {
-            if (isMounted) {
-              setIsAuthenticated(false);
-              setIsPersistentAuthRequired(false);
+            if (!token || !sessionToken || !userData) {
+                if (isMounted) {
+                    setAuthState(prev => ({
+                        ...prev,
+                        isAuthenticated: false,
+                        isPersistentAuthRequired: false
+                    }));
+                }
+                return;
             }
-            await storage.auth.clearAuth();
-            await storage.user.clearUser();
-          }
+
+            // Si tenemos tokens y userData, establecer autenticación
+            if (isMounted) {
+                const biometricEnabled = await storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED);
+                setAuthState(prev => ({
+                    ...prev,
+                    isAuthenticated: true,
+                    isPersistentAuthRequired: biometricEnabled === 'true'
+                }));
+            }
+
+            // Verificar auth persistente
+            const persistentAuth = await storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH);
+            const persistentAuthConfigured = await storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH_CONFIGURED);
+            const biometricEnabled = await storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED);
+
+            console.log('Initializing Auth:', {
+                hasTokens: true,
+                hasUserData: true,
+                persistentAuth,
+                persistentAuthConfigured,
+                biometricEnabled,
+                isAuthenticated: true
+            });
+
+            if (isMounted) {
+                const shouldRequireAuth = (
+                    persistentAuth === 'true' && 
+                    persistentAuthConfigured === 'true' &&
+                    biometricEnabled === 'true'
+                );
+                console.log('Setting initial isPersistentAuthRequired to:', shouldRequireAuth);
+                setAuthState(prev => ({
+                    ...prev,
+                    isPersistentAuthRequired: shouldRequireAuth
+                }));
+            }
+        } catch (error) {
+            console.error('Error initializing auth:', error);
+            if (isMounted) {
+                setAuthState(prev => ({
+                    ...prev,
+                    isAuthenticated: false,
+                    isPersistentAuthRequired: false
+                }));
+            }
+        } finally {
+            if (isMounted) {
+                setAuthState(prev => ({
+                    ...prev,
+                    isLoading: false
+                }));
+            }
         }
-      } catch (error) {
-        if (isMounted) {
-          setIsAuthenticated(false);
-          setIsPersistentAuthRequired(false);
-        }
-        await storage.auth.clearAuth();
-        await storage.user.clearUser();
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
     };
 
     initializeAuth();
 
     return () => {
-      isMounted = false;
+        isMounted = false;
     };
   }, []);
 
@@ -77,60 +121,105 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await storage.user.setData(response.data.user);
       await storage.user.updateLastHydration();
       
-      setIsAuthenticated(true);
+      setAuthState(prev => ({
+        ...prev,
+        isAuthenticated: true
+      }));
       
       return response.data.user;
     } catch (error: any) {
       console.error('Error en login:', error);
-      setIsAuthenticated(false);
+      setAuthState(prev => ({
+        ...prev,
+        isAuthenticated: false
+      }));
       throw error;
     }
   };
 
   const logout = async () => {
-    setIsLoading(true);
+    setAuthState(prev => ({
+        ...prev,
+        isLoading: true
+    }));
     try {
-      await storage.auth.clearAuth();
-      await storage.user.clearUser();
-      await storage.session.clearAll();
-      setIsPersistentAuthRequired(false);
-      setIsPersistentAuthConfigured(false);
-      setIsAuthenticated(false);
+        // Primero limpiar estados
+        setAuthState(prev => ({
+            ...prev,
+            isAuthenticated: false,
+            isPersistentAuthRequired: false
+        }));
+
+        // Luego limpiar storage
+        await Promise.all([
+            storage.auth.clearAuth(),
+            storage.user.clearUser(),
+            storage.session.clearAll(),
+            storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH, 'false'),
+            storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH_CONFIGURED, 'false'),
+            storage.set(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED, 'false')
+        ]);
+
+        // Redirigir al login
+        router.replace(ROUTES.AUTH.LOGIN);
+
     } catch (error) {
-      console.error('Error during logout:', error);
+        console.error('Error during logout:', error);
     } finally {
-      setIsLoading(false);
+        setAuthState(prev => ({
+            ...prev,
+            isLoading: false
+        }));
     }
   };
 
   const checkAuthStatus = useCallback(async (): Promise<void> => {
     try {
-      const { token, sessionToken } = await storage.auth.getTokens();
-      const userData = await storage.user.getData();
-      const persistentAuth = await storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH);
+        const { token, sessionToken } = await storage.auth.getTokens();
+        const userData = await storage.user.getData();
 
-      if (!token || !sessionToken || !userData) {
-        setIsAuthenticated(false);
-        setIsPersistentAuthRequired(false);
-        await storage.auth.clearAuth();
-        await storage.user.clearUser();
-      } else {
-        const { isValid } = await authService.verifySession();
-        if (isValid) {
-          setIsAuthenticated(true);
-          setIsPersistentAuthRequired(persistentAuth === 'true');
-        } else {
-          setIsAuthenticated(false);
-          setIsPersistentAuthRequired(false);
-          await storage.auth.clearAuth();
-          await storage.user.clearUser();
+        if (!token || !sessionToken || !userData) {
+            setAuthState(prev => ({
+                ...prev,
+                isAuthenticated: false,
+                isPersistentAuthRequired: false
+            }));
+            return;
         }
-      }
+
+        // Verificar todos los flags necesarios
+        const [biometricEnabled, persistentAuth, persistentAuthConfigured] = 
+            await Promise.all([
+                storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED),
+                storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH),
+                storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH_CONFIGURED)
+            ]);
+
+        const shouldRequireAuth = 
+            biometricEnabled === 'true' && 
+            persistentAuth === 'true' && 
+            persistentAuthConfigured === 'true';
+
+        setAuthState(prev => ({
+            ...prev,
+            isAuthenticated: true,
+            isPersistentAuthRequired: shouldRequireAuth
+        }));
+
+        console.log('Auth state updated:', {
+            biometricEnabled,
+            persistentAuth,
+            persistentAuthConfigured,
+            shouldRequireAuth
+        });
+
     } catch (error) {
-      setIsAuthenticated(false);
-      setIsPersistentAuthRequired(false);
-      await storage.auth.clearAuth();
-      await storage.user.clearUser();
+        console.error('Error in checkAuthStatus:', error);
+        setAuthState(prev => ({
+            ...prev,
+            isAuthenticated: false,
+            isPersistentAuthRequired: false
+        }));
     }
   }, []);
 
@@ -140,8 +229,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const handlePersistentAuthSuccess = useCallback(async () => {
-    setIsPersistentAuthRequired(false);
-    setIsAuthenticated(true);
+    setAuthState(prev => ({
+        ...prev,
+        isPersistentAuthRequired: false,
+        isAuthenticated: true
+    }));
   }, []);
   
     const requestPasswordReset = async (email: string) => {
@@ -209,12 +301,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await storage.user.setData(response.data.user);
       await storage.user.updateLastHydration();
       
-      setIsAuthenticated(true);
+      setAuthState(prev => ({
+        ...prev,
+        isAuthenticated: true
+      }));
       
       return response.data.user;
     } catch (error) {
       console.error('Error en registro:', error);
-      setIsAuthenticated(false);
+      setAuthState(prev => ({
+        ...prev,
+        isAuthenticated: false
+      }));
       throw error;
     }
   };
@@ -222,13 +320,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider
       value={{
-        isAuthenticated,
-        isLoading,
+        isAuthenticated: authState.isAuthenticated,
+        isLoading: authState.isLoading,
         loginContext,
         logout,
-        isPersistentAuthRequired,
+        isPersistentAuthRequired: authState.isPersistentAuthRequired,
         handlePersistentAuthSuccess,
-        isPersistentAuthConfigured,
+        isPersistentAuthConfigured: false,
         checkPersistentAuth,
         checkAuthStatus,
         requestPasswordReset,
