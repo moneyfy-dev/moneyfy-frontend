@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { SecuritySettings, PersonalData, BankAccount, NotificationPreferences } from '@/core/types';
+import { SecuritySettings, PersonalData, BankAccount, NotificationPreferences, BaseAuthResponse } from '@/core/types';
 
 interface SettingsContextType {
   security: SecuritySettings;
@@ -10,9 +10,10 @@ interface SettingsContextType {
   updatePersonalInfo: (info: Partial<PersonalData>) => Promise<void>;
   updateAccount: (accountId: string, data: Partial<BankAccount>) => Promise<void>;
   addAccount: (account: Omit<BankAccount, 'accountId'>) => Promise<void>;
-  deleteAccount: (accountId: string) => Promise<void>;
+  deleteAccount: (accountId: string) => Promise<BaseAuthResponse>;
   updateNotifications: (prefs: Partial<NotificationPreferences>) => Promise<void>;
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
+  selectAccount: (accountId: string) => Promise<BaseAuthResponse>;
 }
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined); 

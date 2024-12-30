@@ -54,9 +54,16 @@ export default function HomeScreen() {
   }, []);
 
   const onRefresh = async () => {
-    setIsLoading(true);
-    await hydrateUserData(true);
-    setIsLoading(false);
+    console.log('🔄 Iniciando refresh manual');
+    setRefreshing(true);
+    try {
+      await hydrateUserData(true);
+      console.log('✅ Refresh completado exitosamente');
+    } catch (error) {
+      console.error('❌ Error en refresh:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   if (shouldShowOnboarding) {

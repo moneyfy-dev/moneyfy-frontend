@@ -60,29 +60,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const persistentAuthConfigured = await storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH_CONFIGURED);
             const biometricEnabled = await storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED);
 
-            console.log('Initializing Auth:', {
-                hasTokens: true,
-                hasUserData: true,
-                persistentAuth,
-                persistentAuthConfigured,
-                biometricEnabled,
-                isAuthenticated: true
-            });
-
             if (isMounted) {
                 const shouldRequireAuth = (
                     persistentAuth === 'true' && 
                     persistentAuthConfigured === 'true' &&
                     biometricEnabled === 'true'
                 );
-                console.log('Setting initial isPersistentAuthRequired to:', shouldRequireAuth);
                 setAuthState(prev => ({
                     ...prev,
                     isPersistentAuthRequired: shouldRequireAuth
                 }));
             }
         } catch (error) {
-            console.error('Error initializing auth:', error);
             if (isMounted) {
                 setAuthState(prev => ({
                     ...prev,
@@ -109,9 +98,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginContext = async (response: LoginResponse) => {
     try {
+      console.log('🔑 Iniciando login context');
       if (!response.data?.tokens || !response.data?.user) {
         throw new Error('Respuesta de login inválida');
       }
+
+      console.log('💾 Tokens recibidos del login:', {
+        jwtRefresh: response.data.tokens.jwtRefresh,
+        jwtSession: response.data.tokens.jwtSession
+      });
 
       await storage.auth.setTokens(
         response.data.tokens.jwtRefresh,
@@ -128,11 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       return response.data.user;
     } catch (error: any) {
-      console.error('Error en login:', error);
-      setAuthState(prev => ({
-        ...prev,
-        isAuthenticated: false
-      }));
+      console.error('❌ Error en login:', error);
       throw error;
     }
   };
@@ -206,13 +197,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             isPersistentAuthRequired: shouldRequireAuth
         }));
 
-        console.log('Auth state updated:', {
-            biometricEnabled,
-            persistentAuth,
-            persistentAuthConfigured,
-            shouldRequireAuth
-        });
-
     } catch (error) {
         console.error('Error in checkAuthStatus:', error);
         setAuthState(prev => ({
@@ -251,7 +235,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     newPwd: string,
     repeatedPwd: string
   ) => {
-    console.log('confirmPasswordReset', email, code, newPwd, repeatedPwd);
     try {
       const response = await authService.confirmPasswordReset({
         email,

@@ -1,4 +1,4 @@
-import { ApiResponse, LoginResponse, RegisterResponse, RegisterRequest, ConfirmPasswordResetRequest, ConfirmationFlowType } from '@/core/types';
+import { ApiResponse, LoginResponse, RegisterResponse, RegisterRequest, ConfirmPasswordResetRequest, ConfirmationFlowType } from '../../types';
 import { api } from '../api';
 
 export const authService = {
@@ -12,12 +12,13 @@ export const authService = {
     data: LoginResponse | null;
   }> => {
     try {
-      const response = await api.post<LoginResponse>('/users/hydration/data');
+      const response = await api.post<LoginResponse>('/auth/verify-session');
       return {
         isValid: response.data.status === 200,
         data: response.data
       };
     } catch (error) {
+      console.error('Error en verificación de sesión:', error);
       return {
         isValid: false,
         data: null

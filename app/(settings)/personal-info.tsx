@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system';
 import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedDatePicker, ThemedInput, ThemedButton, ProfilePictureModal, AvatarIcon, MessageModal, ThemedText } from '@/shared/components';
@@ -8,10 +9,10 @@ import { validateName, validatePhoneNumber, validateAddress } from '@/shared/uti
 import { useSettings } from '@/core/context';
 import { PersonalData } from '@/core/types';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
 
-interface FormData extends Omit<PersonalData, 'dateOfBirth' | 'email' | 'enable'> {
+interface FormData extends Omit<PersonalData, 'dateOfBirth' | 'email'> {
     dateOfBirth: Date | null;
+    profilePicture: string;
 }
 
 interface FormErrors {
@@ -36,7 +37,7 @@ export default function PersonalInfoScreen() {
         phone: personalInfo.phone || '',
         address: personalInfo.address || '',
         dateOfBirth: personalInfo.dateOfBirth ? new Date(personalInfo.dateOfBirth) : null,
-        profilePicture: personalInfo.profilePicture || '',
+        profilePicture: personalInfo.profilePicture ? `data:image/jpeg;base64,${personalInfo.profilePicture}` : '',
     });
 
     const [errors, setErrors] = useState<FormErrors>({
@@ -46,7 +47,56 @@ export default function PersonalInfoScreen() {
         address: '',
     });
 
+    useEffect(() => {
+        if (personalInfo) {
+            setFormData({
+                name: personalInfo.name || '',
+                surname: personalInfo.surname || '',
+                phone: personalInfo.phone || '',
+                address: personalInfo.address || '',
+                dateOfBirth: personalInfo.dateOfBirth ? new Date(personalInfo.dateOfBirth) : null,
+                profilePicture: personalInfo.profilePicture ? `data:image/jpeg;base64,${personalInfo.profilePicture}` : '',
+            });
+        }
+    }, [personalInfo]);
+
+    const thereIsProfilePicture = () => {
+        if (formData.profilePicture !== '') {
+            setModalVisible(true);
+        } else {
+            handleImagePicker();
+        }
+    };
+
+    const handleImagePicker = async () => {
+        setModalVisible(false);
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1,
+            });
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                const selectedAsset = result.assets[0];
+                const manipResult = await ImageManipulator.manipulateAsync(
+                    selectedAsset.uri,
+                    [{ resize: { width: 300 } }],
+                    { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+                );
+
+                setFormData(prev => ({ ...prev, profilePicture: manipResult.uri }));
+            }
+        } catch (error) {
+            console.error('Error al procesar la imagen:', error);
+            setErrorMessage('Error al procesar la imagen');
+            setIsErrorModalVisible(true);
+        }
+    };
+
     const handleSave = async () => {
+        console.log('🔄 Iniciando guardado de información personal');
         const newErrors: FormErrors = {
             name: '',
             surname: '',
@@ -83,51 +133,33 @@ export default function PersonalInfoScreen() {
         }
 
         try {
-            await updatePersonalInfo({
-                ...formData,
-                dateOfBirth: formData.dateOfBirth?.toISOString() || '',
-                email: personalInfo.email,
-                enable: personalInfo.enable,
-            });
+            const updateData: Partial<PersonalData> = {
+                name: formData.name,
+                surname: formData.surname,
+                phone: formData.phone,
+                address: formData.address,
+                dateOfBirth: formData.dateOfBirth?.toISOString().split('T')[0] || '',
+            };
+
+            if (formData.profilePicture && !formData.profilePicture.startsWith('data:image')) {
+                updateData.profilePicture = formData.profilePicture;
+            }
+
+            console.log('📤 Enviando datos:', updateData);
+            await updatePersonalInfo(updateData);
             
+            console.log('✅ Información actualizada exitosamente');
             setSuccessMessage('Información personal actualizada correctamente');
             setSuccessModalVisible(true);
         } catch (error) {
+            console.error('❌ Error al actualizar información:', error);
             setErrorMessage('No se pudo actualizar la información personal');
             setIsErrorModalVisible(true);
         }
     };
 
-    const handleImagePicker = async () => {
-        try {
-            const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: true,
-                aspect: [1, 1],
-                quality: 0.5,
-            });
-
-            if (!result.canceled) {
-                const manipulatedImage = await ImageManipulator.manipulateAsync(
-                    result.assets[0].uri,
-                    [{ resize: { width: 300, height: 300 } }],
-                    { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
-                );
-
-                setFormData(prev => ({
-                    ...prev,
-                    profilePicture: manipulatedImage.uri
-                }));
-                setModalVisible(false);
-            }
-        } catch (error) {
-            setErrorMessage('Error al procesar la imagen');
-            setIsErrorModalVisible(true);
-        }
-    };
-
     const handleDeleteImage = () => {
-        setFormData(prev => ({
+        setFormData((prev: FormData) => ({
             ...prev,
             profilePicture: ''
         }));
@@ -138,20 +170,14 @@ export default function PersonalInfoScreen() {
         <ThemedLayout padding={[0, 40]}>
             <View style={styles.content}>
                 <View style={styles.profileSection}>
-                    <TouchableOpacity 
-                        style={styles.profileImageContainer}
-                        onPress={() => setModalVisible(true)}
-                    >
+                    <TouchableOpacity onPress={thereIsProfilePicture} style={styles.profileImageContainer}>
                         {formData.profilePicture ? (
-                            <Image
-                                source={{ uri: formData.profilePicture }}
-                                style={styles.profileImage}
-                            />
+                            <Image source={{ uri: formData.profilePicture }} style={styles.profileImage} />
                         ) : (
                             <AvatarIcon width={120} height={120} style={styles.profileImage} />
                         )}
-                        <View style={[styles.editButton, { backgroundColor: Colors.common.green2 }]}>
-                            <Ionicons name="camera" size={20} color={Colors.common.white} />
+                        <View style={[styles.editButton, { backgroundColor: themeColors.buttonBackgroundColor }]}>
+                            <Ionicons name="camera-outline" size={22} color={themeColors.white} />
                         </View>
                     </TouchableOpacity>
                     <View>

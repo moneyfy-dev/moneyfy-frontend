@@ -32,8 +32,6 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    console.log('isAuthenticated', isAuthenticated);
-    console.log('isPersistentAuthRequired', isPersistentAuthRequired);
     if (isAuthenticated && !isPersistentAuthRequired) {
       hydrateUserData();
     }

@@ -1,36 +1,57 @@
-import { AxiosError } from 'axios';
+import { AxiosError, AxiosRequestHeaders } from 'axios';
 import { api } from './config';
 import type { ApiError } from '@/core/types';
 import { storage } from '@/shared/utils/storage';
-import { authService } from '@/core/services';
+import { authService } from '../auth/index';
 
 export const setupErrorInterceptor = () => {
   api.interceptors.response.use(
-    response => response,
+    response => {
+      console.log('✅ Response Success:', {
+        url: response.config.url,
+        status: response.status,
+        hasData: !!response.data
+      });
+      return response;
+    },
     async (error: AxiosError) => {
-      console.error('API Error:', {
+      console.error('❌ API Error:', {
         url: error.config?.url,
         method: error.config?.method,
         status: error.response?.status,
         data: error.response?.data,
+        headers: error.config?.headers
       });
 
       // Manejar error de token expirado (417)
       if (error.response?.status === 417) {
+        console.log('🔄 Intentando recuperar sesión por error 417');
         try {
-          // Intentar verificar sesión
-          const { isValid } = await authService.verifySession();
+          // Usar un endpoint específico para verificar sesión
+          const { token, sessionToken } = await storage.auth.getTokens();
+          const response = await api.post('/auth/verify-session', {}, {
+            headers: {
+              'Authorization': `Bearer ${sessionToken}`,
+              'Refresh-Token': token
+            }
+          });
           
-          if (isValid && error.config) {
-            // Si la sesión es válida, reintentar la petición original
-            return api(error.config);
-          } else {
-            // Si la sesión no es válida, limpiar datos
-            await storage.auth.clearAuth();
-            await storage.user.clearUser();
+          console.log('✅ Verificación de sesión exitosa:', response.data);
+          
+          if (response.data.tokens) {
+            console.log('🔄 Actualizando tokens después de verificación');
+            await storage.auth.setTokens(
+              response.data.tokens.jwtRefresh,
+              response.data.tokens.jwtSession
+            );
+            
+            // Reintentar la petición original con los nuevos tokens
+            if (error.config) {
+              return api(error.config);
+            }
           }
         } catch (verifyError) {
-          // Si falla la verificación, limpiar datos
+          console.error('❌ Error en verificación de sesión:', verifyError);
           await storage.auth.clearAuth();
           await storage.user.clearUser();
         }
@@ -54,13 +75,44 @@ export const setupTokenInterceptor = (
     async (config) => {
       const { token, sessionToken } = await getTokens();
       
-      if (token && sessionToken && config.headers) {
-        config.headers['Authorization'] = `Bearer ${sessionToken}`;
+      // Asegurarnos de que config.headers sea del tipo correcto
+      if (!config.headers) {
+        config.headers = {} as AxiosRequestHeaders;
+      }
+      
+      console.log('🔐 Request Interceptor:', {
+        url: config.url,
+        method: config.method,
+        hasToken: !!token,
+        hasSessionToken: !!sessionToken,
+        currentHeaders: config.headers
+      });
+      
+      if (token && sessionToken) {
+        // Establecer headers de autenticación
+        config.headers.Authorization = `Bearer ${sessionToken}`;
         config.headers['Refresh-Token'] = token;
+        config.headers['Content-Type'] = 'application/json';
+        
+        console.log('📨 Headers configurados:', {
+          url: config.url,
+          Authorization: config.headers.Authorization,
+          RefreshToken: config.headers['Refresh-Token'],
+          ContentType: config.headers['Content-Type']
+        });
+      } else {
+        console.warn('⚠️ No hay tokens disponibles para la solicitud:', {
+          url: config.url,
+          hasToken: !!token,
+          hasSessionToken: !!sessionToken
+        });
       }
       
       return config;
     },
-    (error) => Promise.reject(error)
+    (error) => {
+      console.error('❌ Error en interceptor de request:', error);
+      return Promise.reject(error);
+    }
   );
 };

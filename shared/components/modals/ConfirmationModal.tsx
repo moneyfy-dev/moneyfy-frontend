@@ -4,13 +4,25 @@ import { useThemeColor } from '@/shared/hooks';
 import { ThemedText } from '../ui/ThemedText';
 import { ThemedButton } from '../ui/ThemedButton';
 
-interface LogoutModalProps {
+interface ConfirmationModalProps {
   isVisible: boolean;
   onClose: () => void;
-  onLogout: () => void;
+  onConfirm: () => void;
+  title?: string;
+  message?: string;
+  confirmText?: string;
+  cancelText?: string;
 }
 
-export const LogoutModal: React.FC<LogoutModalProps> = ({ isVisible, onClose, onLogout }) => {
+export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ 
+  isVisible, 
+  onClose, 
+  onConfirm,
+  title = "Cerrar Sesión",
+  message = "¿Estás seguro de que quieres cerrar sesión?",
+  confirmText = "Cerrar Sesión",
+  cancelText = "Cancelar"
+}) => {
   const themeColors = useThemeColor();
 
   return (
@@ -23,18 +35,18 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({ isVisible, onClose, on
       <View style={styles.centeredView}>
         <View style={[styles.modalView, { backgroundColor: themeColors.backgroundCardColor }]}>
           <ThemedText variant="subTitle" style={styles.modalText}>
-            ¿Estás seguro de que quieres cerrar sesión?
+            {message}
           </ThemedText>
           <View style={styles.buttonContainer}>
             <ThemedButton
-              text="Cancelar"
+              text={cancelText}
               onPress={onClose}
               variant="secondary"
               style={styles.button}
             />
             <ThemedButton
-              text="Cerrar Sesión"
-              onPress={onLogout}
+              text={confirmText}
+              onPress={onConfirm}
               style={styles.button}
             />
           </View>

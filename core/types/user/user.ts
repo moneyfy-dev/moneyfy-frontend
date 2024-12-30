@@ -1,4 +1,4 @@
-import { NotificationPreferences } from "./settings";
+import { NotificationPreferences, PersonalData } from "./settings";
 import { Wallet } from "../wallet/wallet";
 
 export interface User {
@@ -11,14 +11,3 @@ export interface User {
     quoterPeople: any[];
     deleteAccount: null;
   }
-
-  export interface PersonalData {
-    name: string;
-    surname: string;
-    email: string;
-    phone: string;
-    address: string;
-    dateOfBirth: string;
-    profilePicture: string;
-    enable: boolean;
-  };

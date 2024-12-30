@@ -43,7 +43,7 @@ export { TabBarIcon } from './navigation/TabBarIcon';
 // Modals
 export { MessageModal } from './modals/MessageModal';
 export { FiltersModal } from './modals/FiltersModal';
-export { LogoutModal } from './modals/LogoutModal';
+export { ConfirmationModal } from './modals/ConfirmationModal';
 export { Modal } from './modals/Modal';
 
 // Utils

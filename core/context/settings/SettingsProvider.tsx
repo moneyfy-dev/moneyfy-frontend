@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { SettingsContext } from './SettingsContext';
 import { SecuritySettings }  from '../../types/user/settings';
-import { PersonalData } from '../../types/user/user';
+import { PersonalData } from '../../types/user/settings';
 import { BankAccount } from '../../types/user/settings';
 import { NotificationPreferences } from '../../types/user/settings';
 import { settingsService } from '../../services/settings/index';
 import { useUser } from '../user/useUser';
 import { storage } from '@/shared/utils/storage';
 import { STORAGE_KEYS } from '@/core/types';
+import { api } from '../../services/api';
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useUser();
+  const { user, updateUserData } = useUser();
   const [security, setSecurity] = useState<SecuritySettings>({ fingerprintEnabled: false });
   const [personalInfo, setPersonalInfo] = useState<PersonalData>({} as PersonalData);
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
@@ -57,53 +58,126 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const updatePersonalInfo = async (info: Partial<PersonalData>) => {
+    console.log('🔄 SettingsProvider - Actualizando info personal:', info);
     try {
-      const updatedInfo = await settingsService.updatePersonalInfo(info);
-      setPersonalInfo(prev => ({ ...prev, ...updatedInfo }));
+        const response = await settingsService.updatePersonalInfo(info);
+        
+        // Actualizar el usuario con la respuesta completa
+        if (response.data?.user) {
+            await updateUserData(response.data.user);
+            // Actualizamos solo la información personal
+            setPersonalInfo(response.data.user.personalData);
+        }
+
+        console.log('✅ Info personal actualizada:', response);
+        
     } catch (error) {
-      console.error('Error al actualizar información personal:', error);
-      throw error;
+        console.error('❌ Error en SettingsProvider - updatePersonalInfo:', error);
+        throw error;
     }
   };
 
   const updateAccount = async (accountId: string, data: Partial<BankAccount>) => {
+    console.log('🔄 SettingsProvider - Actualizando cuenta bancaria:', { accountId, ...data });
     try {
-      const updatedAccount = await settingsService.updateAccount(accountId, data);
-      setAccounts(prev => prev.map(acc => 
-        acc.accountId === accountId ? updatedAccount : acc
-      ));
+        const response = await settingsService.updateAccount(accountId, data);
+        
+        // Actualizar el usuario con la respuesta completa
+        if (response.data?.user) {
+            await updateUserData(response.data.user);
+        }
+        
+        // Actualizar las cuentas bancarias
+        if (response.data?.user?.accounts) {
+            setAccounts(response.data.user.accounts);
+        }
+
+        console.log('✅ Cuenta bancaria actualizada exitosamente');
     } catch (error) {
-      console.error('Error al actualizar cuenta:', error);
-      throw error;
+        console.error('❌ Error en SettingsProvider - updateAccount:', error);
+        throw error;
     }
   };
 
   const addAccount = async (account: Omit<BankAccount, 'accountId'>) => {
+    console.log('🔄 SettingsProvider - Agregando cuenta bancaria:', account);
     try {
-      const newAccount = await settingsService.addAccount(account);
-      setAccounts(prev => [...prev, newAccount]);
+        const response = await settingsService.addAccount(account);
+        
+        // Actualizar el usuario con la respuesta completa
+        if (response.data?.user) {
+            await updateUserData(response.data.user);
+        }
+        
+        // Actualizar las cuentas bancarias
+        if (response.data?.user?.accounts) {
+            setAccounts(response.data.user.accounts);
+        }
+
+        console.log('✅ Cuenta bancaria agregada exitosamente');
     } catch (error) {
-      console.error('Error al agregar cuenta:', error);
-      throw error;
+        console.error('❌ Error en SettingsProvider - addAccount:', error);
+        throw error;
     }
   };
 
   const deleteAccount = async (accountId: string) => {
+    console.log('🔄 SettingsProvider - Eliminando cuenta bancaria:', accountId);
     try {
-      await settingsService.deleteAccount(accountId);
-      setAccounts(prev => prev.filter(acc => acc.accountId !== accountId));
+        const response = await settingsService.deleteAccount(accountId);
+        
+        // Actualizar el usuario con la respuesta completa
+        if (response.data?.user) {
+            await updateUserData(response.data.user);
+            setAccounts(response.data.user.accounts);
+        }
+
+        console.log('✅ Cuenta bancaria eliminada exitosamente');
+        return response;
     } catch (error) {
-      console.error('Error al eliminar cuenta:', error);
-      throw error;
+        console.error('❌ Error en SettingsProvider - deleteAccount:', error);
+        throw error;
+    }
+  };
+
+  const selectAccount = async (accountId: string) => {
+    console.log('🔄 SettingsProvider - Seleccionando cuenta bancaria:', accountId);
+    try {
+        const response = await settingsService.selectAccount(accountId);
+        
+        // Actualizar el usuario con la respuesta completa
+        if (response.data?.user) {
+            await updateUserData(response.data.user);
+        }
+        
+        // Actualizar las cuentas bancarias
+        if (response.data?.user?.accounts) {
+            setAccounts(response.data.user.accounts);
+        }
+
+        console.log('✅ Cuenta bancaria seleccionada exitosamente');
+        return response;
+    } catch (error) {
+        console.error('❌ Error en SettingsProvider - selectAccount:', error);
+        throw error;
     }
   };
 
   const changePassword = async (oldPassword: string, newPassword: string) => {
+    console.log('🔄 SettingsProvider - Cambiando contraseña');
     try {
-      await settingsService.changePassword(oldPassword, newPassword);
+        const response = await settingsService.changePassword(oldPassword, newPassword);
+        
+        // Actualizar el usuario con la respuesta completa
+        if (response.data?.user) {
+            await updateUserData(response.data.user);
+        }
+
+        console.log('✅ Contraseña actualizada exitosamente');
+        return response;
     } catch (error) {
-      console.error('Error al cambiar la contraseña:', error);
-      throw error;
+        console.error('❌ Error en SettingsProvider - changePassword:', error);
+        throw error;
     }
   };
 
@@ -131,6 +205,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         deleteAccount,
         changePassword,
         updateNotifications,
+        selectAccount,
       }}
     >
       {children}

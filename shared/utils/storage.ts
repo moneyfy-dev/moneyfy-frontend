@@ -69,23 +69,59 @@ export const storage = {
   // Métodos específicos para Auth usando SecureStore
   auth: {
     async getTokens() {
-      const [token, sessionToken] = await Promise.all([
-        storage.getSecure(STORAGE_KEYS.AUTH.TOKEN),
-        storage.getSecure(STORAGE_KEYS.AUTH.SESSION_TOKEN),
-      ]);
-      return { token, sessionToken };
+      try {
+        const [token, sessionToken] = await Promise.all([
+          storage.getSecure(STORAGE_KEYS.AUTH.TOKEN),
+          storage.getSecure(STORAGE_KEYS.AUTH.SESSION_TOKEN),
+        ]);
+
+        console.log('🔐 Tokens recuperados del storage:', {
+          hasToken: !!token,
+          hasSessionToken: !!sessionToken,
+          tokenLength: token?.length,
+          sessionTokenLength: sessionToken?.length
+        });
+
+        if (!token || !sessionToken) {
+          console.warn('⚠️ Tokens incompletos en storage');
+          return { token: null, sessionToken: null };
+        }
+
+        return { token, sessionToken };
+      } catch (error) {
+        console.error('❌ Error recuperando tokens:', error);
+        return { token: null, sessionToken: null };
+      }
     },
     
     async setTokens(token: string, sessionToken: string) {
-      await Promise.all([
-        storage.setSecure(STORAGE_KEYS.AUTH.TOKEN, token),
-        storage.setSecure(STORAGE_KEYS.AUTH.SESSION_TOKEN, sessionToken),
-      ]);
+      try {
+        console.log('💾 Guardando tokens en storage:', {
+          tokenLength: token?.length,
+          sessionTokenLength: sessionToken?.length
+        });
+
+        if (!token || !sessionToken) {
+          throw new Error('Tokens inválidos');
+        }
+
+        await Promise.all([
+          storage.setSecure(STORAGE_KEYS.AUTH.TOKEN, token),
+          storage.setSecure(STORAGE_KEYS.AUTH.SESSION_TOKEN, sessionToken),
+        ]);
+
+        console.log('✅ Tokens guardados exitosamente');
+      } catch (error) {
+        console.error('❌ Error guardando tokens:', error);
+        throw error;
+      }
     },
 
     async clearAuth() {
+      console.log('🧹 Limpiando tokens del storage');
       const authKeys = Object.values(STORAGE_KEYS.AUTH);
       await Promise.all(authKeys.map(key => storage.removeSecure(key)));
+      console.log('✅ Tokens limpiados exitosamente');
     }
   },
 

@@ -3,7 +3,7 @@ import { useRouter, Href } from 'expo-router';
 import { ROUTES } from '@/core/types';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedLayout, ThemedText, LogoutModal } from '@/shared/components';
+import { ThemedLayout, ThemedText, ConfirmationModal } from '@/shared/components';
 import { useAuth, useUser } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -93,10 +93,14 @@ export default function SettingsScreen() {
         </ThemedText>
       </View>
 
-      <LogoutModal
+      <ConfirmationModal
         isVisible={isLogoutModalVisible}
         onClose={() => setIsLogoutModalVisible(false)}
-        onLogout={confirmLogout}
+        onConfirm={confirmLogout}
+        title="Cerrar sesión"
+        message="¿Estás seguro de que quieres cerrar sesión?"
+        confirmText="Cerrar sesión"
+        cancelText="Cancelar"
       />
     </ThemedLayout>
   );

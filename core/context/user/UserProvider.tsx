@@ -26,32 +26,42 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const hydrateUserData = useCallback(async (force: boolean = false) => {
+    console.log('🔄 Iniciando hidratación de datos:', { force });
     try {
       setIsLoading(true);
       
       // Verificar si necesitamos actualizar
       if (!force && lastHydrationTime) {
         const minutesSinceLastHydration = differenceInMinutes(new Date(), lastHydrationTime);
-        if (minutesSinceLastHydration < 5) { // No actualizar si pasaron menos de 5 minutos
+        console.log('⏱️ Minutos desde última hidratación:', minutesSinceLastHydration);
+        if (minutesSinceLastHydration < 5) {
+          console.log('⏭️ Saltando hidratación - muy reciente');
           return;
         }
       }
 
       const { token, sessionToken } = await storage.auth.getTokens();
-      console.log('token', token);
-      console.log('sessionToken', sessionToken);
+      console.log('🔑 Tokens disponibles:', {
+        hasToken: !!token,
+        hasSessionToken: !!sessionToken
+      });
+
       if (!token || !sessionToken) {
         throw new Error('No tokens available');
       }
 
       const response = await userService.getUserData();
-      console.log('response', response);
+      console.log('👤 Datos de usuario recibidos:', {
+        hasUser: !!response?.data?.user,
+        hasTokens: !!response?.data?.tokens
+      });
+
       if (response?.data?.user) {
         await storage.user.setData(response.data.user);
         setUser(response.data.user);
         
-        // Actualizar tokens si vienen en la respuesta
         if (response.data.tokens) {
+          console.log('🔄 Actualizando tokens');
           await storage.auth.setTokens(
             response.data.tokens.jwtRefresh,
             response.data.tokens.jwtSession
@@ -62,7 +72,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLastHydrationTime(new Date());
       }
     } catch (error) {
-      console.error('Error hydrating user data:', error);
+      console.error('❌ Error en hidratación:', error);
       throw error;
     } finally {
       setIsLoading(false);

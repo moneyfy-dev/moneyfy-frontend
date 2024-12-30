@@ -5,9 +5,10 @@ import Colors from '@/constants/Colors';
 import { StyleSheet, TouchableOpacity, View, FlatList, Modal, Alert } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedText } from '../ui/ThemedText';
-import { MessageModal } from '../modals/MessageModal';
 import { Ionicons } from '@expo/vector-icons';
-import { deleteAccount } from '@/core/services';
+import { useSettings } from '@/core/context';
+import { ConfirmationModal } from '../modals/ConfirmationModal';
+import { MessageModal } from '../modals/MessageModal';
 
 interface AccountListScreenProps {
     accounts: BankAccount[];
@@ -16,6 +17,7 @@ interface AccountListScreenProps {
 }
 
 export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated }: AccountListScreenProps) {
+    const { deleteAccount } = useSettings();
     const themeColors = useThemeColor();
     const router = useRouter();
     const [menuVisible, setMenuVisible] = useState(false);
@@ -24,6 +26,8 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [successModalVisible, setSuccessModalVisible] = useState(false);
+    const [modalType, setModalType] = useState<'error' | 'info'>('error');
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
     const handleMenuPress = (account: BankAccount) => {
         setSelectedAccount(account);
@@ -31,17 +35,28 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
     };
 
     const handleDeleteAccount = async () => {
+        setShowDeleteConfirmation(false);
         if (selectedAccount) {
             try {
                 console.log('selectedAccount', selectedAccount);
                 console.log('selectedId', selectedAccount.accountId);
-                await deleteAccount(selectedAccount.accountId);
-                setSuccessMessage('Cuenta eliminada correctamente');
-                setSuccessModalVisible(true);
-                onAccountUpdated();
-            } catch (error) {
+                const response = await deleteAccount(selectedAccount.accountId);
+                
+                if (response.status === 200) {
+                    setSuccessMessage('Cuenta eliminada correctamente');
+                    setSuccessModalVisible(true);
+                    onAccountUpdated();
+                }
+            } catch (error: any) {
                 console.error('Error al eliminar la cuenta:', error);
-                setErrorMessage('No se pudo eliminar la cuenta');
+                
+                if (error.response?.data?.message?.includes('no se puede eliminar la cuenta que está seleccionada')) {
+                    setModalType('info');
+                    setErrorMessage('No es posible eliminar esta cuenta porque está configurada para recibir tus comisiones. Por favor, selecciona otra cuenta antes de eliminarla.');
+                } else {
+                    setModalType('error');
+                    setErrorMessage('No se pudo eliminar la cuenta');
+                }
                 setIsErrorModalVisible(true);
             }
         }
@@ -59,14 +74,26 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
     };
 
     const renderAccount = ({ item }: { item: BankAccount }) => (
-        <TouchableOpacity 
-            style={[styles.accountItem, { borderColor: themeColors.borderBackgroundColor }]}
-            onPress={() => onSelectAccount(item.accountId)}
-        >
+        <View style={[styles.accountItem, { borderColor: themeColors.borderBackgroundColor }]}>
             <View style={styles.accountInfo}>
-                <View style={[styles.radioButton, { borderColor: Colors.common.gray4 }, item.selected && { borderColor: themeColors.textColorAccent }]}>
-                    {item.selected && <View style={[styles.radioButtonInner, { backgroundColor: themeColors.textColorAccent }]} />}
-                </View>
+                <TouchableOpacity 
+                    onPress={() => {
+                        if (!item.selected) {
+                            onSelectAccount(item.accountId);
+                        }
+                    }}
+                    style={styles.radioButtonContainer}
+                >
+                    <View style={[
+                        styles.radioButton, 
+                        { borderColor: Colors.common.gray4 }, 
+                        item.selected && { borderColor: themeColors.textColorAccent }
+                    ]}>
+                        {item.selected && (
+                            <View style={[styles.radioButtonInner, { backgroundColor: themeColors.textColorAccent }]} />
+                        )}
+                    </View>
+                </TouchableOpacity>
                 <View>
                     <ThemedText variant="subTitleBold">{item.alias}</ThemedText>
                     <ThemedText variant="paragraph">{item.bank} - {item.accountNumber}</ThemedText>
@@ -75,7 +102,7 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
             <TouchableOpacity onPress={() => handleMenuPress(item)}>
                 <Ionicons name="ellipsis-vertical" size={20} color={themeColors.gray1Gray04} />
             </TouchableOpacity>
-        </TouchableOpacity>
+        </View>
     );
 
     return (
@@ -102,18 +129,17 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
                             <Ionicons name="create-outline" size={24} color={themeColors.textColor} />
                             <ThemedText style={styles.menuItemText}>Editar</ThemedText>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.menuItem} onPress={() => {
-                            Alert.alert(
-                                "Confirmar eliminación",
-                                "¿Estás seguro de que quieres eliminar esta cuenta?",
-                                [
-                                    { text: "Cancelar", style: "cancel" },
-                                    { text: "Confirmar", onPress: handleDeleteAccount }
-                                ]
-                            );
-                        }}>
+                        <TouchableOpacity 
+                            style={styles.menuItem} 
+                            onPress={() => {
+                                setShowDeleteConfirmation(true);
+                                setMenuVisible(false);
+                            }}
+                        >
                             <Ionicons name="trash-outline" size={24} color={themeColors.status.error} />
-                            <ThemedText style={[styles.menuItemText, { color: themeColors.status.error }]}>Eliminar</ThemedText>
+                            <ThemedText style={[styles.menuItemText, { color: themeColors.status.error }]}>
+                                Eliminar
+                            </ThemedText>
                         </TouchableOpacity>
                     </View>
                 </TouchableOpacity>
@@ -137,16 +163,26 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
             <MessageModal
                 isVisible={isErrorModalVisible}
                 onClose={() => setIsErrorModalVisible(false)}
-                title="Error"
+                title={modalType === 'error' ? "Error" : "Información"}
                 message={errorMessage}
                 icon={{
-                    name: "alert-circle-outline",
-                    color: themeColors.status.error
+                    name: modalType === 'error' ? "alert-circle-outline" : "information-circle-outline",
+                    color: modalType === 'error' ? themeColors.status.error : themeColors.status.info
                 }}
                 primaryButton={{
                     text: "Entendido",
                     onPress: () => setIsErrorModalVisible(false)
                 }}
+            />
+
+            <ConfirmationModal
+                isVisible={showDeleteConfirmation}
+                onClose={() => setShowDeleteConfirmation(false)}
+                onConfirm={handleDeleteAccount}
+                title="Eliminar Cuenta"
+                message="¿Estás seguro de que quieres eliminar esta cuenta?"
+                confirmText="Eliminar"
+                cancelText="Cancelar"
             />
         </>
     );
@@ -219,5 +255,8 @@ const styles = StyleSheet.create({
     menuItemText: {
         marginLeft: 10,
         fontSize: 16,
+    },
+    radioButtonContainer: {
+        padding: 8,
     },
 });
