@@ -6,7 +6,7 @@ import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedListLayout, ThemedInput, ThemedText, ThemedButton, ThemedCheckGroup, FiltersModal, LoadingScreen, IconContainer, ThemedDatePicker } from '@/shared/components';
 import { format } from 'date-fns';
-import { useAuth } from '@/core/context';
+import { useUser } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function QuotersScreen() {
@@ -24,14 +24,14 @@ export default function QuotersScreen() {
     }
   });
 
-  const { user, hydrateUserData } = useAuth();
+  const { user, hydrateUserData } = useUser();
 
   useEffect(() => {
     setIsLoading(true);
     const loadInitialData = async () => {
       await hydrateUserData(true);
-      if (user?.quoterPeople) {
-        setQuoters(user.quoterPeople);
+      if (user?.quoters) {
+        setQuoters(user?.quoters);
       }
     };
 
@@ -40,10 +40,10 @@ export default function QuotersScreen() {
   }, []);
 
   useEffect(() => {
-    if (user?.quoterPeople) {
-      setQuoters(user.quoterPeople);
+    if (user?.quoters) {
+      setQuoters(user.quoters);
     }
-  }, [user?.quoterPeople]);
+  }, [user?.quoters]);
 
   const getStatusColor = (status: QuoterStatus) => {
     const colors: Record<QuoterStatus, string> = {
@@ -63,15 +63,15 @@ export default function QuotersScreen() {
   };
 
   const filterQuoters = useCallback(() => {
-    if (!user?.quoterPeople) return;
+    if (!user?.quoters) return;
 
-    let filteredResults = [...user.quoterPeople];
+    let filteredResults = [...user.quoters];
 
     // Filtrar por búsqueda
     if (searchQuery) {
       filteredResults = filteredResults.filter(quoter => {
-        const fullName = `${quoter.quoterCarData.brand} ${quoter.quoterCarData.model}`.toLowerCase();
-        return fullName.includes(searchQuery.toLowerCase());
+        const searchText = `${quoter.quoterCarData.brand} ${quoter.quoterCarData.model} ${quoter.quoterCarData.ppu}`.toLowerCase();
+        return searchText.includes(searchQuery.toLowerCase());
       });
     }
 
@@ -105,7 +105,7 @@ export default function QuotersScreen() {
     }
 
     setQuoters(filteredResults);
-  }, [searchQuery, filters, user?.quoterPeople]);
+  }, [searchQuery, filters, user?.quoters]);
 
   const handleSearch = (text: string) => {
     setSearchQuery(text);
@@ -133,8 +133,8 @@ export default function QuotersScreen() {
         end: null
       }
     });
-    if (user?.quoterPeople) {
-      setQuoters(user.quoterPeople);
+    if (user?.quoters) {
+      setQuoters(user.quoters);
     }
   };
 
@@ -165,13 +165,11 @@ export default function QuotersScreen() {
         style={styles.quoterContent}
       >
         <View style={styles.quoterHeader}>
-
           <IconContainer
             icon="person-outline"
             size={24}
           />
           <View style={styles.quoterInfo}>
-
             <View style={styles.nameContainer}>
               <ThemedText variant="subTitleBold">
                 {item.quoterCarData.brand} {' '}
@@ -198,12 +196,11 @@ export default function QuotersScreen() {
                 </ThemedText>
               </View>
 
-              <ThemedText variant='paragraph'>
-                |
-              </ThemedText>
+              <ThemedText variant='paragraph'>|</ThemedText>
+              
               <View style={styles.carInfo}>
                 <ThemedText variant="paragraphBold">
-                  Vehiculo:
+                  Vehículo:
                 </ThemedText>
                 <ThemedText variant="paragraph">
                   {item.quoterCarData.ppu}
@@ -214,7 +211,6 @@ export default function QuotersScreen() {
             <ThemedText variant="notes">
               Cotizado el: {format(new Date(item.createdDate), 'dd/MM/yyyy')}
             </ThemedText>
-
           </View>
         </View>
       </Pressable>

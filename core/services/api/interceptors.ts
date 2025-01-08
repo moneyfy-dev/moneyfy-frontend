@@ -2,7 +2,6 @@ import { AxiosError, AxiosRequestHeaders } from 'axios';
 import { api } from './config';
 import type { ApiError } from '@/core/types';
 import { storage } from '@/shared/utils/storage';
-import { authService } from '../auth/index';
 
 export const setupErrorInterceptor = () => {
   api.interceptors.response.use(

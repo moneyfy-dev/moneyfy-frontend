@@ -16,7 +16,12 @@ export const STORAGE_KEYS = {
     VEHICLES: 'session_vehicles',
     QUOTES: 'session_quotes',
     QUOTERS: 'session_quoters',
-  }
+  },
+  QUOTE: {
+    VEHICLE: 'quote_vehicle',
+    PLANS: 'quote_plans',
+    QUOTER_ID: 'quote_quoter_id'
+  },
 } as const;
 
 // Tipos derivados de las keys

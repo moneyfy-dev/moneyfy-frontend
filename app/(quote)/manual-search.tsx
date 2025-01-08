@@ -3,20 +3,29 @@ import { useRouter } from 'expo-router';
 import { VehicleModel, OWNER_OPTIONS_MAP, ROUTES } from '@/core/types';
 import { View, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedView, ThemedLayout, ThemedText, ThemedInput, ThemedAutocomplete, ThemedButton, MessageModal } from "@/shared/components";
+import {
+    ThemedView,
+    ThemedLayout,
+    ThemedText,
+    ThemedInput,
+    ThemedAutocomplete,
+    ThemedButton,
+    MessageModal,
+    LoadingScreen
+} from "@/shared/components";
 import { validateRUT } from '@/shared/utils/validations';
-import { getAvailableVehicles, startQuotationFlow } from '@/core/services';
-import { useAuth } from '@/core/context';
-import {  } from '@/core/types';
-
+import { useQuote } from '@/core/context';
 
 export default function ManualSearchScreen() {
     const themeColors = useThemeColor();
-    const { updateUserData } = useAuth();
-    const [availableVehicles, setAvailableVehicles] = useState<VehicleModel[]>([]);
-    const [selectedVehicle, setSelectedVehicle] = useState<VehicleModel | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
+    const {
+        startQuotationFlow,
+        getAvailableVehicles,
+        availableVehicles,
+        isLoading
+    } = useQuote();
+    const [selectedVehicle, setSelectedVehicle] = useState<VehicleModel | null>(null);
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -34,7 +43,6 @@ export default function ManualSearchScreen() {
         rut: ''
     });
 
-    // Generar array de años desde 1990 hasta el año actual
     const availableYears = useMemo(() => {
         const currentYear = new Date().getFullYear();
         const years: string[] = [];
@@ -50,15 +58,10 @@ export default function ManualSearchScreen() {
 
     const loadVehicles = async () => {
         try {
-            const response = await getAvailableVehicles();
-            setAvailableVehicles(response.data.vehicles);
-            // Actualizar datos del usuario
-            await updateUserData(response.data.user);
+            await getAvailableVehicles();
         } catch (error) {
             setErrorMessage('No se pudieron cargar los vehículos disponibles');
             setIsErrorModalVisible(true);
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -81,51 +84,49 @@ export default function ManualSearchScreen() {
         }
 
         try {
-            setIsLoading(true);
-
             const response = await startQuotationFlow({
                 ppu: formData.patente.toUpperCase(),
                 brand: formData.marca,
                 model: formData.modelo,
                 year: formData.año,
                 purchaserId: formData.rut,
-                ownerOption: OWNER_OPTIONS_MAP[formData.isDueño as keyof typeof OWNER_OPTIONS_MAP]
+                ownerOption: OWNER_OPTIONS_MAP[formData.isDueño as keyof typeof OWNER_OPTIONS_MAP],
+                colour: '',
+                engineNum: '',
+                chassisNum: ''
             });
-            console.log('response', response.quoterId);
+
             router.push({
                 pathname: ROUTES.QUOTE.QUOTE_RESULTS,
                 params: {
-                    plans: encodeURIComponent(JSON.stringify(response.plans)),
-                    quoterId: response.quoterId,
-                    vehicle: encodeURIComponent(JSON.stringify(response.vehicle))
+                    plans: encodeURIComponent(JSON.stringify(response.data.plans)),
+                    quoterId: response.data.quoterId,
+                    vehicle: encodeURIComponent(JSON.stringify(response.data.vehicle))
                 }
             });
-
         } catch (error) {
-            console.error('Error al cotizar:', error);
-            setErrorMessage('No se pudo realizar la cotización');
+            console.error('Error al iniciar cotización:', error);
+            setErrorMessage('No se pudo iniciar la cotización');
             setIsErrorModalVisible(true);
-        } finally {
-            setIsLoading(false);
         }
     };
 
     return (
-        <ThemedLayout padding={[0, 24]}>
+        <ThemedLayout padding={[0, 40]}>
             <View style={styles.content}>
                 <View style={styles.header}>
-                    <ThemedText variant="superTitle" marginBottom={16} textAlign="center">
-                        Ingreso de vehículo manual
+                    <ThemedText variant="title" textAlign="center">
+                        Ingreso manual
                     </ThemedText>
-                    <ThemedText variant="paragraph" textAlign="center" color={themeColors.textParagraph}>
-                        Completa la información de tu vehículo manualmente para encontrar el seguro que mejor se adapte a tus necesidades.
+                    <ThemedText variant="paragraph" textAlign="center">
+                        Ingresa los datos del vehículo manualmente
                     </ThemedText>
                 </View>
 
                 <ThemedInput
                     label="Patente"
                     value={formData.patente}
-                    onChangeText={(value) => setFormData({ ...formData, patente: value })}
+                    onChangeText={(value) => setFormData({ ...formData, patente: value.toUpperCase() })}
                     placeholder="Patente"
                     isPlate={true}
                 />
@@ -196,7 +197,7 @@ export default function ManualSearchScreen() {
             <ThemedButton
                 text="Siguiente"
                 onPress={handleSubmit}
-                disabled={isLoading || !formData.marca || !formData.modelo || !formData.patente || !formData.rut || !formData.isDueño}
+                disabled={!formData.marca || !formData.modelo || !formData.patente || !formData.rut || !formData.isDueño}
             />
 
             <MessageModal
@@ -213,6 +214,8 @@ export default function ManualSearchScreen() {
                     onPress: () => setIsErrorModalVisible(false)
                 }}
             />
+
+            {isLoading && <LoadingScreen />}
         </ThemedLayout>
     );
 }

@@ -1,81 +1,74 @@
 import React, { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Vehicle, OWNER_OPTIONS_MAP, ROUTES } from '@/core/types';
+import { OWNER_OPTIONS_MAP, ROUTES } from '@/core/types';
 import { View, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedText, ThemedLayout, ThemedInput, ThemedButton, ThemedView, VehicleCard, MessageModal, LoadingScreen } from '@/shared/components';
-import { startQuotationFlow } from '@/core/services';
+import {
+  ThemedText,
+  ThemedLayout,
+  ThemedInput,
+  ThemedButton,
+  ThemedView,
+  VehicleCard,
+  MessageModal,
+  LoadingScreen
+} from '@/shared/components';
+import { useQuote } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SearchResultsScreen() {
-  const { value, vehicle: initialVehicle, quoterId: initialQuoterId } = useLocalSearchParams();
+  const { value } = useLocalSearchParams();
   const themeColors = useThemeColor();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const { startQuotationFlow, isLoading, vehicle, quoterId } = useQuote();
   const [buyerRut, setBuyerRut] = useState('');
   const [ownerOption, setOwnerOption] = useState(Object.keys(OWNER_OPTIONS_MAP)[0]);
-  const [quoterId, setQuoterId] = useState<string>('');
   const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Verificar que tenemos los datos necesarios
   useEffect(() => {
-    try {
-      if (initialVehicle && initialQuoterId) {
-        const vehicleString = decodeURIComponent(initialVehicle as string);
-        const parsedVehicle = JSON.parse(vehicleString);
+    console.log('🔍 Verificando datos en search-results:', {
+        hasVehicle: !!vehicle,
+        hasQuoterId: !!quoterId,
+        vehicle,
+        quoterId
+    });
 
-        setVehicle(parsedVehicle);
-        setSelectedVehicle(parsedVehicle);
-        setQuoterId(initialQuoterId as string);
-      }
-    } catch (error) {
-      console.error('Error al procesar el vehículo:', error);
-      setErrorMessage('Hubo un problema al cargar los resultados');
-      setIsErrorModalVisible(true);
+    if (!vehicle || !quoterId) {
+        console.log('⚠️ Datos faltantes, redirigiendo a búsqueda');
+        setErrorMessage('No se encontraron datos del vehículo');
+        setIsErrorModalVisible(true);
+        router.replace(ROUTES.TABS.QUOTE);
     }
-  }, [initialVehicle, initialQuoterId]);
+  }, [vehicle, quoterId]);
 
   const handleQuote = async () => {
-    setIsLoading(true);
-    if (!selectedVehicle || !buyerRut || !ownerOption || !quoterId) {
+    if (!vehicle || !buyerRut || !ownerOption || !quoterId) {
       setErrorMessage('Por favor complete todos los campos requeridos');
       setIsErrorModalVisible(true);
       return;
     }
 
     try {
-      console.log('quoterId', quoterId);
       const response = await startQuotationFlow({
-        quoterId: quoterId,
-        ppu: selectedVehicle.ppu,
-        brand: selectedVehicle.brand,
-        model: selectedVehicle.model,
-        year: selectedVehicle.year,
-        colour: selectedVehicle.colour,
-        engineNum: selectedVehicle.engineNum,
-        chassisNum: selectedVehicle.chassisNum,
+        ppu: vehicle.ppu,
+        brand: vehicle.brand,
+        model: vehicle.model,
+        year: vehicle.year,
         purchaserId: buyerRut,
         ownerOption: OWNER_OPTIONS_MAP[ownerOption as keyof typeof OWNER_OPTIONS_MAP],
-      });
-      console.log('response', response.vehicle);
-
-      router.push({
-        pathname: ROUTES.QUOTE.QUOTE_RESULTS,
-        params: {
-          plans: encodeURIComponent(JSON.stringify(response.plans)),
-          quoterId: response.quoterId,
-          vehicle: encodeURIComponent(JSON.stringify(response.vehicle))
-        }
+        quoterId: quoterId,
+        colour: vehicle.colour,
+        engineNum: vehicle.engineNum,
+        chassisNum: vehicle.chassisNum
       });
 
+      router.push(ROUTES.QUOTE.QUOTE_RESULTS);
     } catch (error) {
-      console.error('Error al cotizar:', error);
-      setErrorMessage('No se pudo realizar la cotización');
+      console.error('Error al iniciar cotización:', error);
+      setErrorMessage('No se pudo iniciar la cotización');
       setIsErrorModalVisible(true);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -108,11 +101,11 @@ export default function SearchResultsScreen() {
   };
 
   return (
-    <ThemedLayout padding={[0, 24]}>
+    <ThemedLayout padding={[0, 40]}>
       <View style={styles.content}>
         <View style={styles.header}>
           <ThemedText variant="superTitle">
-            Resultado de la Búsqueda
+            Resultados de búsqueda
           </ThemedText>
           {getSearchValues()}
           <ThemedText variant="paragraph" color={themeColors.textParagraph}>
@@ -134,24 +127,26 @@ export default function SearchResultsScreen() {
 
         <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
 
-        <ThemedText variant="subTitle" textAlign="center" style={{ marginVertical: 8 }}>
-          Datos del comprador
-        </ThemedText>
+        <View style={styles.searchValueContainer}>
+          <ThemedText variant="subTitle" textAlign="center">
+            Datos del comprador
+          </ThemedText>
+        </View>
 
         <ThemedInput
           label="RUT del comprador"
-          placeholder="RUT"
           value={buyerRut}
           onChangeText={setBuyerRut}
-          isRUT
+          placeholder="RUT"
+          isRUT={true}
         />
 
         <ThemedInput
           label="¿Es el dueño del vehículo?"
-          placeholder="Seleccione una opción"
           value={ownerOption}
           onChangeText={setOwnerOption}
-          isSelect
+          placeholder="Si, soy el dueño del vehículo"
+          isSelect={true}
           options={Object.keys(OWNER_OPTIONS_MAP)}
         />
       </View>
@@ -159,9 +154,10 @@ export default function SearchResultsScreen() {
       <ThemedButton
         text="Siguiente"
         onPress={handleQuote}
-        style={styles.nextButton}
-        disabled={!selectedVehicle || !buyerRut || !ownerOption || !quoterId}
+        disabled={!vehicle || !buyerRut || !ownerOption}
       />
+
+      {isLoading ? <LoadingScreen /> : null}
 
       <MessageModal
         isVisible={isErrorModalVisible}
@@ -177,54 +173,29 @@ export default function SearchResultsScreen() {
           onPress: () => setIsErrorModalVisible(false)
         }}
       />
-      {isLoading && (
-        <LoadingScreen />
-      )}
     </ThemedLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    flex: 1,
-  },
-  header: {
-    marginBottom: 24,
-  },
-  vehicleCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    marginBottom: 16,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  vehicleInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  nextButton: {
-    marginTop: 24,
-  },
-  divider: {
-    height: 1,
-    width: '100%',
-    marginVertical: 20,
-  },
-  searchValueContainer: {
-    marginVertical: 16,
-    gap: 8,
-  },
-  searchItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-}); 
+    content: {
+        flex: 1,
+    },
+    header: {
+        marginBottom: 24,
+    },
+    divider: {
+        height: 1,
+        width: '100%',
+        marginVertical: 20,
+    },
+    searchValueContainer: {
+        marginVertical: 16,
+        gap: 8,
+    },
+    searchItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+});  

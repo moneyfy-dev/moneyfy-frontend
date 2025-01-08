@@ -21,36 +21,18 @@ export interface QuoterCarData {
 }
 
 export interface QuoterPlanData {
-  updatedDate: string;
-  createdDate: string;
-  details: never[];
-  damageThirdParty: string;
-  totalLoss: string;
-  workshopType: string;
-  stolenVehicle: string;
   quoterPlanId: string;
-  id: string;
+  insurer: string;
   planName: string;
-  insuranceCompany: string;
-  deductible: number;
   price: number;
   priceUf: number;
-  discount: number;
-  logos: {
-    light: string;
-    dark: string;
-  };
-  coverages: {
-    title: string;
-    description: string;
-  }[];
+  deductible: number;
 }
 
 export interface QuoterAddressData {
   street: string;
-  streetNumber: number;
+  streetNumber: string;
   department: string;
-  inspection: string;
 }
 
 export interface QuoterPayment {
@@ -71,4 +53,4 @@ export interface Quoter {
   quoterPlanData: QuoterPlanData;
   quoterAddressData: QuoterAddressData;
   quoterPayment: QuoterPayment;
-} 
+}

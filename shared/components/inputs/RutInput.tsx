@@ -10,11 +10,11 @@ export const RutInput = forwardRef<TextInput, ThemedInputCommonProps>(
     const themeColors = useThemeColor();
 
     const formatRUT = (rut: string) => {
-      const cleaned = rut.replace(/\D/g, '');
+      const cleaned = rut.replace(/[^\dkK]/g, '');
       let formatted = '';
       if (cleaned.length > 1) {
-        let lastChar = cleaned.slice(-1).toLowerCase();
-        let rutWithoutLastChar = cleaned.slice(0, -1);
+        const lastChar = cleaned.slice(-1).toLowerCase();
+        const rutWithoutLastChar = cleaned.slice(0, -1).replace(/[^\d]/g, '');
         formatted = rutWithoutLastChar.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '-' + lastChar;
       } else {
         formatted = cleaned;
@@ -23,8 +23,8 @@ export const RutInput = forwardRef<TextInput, ThemedInputCommonProps>(
     };
 
     const handleRUTChange = (text: string) => {
-      const numericValue = text.replace(/\D/g, '');
-      onChangeText(numericValue);
+      const validValue = text.replace(/[^\dkK]/g, '');
+      onChangeText(validValue);
     };
 
     const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {

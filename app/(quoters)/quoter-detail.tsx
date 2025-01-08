@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Quoter, QuoterStatus, InsurancePlan } from '@/core/types';
+import { Quoter, QuoterStatus, InsurancePlan, QuoterPlanData } from '@/core/types';
 import { View, StyleSheet } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, QuoteCard, VehicleCard, IconContainer, QuoterInfoCard, LoadingScreen } from '@/shared/components';
 import { format } from 'date-fns';
-import { useAuth } from '@/core/context';
+import { useUser } from '@/core/context';
 
 export default function QuoterDetailScreen() {
   const router = useRouter();
@@ -14,7 +14,7 @@ export default function QuoterDetailScreen() {
   const themeColors = useThemeColor();
   const [quoter, setQuoter] = useState<Quoter | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { user, hydrateUserData } = useAuth();
+  const { user, hydrateUserData } = useUser();
 
   useEffect(() => {
     let isMounted = true;
@@ -23,8 +23,8 @@ export default function QuoterDetailScreen() {
       setIsLoading(true);
       try {
         await hydrateUserData(true);
-        if (isMounted && user?.quoterPeople) {
-          const quoterData = user.quoterPeople.find(r => r.quoterId === params.id);
+        if (isMounted && user?.quoters) {
+          const quoterData = user.quoters.find(r => r.quoterId === params.id);
           setQuoter(quoterData || null);
           console.log('quoterData', quoterData?.quoterPlanData);
         }
@@ -63,22 +63,14 @@ export default function QuoterDetailScreen() {
     return status === 'Caducado' ? Colors.common.black : Colors.common.white;
   };
 
-  const mapToPlanFormat = (quoterPlan: typeof quoter.quoterPlanData): InsurancePlan => {
+  const mapToPlanFormat = (quoterPlan: typeof quoter.quoterPlanData): QuoterPlanData => {
     return {
-      planId: quoterPlan.quoterPlanId || '',
+      quoterPlanId: quoterPlan.quoterPlanId || '',
       planName: quoterPlan.planName || '',
-      insuranceCompany: quoterPlan.insuranceCompany || '',
+      insurer: quoterPlan.insurer || '',
       deductible: quoterPlan.deductible || 0,
       price: quoterPlan.price || 0,
       priceUf: quoterPlan.priceUf || 0,
-      discount: quoterPlan.discount as unknown as number || 0,
-      stolenVehicle: quoterPlan.stolenVehicle || '',
-      workshopType: quoterPlan.workshopType || '',
-      totalLoss: quoterPlan.totalLoss || '',
-      damageThirdParty: quoterPlan.damageThirdParty || '',
-      details: quoterPlan.details || [],
-      createdDate: quoterPlan.createdDate || '',
-      updatedDate: quoterPlan.updatedDate || '',
     };
   };
 

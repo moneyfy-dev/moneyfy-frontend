@@ -4,45 +4,94 @@ import type {
     QuoteVehicleParams, 
     QuoteVehicleResponse, 
     SelectPlanParams,
-    VehiclesResponse, 
-    Vehicle,
-    InsurancePlan,
-    QuoteResult
+    VehiclesResponse,
+    QuoteResult,
+    GenerateTransactionParams,
+    FinalizeQuoteParams
 } from '@/core/types';
 
 export const quoteService = {
     // Búsqueda de compañías aseguradoras
     searchCompanies(): Promise<SearchResponse> {
-        return api.get('/referred/search/companies');
+        console.log('📤 Request searchCompanies iniciando...');
+        return api.get('/quoter/search/insurers')
+            .then(response => {
+                console.log('📥 Response searchCompanies raw:', {
+                    status: response.status,
+                    data: response.data,
+                    hasInsurers: !!response.data?.data?.insurers,
+                    insurers: response.data?.data?.insurers
+                });
+                return response.data;
+            })
+            .catch(error => {
+                console.error('❌ Error en searchCompanies:', {
+                    status: error.response?.status,
+                    data: error.response?.data,
+                    message: error.message
+                });
+                throw error;
+            });
     },
 
     // Búsqueda de vehículo
     searchVehicle(ownerId: string, ppu: string): Promise<SearchResponse> {
-        return api.post('/referred/search/vehicle', { ownerId, ppu });
+        return api.post('/quoter/search/vehicle', { ownerId, ppu })
+            .then(response => {
+                return response.data; // Esto ya devuelve el objeto con message, status y data
+            })
+            .catch(error => {
+                console.error('❌ Error en searchVehicle:', error.response?.data);
+                throw error;
+            });
     },
 
     // Cotización de vehículo
     quoteVehicle(quoteData: QuoteVehicleParams): Promise<QuoteVehicleResponse> {
-        return api.post('/referred/vehicle/quote', quoteData);
+        console.log('📤 Request quoteVehicle iniciando para:', quoteData.insurerAlias);
+        return api.post('/quoter/vehicle/quote', quoteData)
+            .then(response => {
+                console.log('📥 Response quoteVehicle raw:', {
+                    status: response.status,
+                    data: response.data,
+                    hasPlans: !!response.data?.data?.plans,
+                    plans: response.data?.data?.plans
+                });
+                return response.data;
+            })
+            .catch(error => {
+                console.error('❌ Error en quoteVehicle:', {
+                    insurer: quoteData.insurerAlias,
+                    status: error.response?.status,
+                    data: error.response?.data,
+                    message: error.message
+                });
+                throw error;
+            });
     },
 
     // Selección de plan
     selectPlan(planData: SelectPlanParams): Promise<QuoteVehicleResponse> {
-        return api.put('/referred/select/plan', planData);
+        return api.put('/quoter/select/plan', planData);
     },
 
     // Obtener vehículos disponibles
     getAvailableVehicles(): Promise<VehiclesResponse> {
-        return api.get('/referred/search/available/vehicles');
+        return api.get('/quoter/search/available/vehicles');
     },
 
     // Flujo completo de cotización
-    async startQuotationFlow(quoteData: Omit<QuoteVehicleParams, 'companyAlias'>): Promise<QuoteVehicleResponse> {
-
+    async startQuotationFlow(quoteData: Omit<QuoteVehicleParams, 'insurerAlias'>): Promise<QuoteVehicleResponse> {
+        console.log('📤 Request startQuotationFlow:', quoteData);
         try {
             // 1. Obtener compañías
             const companiesResponse = await this.searchCompanies();
-            const companies = companiesResponse.data.companies || [];
+
+            // Transformar el array de strings en array de Company
+            const companies = (companiesResponse.data?.insurers || []).map(alias => ({
+                name: alias,
+                alias: alias
+            }));
             
             if (companies.length === 0) {
                 throw new Error('No hay compañías disponibles para cotizar');
@@ -53,26 +102,32 @@ export const quoteService = {
                 try {
                     const quoteParams: QuoteVehicleParams = {
                         ...quoteData,
-                        companyAlias: company.alias,
+                        insurerAlias: company.alias,
                     };
                     const response = await this.quoteVehicle(quoteParams);
                     
+                    if (!response.data?.plans) {
+                        return {
+                            plans: [],
+                            quoterId: response.data?.quoterId || null
+                        };
+                    }
+
+                    const plansWithInsurer = response.data.plans.map(plan => ({
+                        ...plan,
+                        insurer: response.data.insurer
+                    }));
+
                     return {
-                        plans: response.data.plans.map(plan => ({
-                            ...plan,
-                            insuranceCompany: company.name
-                        })),
+                        plans: plansWithInsurer,
                         quoterId: response.data.quoterId,
-                        vehicle: response.data.vehicle,
-                        user: response.data.user
+                        insurer: response.data.insurer
                     };
                 } catch (error) {
-                    console.log(`Error al cotizar con ${company.name}:`, error);
+                    console.log(`⚠️ Error al cotizar con ${company.name}:`, error);
                     return {
                         plans: [],
-                        quoterId: null,
-                        vehicle: null,
-                        user: null
+                        quoterId: null
                     };
                 }
             });
@@ -93,34 +148,15 @@ export const quoteService = {
             const allPlans = results
                 .map((result: QuoteResult) => result.plans)
                 .flat()
-                .filter(plan => plan !== null);
+                .filter(plan => plan !== null && plan !== undefined);
 
-            // Buscar explícitamente un quoterId válido
             const quoterId = results.find((result: QuoteResult) => result.quoterId)?.quoterId;
             
             if (allPlans.length === 0) {
                 throw new Error('No se encontraron planes disponibles');
             }
 
-            // 5. Construir el objeto Vehicle completo
-            const vehicle: Vehicle = {
-                ppu: quoteData.ppu,
-                type: 'AUTO',
-                brand: quoteData.brand,
-                model: quoteData.model,
-                year: quoteData.year,
-                colour: quoteData.colour || 'NO ESPECIFICADO',
-                engineNum: quoteData.engineNum || 'NO ESPECIFICADO',
-                chassisNum: quoteData.chassisNum || 'NO ESPECIFICADO',
-                manufacturer: quoteData.brand
-            };
-
-            // 6. Obtener datos de usuario y tokens del primer resultado válido
-            const validResult = results.find((result: QuoteResult) => result.user);
-            
-            // Validar quoterId
-            const finalQuoterId = quoterId || quoteData.quoterId;
-            if (!finalQuoterId) {
+            if (!quoterId) {
                 throw new Error('No se pudo obtener un quoterId válido');
             }
 
@@ -129,15 +165,21 @@ export const quoteService = {
                 status: 200,
                 data: {
                     plans: allPlans,
-                    quoterId: finalQuoterId,
-                    vehicle,
-                    user: validResult?.user || null,
-                    // Removemos tokens ya que serán manejados por el interceptor
+                    quoterId,
+                    insurer: allPlans[0].insurer
                 }
             };
         } catch (error) {
-            console.error('Error en el flujo de cotización:', error);
+            console.error('Error en startQuotationFlow:', error);
             throw error;
         }
+    },
+
+    generateTransaction(params: GenerateTransactionParams): Promise<any> {
+        return api.put('/quoter/generate/transaction', params);
+    },
+
+    finalizeQuote(params: FinalizeQuoteParams): Promise<any> {
+        return api.put('/quoter/finalize/quote', params);
     }
 }; 

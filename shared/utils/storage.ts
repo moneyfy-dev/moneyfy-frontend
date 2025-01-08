@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { STORAGE_KEYS } from '@/core/types';
+import type { Vehicle, InsurancePlan } from '@/core/types';
 
 export const storage = {
   // Métodos genéricos
@@ -151,6 +152,50 @@ export const storage = {
       const sessionKeys = Object.values(STORAGE_KEYS.SESSION);
       await storage.multiRemove(sessionKeys);
     },
+  },
+
+  // Métodos específicos para Quote
+  quote: {
+    async getVehicle() {
+      return storage.get<Vehicle>(STORAGE_KEYS.QUOTE.VEHICLE);
+    },
+
+    async setVehicle(vehicle: Vehicle | null) {
+      if (vehicle) {
+        await storage.set(STORAGE_KEYS.QUOTE.VEHICLE, vehicle);
+      } else {
+        await storage.remove(STORAGE_KEYS.QUOTE.VEHICLE);
+      }
+    },
+
+    async getPlans() {
+      return storage.get<InsurancePlan[]>(STORAGE_KEYS.QUOTE.PLANS);
+    },
+
+    async setPlans(plans: InsurancePlan[] | null) {
+      if (plans) {
+        await storage.set(STORAGE_KEYS.QUOTE.PLANS, plans);
+      } else {
+        await storage.remove(STORAGE_KEYS.QUOTE.PLANS);
+      }
+    },
+
+    async getQuoterId() {
+      return storage.get<string>(STORAGE_KEYS.QUOTE.QUOTER_ID);
+    },
+
+    async setQuoterId(quoterId: string | null) {
+      if (quoterId) {
+        await storage.set(STORAGE_KEYS.QUOTE.QUOTER_ID, quoterId);
+      } else {
+        await storage.remove(STORAGE_KEYS.QUOTE.QUOTER_ID);
+      }
+    },
+
+    async clearQuote() {
+      const quoteKeys = Object.values(STORAGE_KEYS.QUOTE);
+      await storage.multiRemove(quoteKeys);
+    }
   },
 
   STORAGE_KEYS,

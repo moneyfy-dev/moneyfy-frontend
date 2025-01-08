@@ -4,8 +4,8 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedText } from '../ui/ThemedText';
 import { ThemedButton } from '../ui/ThemedButton';
-import { LogoBci } from '../images/LogoBci';
 import { Ionicons } from '@expo/vector-icons';
+import { InsurerLogo } from '../ui/InsurerLogo';
 
 interface QuoteCardProps {
   plan: InsurancePlan;
@@ -46,7 +46,12 @@ export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) 
     <View style={[styles.card, { borderColor: themeColors.borderBackgroundColor }]}>
       <View style={styles.cardHeader}>
         <View style={styles.logoContainer}>
-          <LogoBci/>
+          {plan.insurer && typeof plan.insurer === 'object' && (
+            <InsurerLogo
+              darkLogo={plan.insurer.darkLogo}
+              lightLogo={plan.insurer.lightLogo}
+              />
+          )}
         </View>
         <ThemedText variant='paragraph' style={styles.planName}>
           {plan.planName}
@@ -199,3 +204,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+

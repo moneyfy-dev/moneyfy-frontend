@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ROUTES } from '@/core/types/utils/routes';
+import { ROUTES } from '@/core/types';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedLayout,ThemedText, ThemedInput, ThemedButton, NoAccountWarning, LoadingScreen, MessageModal } from '@/shared/components';
+import { 
+  ThemedLayout,
+  ThemedText, 
+  ThemedInput, 
+  ThemedButton,
+  NoAccountWarningScreen,
+  LoadingScreen, 
+  MessageModal 
+} from '@/shared/components';
 import { validateRUT } from '@/shared/utils/validations';
-import axios from 'axios';
-import { useAuth } from '@/core/context';
-import { searchVehicle } from '@/core/services';
+import { useUser, useQuote } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function QuoteScreen() {
   const router = useRouter();
   const themeColors = useThemeColor();
-  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useUser();
+  const { searchVehicle, isLoading } = useQuote();
   const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [searchValue, setSearchValue] = useState({
@@ -24,11 +31,11 @@ export default function QuoteScreen() {
     ownerId: '',
     ppu: '',
   });
-  const { user, updateUserData } = useAuth();
+
   const hasAccounts = user?.accounts && user.accounts.length > 0;
 
   if (!hasAccounts) {
-    return <NoAccountWarning />;
+    return <NoAccountWarningScreen />;
   }
 
   const validateForm = () => {
@@ -55,13 +62,12 @@ export default function QuoteScreen() {
     return isValid;
   };
 
-  const handleSearch = async (value: { ownerId: string, ppu: string }) => {
-    setIsLoading(true);
+  const handleSearch = async () => {
     if (!validateForm()) {
       return;
     }
 
-    if (!value.ownerId.trim() && !value.ppu.trim()) {
+    if (!searchValue.ownerId.trim() && !searchValue.ppu.trim()) {
       setErrors({
         ownerId: 'Ingrese el RUT del propietario',
         ppu: 'Ingrese la patente del vehículo'
@@ -70,45 +76,32 @@ export default function QuoteScreen() {
     }
 
     try {
-      const response = await searchVehicle(value.ownerId, value.ppu.toUpperCase());
+      const response = await searchVehicle(
+        searchValue.ownerId, 
+        searchValue.ppu.toUpperCase()
+      );
 
-      if (response?.data?.user) {
-        await updateUserData(response.data.user);
-
-        router.push({
-          pathname: ROUTES.QUOTE.SEARCH_RESULTS,
-          params: {
-            value: JSON.stringify(value),
-            vehicle: encodeURIComponent(JSON.stringify(response.data.vehicle)),
-            quoterId: response.data.quoterId
-          }
-        });
-      } else {
-        throw new Error('No se encontraron resultados');
-      }
+      router.push({
+        pathname: ROUTES.QUOTE.SEARCH_RESULTS,
+        params: {
+          value: JSON.stringify(searchValue)
+        }
+      });
     } catch (error) {
       console.error('Error al buscar:', error);
-      if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.message || 'Error al realizar la búsqueda';
-        setErrorMessage(errorMessage);
-        setIsErrorModalVisible(true);
-      } else {
-        setErrorMessage('No se pudo realizar la búsqueda. Intente nuevamente.');
-        setIsErrorModalVisible(true);
-      }
-    } finally {
-      setIsLoading(false);
+      setErrorMessage(error instanceof Error ? error.message : 'No se pudo realizar la búsqueda. Intente nuevamente.');
+      setIsErrorModalVisible(true);
     }
   };
 
   return (
-    <ThemedLayout padding={[48, 24]}>
+    <ThemedLayout padding={[40, 24]}>
       <View style={styles.header}>
-        <ThemedText variant="superTitle" marginBottom={16} textAlign="center">
-          Cotiza rápidamente el seguro más adecuado
+        <ThemedText variant="title" textAlign="center">
+          Cotiza un seguro
         </ThemedText>
-        <ThemedText variant="paragraph" textAlign="center" color={themeColors.textParagraph}>
-          Cotiza diferentes planes de seguros ingresando la información de tu vehículo o el RUT del propietario.
+        <ThemedText variant="paragraph" textAlign="center">
+          Ingresa los datos del vehículo para comenzar
         </ThemedText>
       </View>
 
@@ -142,7 +135,7 @@ export default function QuoteScreen() {
       <ThemedButton
         style={styles.searchButton}
         text="Buscar"
-        onPress={() => handleSearch(searchValue)}
+        onPress={handleSearch}
       />
 
       <TouchableOpacity
@@ -189,9 +182,6 @@ const styles = StyleSheet.create({
   },
   searchSection: {
     marginBottom: 16,
-  },
-  searchInput: {
-    marginBottom: 0,
   },
   searchButton: {
     marginBottom: 16,

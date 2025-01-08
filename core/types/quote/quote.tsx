@@ -1,3 +1,5 @@
+import { QuoterStatus } from "../quoter/quoter";
+
 // Tipos base
 export interface Vehicle {
   ppu: string;
@@ -16,6 +18,14 @@ export interface Company {
   alias: string;
 }
 
+export interface Insurer {
+  insurerId: string;
+  name: string;
+  alias: string;
+  darkLogo: string;
+  lightLogo: string;
+}
+
 export interface InsurancePlan {
   planId: string;
   insuranceCompany: string;
@@ -31,6 +41,7 @@ export interface InsurancePlan {
   details: string[];
   createdDate: string;
   updatedDate: string;
+  insurer: Insurer;
 }
 
 // Parámetros de solicitud
@@ -42,22 +53,22 @@ export interface QuoteVehicleParams {
   year: string;
   purchaserId: string;
   ownerOption: string;
-  companyAlias: string;
+  insurerAlias?: string;
   colour?: string;
   engineNum?: string;
   chassisNum?: string;
 }
 
 export interface SelectPlanParams {
-  quoterId: string;
+  quoterId: string | null;
   planId: string;
-  insuranceCompany: string;
+  insurer: string;
   planName: string;
   price: number;
   priceUf: number;
   deductible: number;
   street: string;
-  streetNumber: number;
+  streetNumber: string;
   department: string;
 }
 
@@ -66,8 +77,8 @@ export interface SearchResponse {
   message: string;
   status: number;
   data: {
-      quoterId: string | number | (string | number)[] | null | undefined;
-      companies?: Company[];
+      quoterId?: string | number | (string | number)[] | null | undefined;
+      insurers?: string[];
       vehicle?: Vehicle;
       tokens: {
           jwtSession: string;
@@ -81,18 +92,22 @@ export interface QuoteVehicleResponse {
   message: string;
   status: number;
   data: {
-      quoterId: string;
-      plans: InsurancePlan[];
-      vehicle: Vehicle;
-      user: any;
+    quoterId: string;
+    insurer: Insurer;
+    plans: InsurancePlan[];
   };
+}
+
+export interface QuoteVehicleData {
+  quoterId: string | null;
+  insurers?: Insurer[];
+  plans: InsurancePlan[];
 }
 
 export interface QuoteResult {
   plans: InsurancePlan[];
   quoterId: string | null;
-  vehicle: Vehicle | null;
-  user: any;
+  insurer?: Insurer;
 }
 
 export interface VehicleModel {
@@ -122,3 +137,14 @@ export const OWNER_OPTIONS_MAP = {
   "No, soy el cónyuge del dueño": "3",
   "No, soy el hijo(a) del dueño": "4"
 } as const;
+
+// Añadir nuevos tipos
+
+export interface GenerateTransactionParams {
+    quoterId: string | null;
+}
+
+export interface FinalizeQuoteParams {
+    quoterId: string | null;
+    transactionStatus: QuoterStatus;
+}

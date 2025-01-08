@@ -5,24 +5,23 @@ import { View, StyleSheet, Pressable, FlatList } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedText, ThemedInput, FiltersModal, QuoteCard, ThemedLayoutFlatList, CarIcon, MessageModal } from "@/shared/components";
+import { useQuote } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 
 interface Filters {
-  insuranceType: string;
-  company: string;
-  coverage: string;
-  replacementCar: string;
+    insuranceType: string;
+    company: string;
+    coverage: string;
+    replacementCar: string;
 }
 
 export default function QuoteResults() {
     const themeColors = useThemeColor();
     const [showFilters, setShowFilters] = useState(false);
-    const { plans: plansParam, quoterId: quoterIdParam, vehicle: vehicleParam } = useLocalSearchParams();
     const router = useRouter();
+    const { plans, vehicle, quoterId, isLoading } = useQuote();
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
-    const [plans, setPlans] = useState<InsurancePlan[]>([]);
     const [filteredPlans, setFilteredPlans] = useState<InsurancePlan[]>([]);
     const [filters, setFilters] = useState<Filters>({
         insuranceType: 'Seguro por kilómetro',
@@ -31,87 +30,35 @@ export default function QuoteResults() {
         replacementCar: ''
     });
 
-    // Función para manejar la selección del plan
+    useEffect(() => {
+        if (plans) {
+            setFilteredPlans(plans);
+        }
+        console.log('🔄 Filtered plans:', filteredPlans);
+    }, [plans]);
+
     const handleSelectPlan = (plan: InsurancePlan) => {
-        console.log('quoterIdParam', quoterIdParam);
         router.push({
             pathname: ROUTES.QUOTE.CONFIRM_ADDRESS,
-            params: {
-                quoterId: quoterIdParam,
-                plan: JSON.stringify(plan),
-                vehicle: vehicleParam
-            }
+            params: { planId: plan.planId }
         });
     };
-
-    useEffect(() => {
-        console.log('vehicleParam', vehicleParam);
-        try {
-            if (plansParam) {
-                
-                let parsedPlans: InsurancePlan[];
-                
-                if (typeof plansParam === 'string') {
-                    // Si es un string, parseamos el JSON
-                    parsedPlans = JSON.parse(plansParam);
-                } else if (Array.isArray(plansParam)) {
-                    // Si ya es un array, lo convertimos a unknown primero
-                    parsedPlans = plansParam as unknown as InsurancePlan[];
-                } else {
-                    // Si es un solo objeto, lo envolvemos en un array
-                    parsedPlans = [plansParam as unknown as InsurancePlan];
-                }
-                
-                setPlans(parsedPlans);
-                setFilteredPlans(parsedPlans);
-            }
-            if (vehicleParam) {
-                let parsedVehicle: Vehicle;
-                if(typeof vehicleParam === 'string') {
-                    parsedVehicle = JSON.parse(vehicleParam);
-                } else {
-                    parsedVehicle = vehicleParam as unknown as Vehicle;
-                }
-                setSelectedVehicle(parsedVehicle);
-            }
-        } catch (error) {
-            setErrorMessage('Hubo un problema al cargar los resultados');
-            setIsErrorModalVisible(true);
-        }
-    }, [plansParam]);
-
-    useEffect(() => {
-        let result = [...plans];
-
-        if (filters.company) {
-            result = result.filter(plan => 
-                plan.insuranceCompany.toLowerCase().includes(filters.company.toLowerCase())
-            );
-        }
-        if (filters.coverage) {
-            result = result.filter(plan => 
-                plan.planName.toLowerCase().includes(filters.coverage.toLowerCase())
-            );
-        }
-
-        setFilteredPlans(result);
-    }, [filters, plans]);
 
     return (
         <ThemedLayoutFlatList padding={[0, 24]}>
             <View style={styles.container}>
-                {selectedVehicle && (
+                {vehicle && (
                     <View style={styles.header}>
                         <CarIcon />
                         <View style={styles.vehicleInfo}>
-                            <ThemedText variant="superTitle">{selectedVehicle.ppu}</ThemedText>
+                            <ThemedText variant="superTitle">{vehicle.ppu}</ThemedText>
                             <ThemedText variant="title">
-                                {selectedVehicle.year}{' '}
+                                {vehicle.year}{' '}
                                 <ThemedText variant="subTitle" style={{color: themeColors.textColorAccent}}>
-                                    {selectedVehicle.brand.toUpperCase()} {selectedVehicle.model.toUpperCase()}
+                                    {vehicle.brand.toUpperCase()} {vehicle.model.toUpperCase()}
                                 </ThemedText>
                             </ThemedText>
-                            <ThemedText variant="paragraph">N° Motor {''} {selectedVehicle.engineNum}</ThemedText>
+                            <ThemedText variant="paragraph">N° Motor {''} {vehicle.engineNum}</ThemedText>
                         </View>
                     </View>
                 )}

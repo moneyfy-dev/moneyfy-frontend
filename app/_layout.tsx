@@ -7,7 +7,7 @@ import { Stack } from 'expo-router';
 import { screens } from '@/core/types';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/shared/hooks';
-import { ThemeProvider, OnboardingProvider, AuthProvider, useAuth, UserProvider, SettingsProvider, useUser } from '@/core/context';
+import { ThemeProvider, OnboardingProvider, AuthProvider, useAuth, UserProvider, QuoteProvider, SettingsProvider, useUser } from '@/core/context';
 
 const SPLASH_SCREEN_DURATION = 4000; // Duración fija para la animación de marca
 
@@ -53,8 +53,9 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <AuthProvider>
             <UserProvider>
-              <SettingsProvider>
-                <OnboardingProvider>
+              <QuoteProvider>
+                <SettingsProvider>
+                  <OnboardingProvider>
                   {isAuthenticated ? (
                     isPersistentAuthRequired ? (
                       <Stack
@@ -93,8 +94,9 @@ export default function RootLayout() {
                       ))}
                     </Stack>
                   )}
-                </OnboardingProvider>
-              </SettingsProvider>
+                  </OnboardingProvider>
+                </SettingsProvider>
+              </QuoteProvider>
             </UserProvider>
           </AuthProvider>
         </SafeAreaProvider>
