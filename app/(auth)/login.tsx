@@ -7,8 +7,6 @@ import { validateEmail, validatePassword } from '@/shared/utils/validations';
 import { useThemeColor, useCardVisibility } from '@/shared/hooks';
 import { useAuth } from '@/core/context';
 import { AnimatedCard } from '@/shared/components/composite/AnimatedCard';
-import { authService } from '@/core/services';
-import { useUser } from '@/core/context';
 
 const { height } = Dimensions.get('window');
 
@@ -19,7 +17,7 @@ export default function LoginScreen() {
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { loginContext } = useAuth();
+    const { login } = useAuth();
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [isFormValid, setIsFormValid] = useState(false);
@@ -28,7 +26,6 @@ export default function LoginScreen() {
     const router = useRouter();
     const [touchedFields, setTouchedFields] = useState({ email: false, password: false });
     const [errorMessage, setErrorMessage] = useState('');
-    const { syncWithAuth } = useUser();
 
     const showLoginForm = () => {
         setIsFormVisible(true);
@@ -85,11 +82,7 @@ export default function LoginScreen() {
 
             setIsLoading(true);
             
-            // Usar el contexto para manejar el login
-            const response = await authService.login(email, password);
-            const userData = await loginContext(response);
-            await syncWithAuth(userData as unknown as User);
-            
+            await login(email, password);
             router.replace(ROUTES.TABS.INDEX);
         } catch (error: any) {
             if (error.status === 226) {

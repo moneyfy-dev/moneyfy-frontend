@@ -1,7 +1,8 @@
 import { ApiResponse, LoginResponse, RegisterResponse, RegisterRequest, ConfirmPasswordResetRequest, ConfirmationFlowType } from '../../types';
-import { api } from '../api';
+import { api } from '../api/config';
 
 export const authService = {
+
   login: async (email: string, password: string): Promise<LoginResponse> => {
     const response = await api.post('/auth/log-in', { email, pwd: password });
     return response.data;

@@ -9,7 +9,7 @@ interface AuthState {
 }
 
 interface AuthContextType extends AuthState {
-  loginContext: (response: LoginResponse) => Promise<User>;
+  login: (email: string, password: string) => Promise<User>;
   logout: () => Promise<void>;
   handlePersistentAuthSuccess: () => Promise<void>;
   checkPersistentAuth: () => Promise<boolean>;
@@ -30,7 +30,6 @@ interface AuthContextType extends AuthState {
     type: ConfirmationFlowType
   ) => Promise<any>;
   requestPasswordReset: (email: string) => Promise<PasswordResetResponse>;
-  handleRegistrationSuccess: (response: RegisterResponse) => Promise<User>;
 }
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType);

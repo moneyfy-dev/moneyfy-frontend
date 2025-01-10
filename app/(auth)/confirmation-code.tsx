@@ -9,7 +9,7 @@ import { useAuth, useUser } from '@/core/context';
 export default function ConfirmationCodeScreen() {
     const route = useLocalSearchParams();
     const { email, flow } = route;
-    const { confirmCode, resendCode, handleRegistrationSuccess } = useAuth();
+    const { confirmCode, resendCode } = useAuth();
     const { syncWithAuth } = useUser();
     const router = useRouter();
     const [code, setCode] = useState('');
@@ -23,6 +23,7 @@ export default function ConfirmationCodeScreen() {
     const [errorMessage, setErrorMessage] = useState('');
     const [successModalVisible, setSuccessModalVisible] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    
 
     const handleConfirmCode = async (code: string) => {
         try {
@@ -36,7 +37,6 @@ export default function ConfirmationCodeScreen() {
             setSuccessModalVisible(true);
 
             if (flow === 'registerUser' && response.status === 201) {
-                await handleRegistrationSuccess(response);
                 await syncWithAuth(response.data.user);
                 router.replace(ROUTES.TABS.INDEX);
             } else if (flow === 'restorePassword' && response.status === 200) {

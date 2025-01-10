@@ -96,35 +96,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const loginContext = async (response: LoginResponse) => {
+  const login = async (email: string, password: string) => {
     try {
-      console.log('🔑 Iniciando login context');
-      if (!response.data?.tokens || !response.data?.user) {
-        throw new Error('Respuesta de login inválida');
-      }
+        const response = await authService.login(email, password);
+        if (!response.data?.user) {
+            throw new Error('Respuesta de login inválida');
+        }
 
-      console.log('💾 Tokens recibidos del login:', {
-        jwtRefresh: response.data.tokens.jwtRefresh,
-        jwtSession: response.data.tokens.jwtSession
-      });
+        // Guardar datos de usuario
+        await storage.user.setData(response.data.user);
+        await storage.user.updateLastHydration();
+        
+        // Actualizar estado
+        setAuthState(prev => ({
+            ...prev,
+            isAuthenticated: true
+        }));
 
-      await storage.auth.setTokens(
-        response.data.tokens.jwtRefresh,
-        response.data.tokens.jwtSession
-      );
-      
-      await storage.user.setData(response.data.user);
-      await storage.user.updateLastHydration();
-      
-      setAuthState(prev => ({
-        ...prev,
-        isAuthenticated: true
-      }));
-      
-      return response.data.user;
+        return response.data.user;
     } catch (error: any) {
-      console.error('❌ Error en login:', error);
-      throw error;
+        console.error('❌ Error en login:', error);
+        throw error;
     }
   };
 
@@ -254,9 +246,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     flow: ConfirmationFlowType,
   ) => {
     try {
-      const response = await authService.confirmCode(email, code, flow );
+      const response = await authService.confirmCode(email, code, flow);
+      
+      // Si es registro exitoso, guardar datos inmediatamente
+      if (flow === 'registerUser' && response.status === 201) {
+          if (!response.data?.tokens || !response.data?.user) {
+              throw new Error('Respuesta de registro inválida');
+          }
+
+          // Guardar tokens
+          await storage.auth.setTokens(
+              response.data.tokens.jwtRefresh,
+              response.data.tokens.jwtSession
+          );
+
+          // Actualizar estado de autenticación
+          setAuthState(prev => ({
+              ...prev,
+              isAuthenticated: true
+          }));
+      }
+
       return response;
     } catch (error) {
+      console.error('Error en confirmCode:', error);
       throw error;
     }
   };
@@ -270,42 +283,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const handleRegistrationSuccess = async (response: RegisterResponse) => {
-    try {
-      if (!response.data?.tokens || !response.data?.user) {
-        throw new Error('Respuesta de registro inválida');
-      }
-
-      await storage.auth.setTokens(
-        response.data.tokens.jwtRefresh,
-        response.data.tokens.jwtSession
-      );
-      
-      await storage.user.setData(response.data.user);
-      await storage.user.updateLastHydration();
-      
-      setAuthState(prev => ({
-        ...prev,
-        isAuthenticated: true
-      }));
-      
-      return response.data.user;
-    } catch (error) {
-      console.error('Error en registro:', error);
-      setAuthState(prev => ({
-        ...prev,
-        isAuthenticated: false
-      }));
-      throw error;
-    }
-  };
-
   return (
     <AuthContext.Provider
       value={{
         isAuthenticated: authState.isAuthenticated,
         isLoading: authState.isLoading,
-        loginContext,
+        login,
         logout,
         isPersistentAuthRequired: authState.isPersistentAuthRequired,
         handlePersistentAuthSuccess,
@@ -316,7 +299,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         confirmPasswordReset,
         confirmCode,
         resendCode,
-        handleRegistrationSuccess,
       }}
     >
       {children}

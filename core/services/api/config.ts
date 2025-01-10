@@ -12,14 +12,14 @@ export const api = axios.create({
   },
 });
 
-// Configurar el interceptor inmediatamente
+// Interceptor para enviar tokens
 api.interceptors.request.use(
   async (config) => {
     if (!config.headers) {
       config.headers = {} as AxiosRequestHeaders;
     }
 
-    // Solo agregar tokens si no es una ruta de autenticación
+    // Solo agregar tokens si no es ruta de auth
     if (!config.url?.includes('/auth/')) {
       const { token, sessionToken } = await storage.auth.getTokens();
       if (token && sessionToken) {
@@ -29,6 +29,26 @@ api.interceptors.request.use(
     }
 
     return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Interceptor para guardar tokens automáticamente
+api.interceptors.response.use(
+  async (response) => {
+    try {
+      // Si la respuesta contiene tokens, guardarlos
+      if (response.data.data.tokens.jwtRefresh && response.data.data.tokens.jwtSession) {
+        console.log('🔄 Interceptor: Guardando tokens de respuesta');
+        await storage.auth.setTokens(
+          response.data.data.tokens.jwtRefresh,
+          response.data.data.tokens.jwtSession
+        );
+      }
+    } catch (error) {
+      console.error('❌ Error al guardar tokens en interceptor:', error);
+    }
+    return response;
   },
   (error) => Promise.reject(error)
 );

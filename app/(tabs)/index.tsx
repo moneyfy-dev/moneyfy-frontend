@@ -15,7 +15,7 @@ const FORCE_SHOW_ONBOARDING = true; // Mantenemos esto para desarrollo
 export default function HomeScreen() {
   const themeColors = useThemeColor();
   const router = useRouter();
-  const { user, updateUserData, hydrateUserData } = useUser();
+  const { user, hydrateUserData } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const typedUser = user as User;
   const [showBalance, setShowBalance] = useState(false);

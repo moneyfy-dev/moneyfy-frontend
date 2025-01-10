@@ -1,119 +1,131 @@
 {
-  "registration": {
-    "register1": {
-      "request": {
-        "method": "POST",
-        "endpoint": "/api/auth/register",
-        "headers": {},
-        "body": {
-            "name": "user",
-            "surname": "random",
-            "pwd": "12345678",
-            "email": "alejandro.osses@connect360.cl"
-        }
-      },
-      "response": {
-        "status": 200,
-        "body": {
-          "message": "Solicitud aceptada: el código de confirmación para finalizar el proceso de registro, ha sido enviado al email: alejandro.osses@connect360.cl",
-          "data": {
-            "info": "ok"
-          }
-        }
-      }
+  "config": {
+    "adapter": [
+      "xhr",
+      "http",
+      "fetch"
+    ],
+    "baseURL": "https://app-moneyfy-qa.connect360.cl/segurosref",
+    "data": "{\"email\":\"alejandro@fenrir.cl\",\"pwd\":\"123123123aA#\"}",
+    "env": {
+      "Blob": [Function Blob
+      ],
+      "FormData": [Function FormData
+      ]
     },
-    "register2": {
-      "request": {
-        "method": "POST",
-        "endpoint": "/api/auth/register",
-        "headers": {},
-        "body": {
-            "email": "alejandro.osses@connect360.cl",
-            "code": "480109"
-        }
-      },
-      "response": {
-        "status": 200,
-        "body": {
-            "message": "Recurso creado: usuario registrado exitosamente",
-            "status": 201,
-            "data": {
-                "user": {
-                    "userId": "67338f0905869615b4ead8ad",
-                    "personalData": {
-                        "name": "user",
-                        "surname": "random",
-                        "email": "alejandro.osses@connect360.cl",
-                        "profilePicture": "",
-                        "phone": "",
-                        "dateOfBirth": "1900-01-01",
-                        "address": "",
-                        "enable": true
-                    },
-                    "wallet": {
-                        "totalBalance": 0,
-                        "outstandingBalance": 0,
-                        "availableBalance": 0,
-                        "paymentBalance": 0,
-                        "history": []
-                    },
-                    "notifs": {
-                        "byEmail": false,
-                        "byPush": true,
-                        "commissionUpdate": true,
-                        "saleState": false,
-                        "withdrawalAvailability": false,
-                        "referredAccepted": false,
-                        "withdrawalReminder": false,
-                        "specialOffers": false,
-                        "paymentProblems": false
-                    },
-                    "accounts": [],
-                    "referredPeople": []
-                },
-                "tokens": {
-                    "jwtSession": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbGVqYW5kcm8ub3NzZXNAY29ubmVjdDM2MC5jbCIsImF1dGhvcml0aWVzIjoiW3tcImF1dGhvcml0eVwiOlwiUk9MRV9VU0VSXCJ9XSIsImlhdCI6MTczMTQzMjIzMCwiZXhwIjoxNzMxNDMzMTMwfQ.pQo4DwpAKcoIn0wIa98QSUE8vtig76iA2tsyR_Y2Bwo",
-                    "jwtRefresh": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyM2YzcjFkMHMwcHAiLCJyZWZyZXNoVmFsdWUiOiJyM2YzcjFkMHMwcHA6MTczMTQzMjIzMDcxODozeDF0MCIsInVzZXIiOiJhbGVqYW5kcm8ub3NzZXNAY29ubmVjdDM2MC5jbCIsImlhdCI6MTczMTQzMjIzMCwiZXhwIjoxNzMxNDQ2NjMwfQ.fAKckSc0w4cTuqyPvtnVpZKOfyUFyUG0vPL8QoUP1hQ"
-                }
-            }
-        }
-      }
+    "headers": [Object
+    ],
+    "maxBodyLength": -1,
+    "maxContentLength": -1,
+    "method": "post",
+    "timeout": 10000,
+    "transformRequest": [
+      [Function transformRequest
+      ]
+    ],
+    "transformResponse": [
+      [Function transformResponse
+      ]
+    ],
+    "transitional": {
+      "clarifyTimeoutError": false,
+      "forcedJSONParsing": true,
+      "silentJSONParsing": true
     },
-    "login": {
-      "request": {
-        "method": "POST",
-        "endpoint": "/api/auth/login",
-        "headers": {},
-        "body": {
-          "email": "alejandro.osses@connect360.cl",
-          "pwd": "12345678"
-        }
-      },
-      "response": {
-        "status": 200,
-        "body": {
-          "token": "eyJhbGciOiJ...",
-          "message": "Login exitoso"
-        }
-      }
-    }
+    "url": "/auth/log-in",
+    "validateStatus": [Function validateStatus
+    ],
+    "xsrfCookieName": "XSRF-TOKEN",
+    "xsrfHeaderName": "X-XSRF-TOKEN"
   },
-  "protectedEndpoints": {
-    "ejemplo": {
-      "request": {
-        "method": "GET",
-        "endpoint": "/api/protected/resource",
-        "headers": {
-          "Authorization": "Bearer eyJhbGciOiJ..."
-        },
-        "body": {}
-      },
-      "response": {
-        "status": 200,
-        "body": {
-          "data": "ejemplo de respuesta"
-        }
-      }
-    }
-  }
+  "data": {
+    "data": {
+      "tokens": [Object
+      ],
+      "user": [Object
+      ]
+    },
+    "message": "Solicitud realizada: se ha iniciado sesión exitosamente",
+    "status": 200
+  },
+  "headers": {
+    "cache-control": "no-cache, no-store, max-age=0, must-revalidate",
+    "content-type": "application/json",
+    "date": "Fri, 10 Jan 2025 19:19:00 GMT",
+    "expires": "0",
+    "pragma": "no-cache",
+    "strict-transport-security": "max-age=31536000 ; includeSubDomains",
+    "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "DENY",
+    "x-xss-protection": "0"
+  },
+  "request": {
+    "DONE": 4,
+    "HEADERS_RECEIVED": 2,
+    "LOADING": 3,
+    "OPENED": 1,
+    "UNSENT": 0,
+    "_aborted": false,
+    "_cachedResponse": undefined,
+    "_hasError": false,
+    "_headers": {
+      "accept": "application/json, text/plain, */*",
+      "content-type": "application/json"
+    },
+    "_incrementalEvents": false,
+    "_lowerCaseResponseHeaders": {
+      "cache-control": "no-cache, no-store, max-age=0, must-revalidate",
+      "content-type": "application/json",
+      "date": "Fri, 10 Jan 2025 19:19:00 GMT",
+      "expires": "0",
+      "pragma": "no-cache",
+      "strict-transport-security": "max-age=31536000 ; includeSubDomains",
+      "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "x-xss-protection": "0"
+    },
+    "_method": "POST",
+    "_perfKey": "network_XMLHttpRequest_https://app-moneyfy-qa.connect360.cl/segurosref/auth/log-in",
+    "_performanceLogger": {
+      "_closed": false,
+      "_extras": [Object
+      ],
+      "_pointExtras": [Object
+      ],
+      "_points": [Object
+      ],
+      "_timespans": [Object
+      ]
+    },
+    "_requestId": null,
+    "_response": "{\"message\":\"Solicitud realizada: se ha iniciado sesión exitosamente\",\"status\":200,\"data\":{\"tokens\":{\"jwtSession\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbGVqYW5kcm9AZmVucmlyLmNsIiwiYXV0aG9yaXRpZXMiOiJbe1wiYXV0aG9yaXR5XCI6XCJST0xFX1VTRVJcIn1dIiwiaWF0IjoxNzM2NTM2NzQwLCJleHAiOjE3MzY1Mzc2NDB9.DqcqvNVz-W7SspKyPGQcFo7JTt6LC9UzlUzwYRA51As\",\"jwtRefresh\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyM2YzcjFkMHMwcHAiLCJyZWZyZXNoVmFsdWUiOiJyM2YzcjFkMHMwcHA6MTczNjUyNTgzMzMyMTozeDF0MCIsInVzZXIiOiJhbGVqYW5kcm9AZmVucmlyLmNsIiwiaWF0IjoxNzM2NTI1ODMzLCJleHAiOjE3MzY1NDAyMzN9.TrrMYE-5GHLSFGM3zLynt3XTis7de-Bzc0BqkEO3uoA\"},\"user\":{\"userId\":\"678147e7c8157f0841beb631\",\"codeToRefer\":\"NyoYyE\",\"disableAccount\":\"1900-01-01T00:00:00\",\"personalData\":{\"name\":\"Alejandro\",\"surname\":\"Osses\",\"email\":\"alejandro@fenrir.cl\",\"phone\":\"\",\"address\":\"\",\"dateOfBirth\":\"1900-01-01\",\"status\":\"Activado\",\"profilePicture\":\"\"},\"wallet\":{\"totalBalance\":0,\"outstandingBalance\":0,\"availableBalance\":0,\"paymentBalance\":0,\"records\":[]},\"notifPreference\":{\"byEmail\":false,\"byPush\":true,\"commissionUpdate\":true,\"saleState\":false,\"withdrawalAvailability\":false,\"referredRegistered\":true,\"withdrawalReminder\":false,\"specialOffers\":false,\"paymentProblems\":false,\"data\":[]},\"accounts\":[],\"quoters\":[]}}}",
+    "_responseType": "",
+    "_sent": true,
+    "_subscriptions": [],
+    "_timedOut": false,
+    "_trackingName": "unknown",
+    "_url": "https://app-moneyfy-qa.connect360.cl/segurosref/auth/log-in",
+    "readyState": 4,
+    "responseHeaders": {
+      "cache-control": "no-cache, no-store, max-age=0, must-revalidate",
+      "content-type": "application/json",
+      "date": "Fri, 10 Jan 2025 19:19:00 GMT",
+      "expires": "0",
+      "pragma": "no-cache",
+      "strict-transport-security": "max-age=31536000 ; includeSubDomains",
+      "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "x-xss-protection": "0"
+    },
+    "responseURL": "https://app-moneyfy-qa.connect360.cl/segurosref/auth/log-in",
+    "status": 200,
+    "timeout": 10000,
+    "upload": {},
+    "withCredentials": true
+  },
+  "status": 200,
+  "statusText": undefined
 }
