@@ -4,26 +4,20 @@ import { ROUTES, ConfirmationFlowType } from '@/core/types';
 import { View, StyleSheet, TextInput } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedButton, MessageModal, VerificationCode, ResendCode } from '@/shared/components';
-import { useAuth, useUser } from '@/core/context';
+import { useAuth } from '@/core/context';
 
 export default function ConfirmationCodeScreen() {
     const route = useLocalSearchParams();
     const { email, flow } = route;
     const { confirmCode, resendCode } = useAuth();
-    const { syncWithAuth } = useUser();
     const router = useRouter();
     const [code, setCode] = useState('');
-    const inputRefs = useRef<Array<React.RefObject<TextInput>>>([
-        React.createRef(), React.createRef(), React.createRef(), React.createRef(), React.createRef(), React.createRef()
-    ]);
     const themeColors = useThemeColor();
     const [isResendDisabled, setIsResendDisabled] = useState(false);
-    const [resendTimer, setResendTimer] = useState(0);
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [successModalVisible, setSuccessModalVisible] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
-    
 
     const handleConfirmCode = async (code: string) => {
         try {
@@ -33,21 +27,28 @@ export default function ConfirmationCodeScreen() {
                 flow as ConfirmationFlowType,
             );
 
-            setSuccessMessage('Verificación exitosa');
-            setSuccessModalVisible(true);
-
             if (flow === 'registerUser' && response.status === 201) {
-                await syncWithAuth(response.data.user);
                 router.replace(ROUTES.TABS.INDEX);
-            } else if (flow === 'restorePassword' && response.status === 200) {
-                setSuccessMessage('Contraseña restaurada exitosamente');
+            } else if (flow === 'changeDevice' && response.status === 200) {
+                setSuccessMessage('Dispositivo cambiado exitosamente');
                 setSuccessModalVisible(true);
                 setTimeout(() => {
-                    router.replace(ROUTES.AUTH.LOGIN);
-                }, 1500);
+                    router.replace(ROUTES.TABS.INDEX);
+                }, 3000);
             }
         } catch (error: any) {
-            setErrorMessage(error.message || 'Código inválido. Por favor intente nuevamente.');
+            let errorMessage;
+            switch (error.response.status) {
+                case 410:
+                    errorMessage = 'El código ha expirado o no es correcto.';
+                    break;
+                case 424:
+                    errorMessage = 'Error al confirmar el código. Por favor intente nuevamente.';
+                    break;
+                default:
+                    errorMessage = 'No es posible confirmar el código.';
+            }
+            setErrorMessage(errorMessage);
             setIsErrorModalVisible(true);
         }
     };
@@ -56,8 +57,6 @@ export default function ConfirmationCodeScreen() {
         if (isResendDisabled) return;
 
         setIsResendDisabled(true);
-        setResendTimer(60);
-
         try {
             const response = await resendCode(
                 email as string, 

@@ -10,9 +10,9 @@ import type {
     SelectPlanParams,
     SearchResponse,
     QuoteVehicleResponse,
-    VehicleModel,
+    Brand,
     GenerateTransactionParams,
-    FinalizeQuoteParams
+    FinalizeQuoteParams,
 } from '@/core/types';
 
 export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -22,7 +22,7 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [quoterId, setQuoterId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [availableVehicles, setAvailableVehicles] = useState<VehicleModel[]>([]);
+    const [availableVehicles, setAvailableVehicles] = useState<Brand[]>([]);
 
     // Cargar datos del storage al iniciar
     useEffect(() => {
@@ -154,16 +154,17 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsLoading(true);
         try {
             const response = await quoteService.getAvailableVehicles();
-            
+            console.log('🔄 Respuesta getAvailableVehicles:', response.data);
+
             if (response.data?.user) {
                 await updateUserData(response.data.user);
             }
 
-            if (response.data.vehicles) {
-                setAvailableVehicles(response.data.vehicles);
+            if (response.data.brands) {
+                setAvailableVehicles(response.data.brands);
             }
 
-            console.log('✅ Vehículos obtenidos exitosamente');
+            return response;
         } catch (error) {
             console.error('❌ Error al obtener vehículos:', error);
             const message = error instanceof Error ? error.message : 'Error al obtener vehículos disponibles';
@@ -225,10 +226,10 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 quoterId,
                 isLoading,
                 error,
-                availableVehicles,
                 searchVehicle,
                 startQuotationFlow,
                 selectPlan,
+                availableVehicles,
                 getAvailableVehicles,
                 clearQuoteData,
                 generateTransaction,

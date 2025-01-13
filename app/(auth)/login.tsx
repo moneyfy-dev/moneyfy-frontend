@@ -27,23 +27,6 @@ export default function LoginScreen() {
     const [touchedFields, setTouchedFields] = useState({ email: false, password: false });
     const [errorMessage, setErrorMessage] = useState('');
 
-    const showLoginForm = () => {
-        setIsFormVisible(true);
-        Animated.spring(formAnimation, {
-            toValue: 0,
-            useNativeDriver: true,
-        }).start();
-    };
-
-    const hideLoginForm = () => {
-        Animated.spring(formAnimation, {
-            toValue: height,
-            useNativeDriver: true,
-        }).start(() => {
-            setIsFormVisible(false);
-        });
-    };
-
     useEffect(() => {
         const isValid = validateEmail(email) && validatePassword(password);
         setIsFormValid(isValid);
@@ -83,20 +66,29 @@ export default function LoginScreen() {
             setIsLoading(true);
             
             await login(email, password);
-            router.replace(ROUTES.TABS.INDEX);
         } catch (error: any) {
-            if (error.status === 226) {
-                router.push({
-                    pathname: ROUTES.AUTH.CONFIRMATION,
-                    params: { email, flow: 'changeDevice' }
-                });
-            } else {
-                setErrorMessage(error.message || 'Error al iniciar sesión');
+                setErrorMessage('Por favor, verifica tus credenciales');
                 setIsErrorModalVisible(true);
-            }
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const showLoginForm = () => {
+        setIsFormVisible(true);
+        Animated.spring(formAnimation, {
+            toValue: 0,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const hideLoginForm = () => {
+        Animated.spring(formAnimation, {
+            toValue: height,
+            useNativeDriver: true,
+        }).start(() => {
+            setIsFormVisible(false);
+        });
     };
 
     return (

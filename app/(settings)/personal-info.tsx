@@ -7,8 +7,9 @@ import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedDatePicker, ThemedInput, ThemedButton, ProfilePictureModal, AvatarIcon, MessageModal, ThemedText } from '@/shared/components';
 import { validateName, validatePhoneNumber, validateAddress } from '@/shared/utils/validations';
 import { useSettings } from '@/core/context';
-import { PersonalData } from '@/core/types';
+import { PersonalData, ROUTES } from '@/core/types';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 interface FormData extends Omit<PersonalData, 'dateOfBirth' | 'email'> {
     dateOfBirth: Date | null;
@@ -96,7 +97,6 @@ export default function PersonalInfoScreen() {
     };
 
     const handleSave = async () => {
-        console.log('🔄 Iniciando guardado de información personal');
         const newErrors: FormErrors = {
             name: '',
             surname: '',
@@ -165,6 +165,11 @@ export default function PersonalInfoScreen() {
         }));
         setModalVisible(false);
     };
+
+    function successNavigate(): void {
+        setSuccessModalVisible(false)
+        router.replace(ROUTES.TABS.INDEX)
+    }
 
     return (
         <ThemedLayout padding={[0, 40]}>
@@ -242,7 +247,7 @@ export default function PersonalInfoScreen() {
 
             <MessageModal
                 isVisible={successModalVisible}
-                onClose={() => setSuccessModalVisible(false)}
+                onClose={() => successNavigate()}
                 title="Éxito"
                 message={successMessage}
                 icon={{
@@ -251,7 +256,7 @@ export default function PersonalInfoScreen() {
                 }}
                 primaryButton={{
                     text: "Entendido",
-                    onPress: () => setSuccessModalVisible(false)
+                    onPress: () => successNavigate()
                 }}
             />
 

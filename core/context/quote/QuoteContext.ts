@@ -1,14 +1,15 @@
 import { createContext } from 'react';
 import { 
     Vehicle,
-    VehicleModel,
+    VehiclesResponse,
     InsurancePlan, 
     SearchResponse,
     QuoteVehicleParams,
     SelectPlanParams,
     QuoteVehicleResponse,
     GenerateTransactionParams,
-    FinalizeQuoteParams
+    FinalizeQuoteParams,
+    Brand
 } from '@/core/types';
 
 interface QuoteContextType {
@@ -18,7 +19,7 @@ interface QuoteContextType {
     quoterId: string | null;
     isLoading: boolean;
     error: string | null;
-    availableVehicles: VehicleModel[];
+    availableVehicles: Brand[];
     generateTransaction: (params: GenerateTransactionParams) => Promise<void>;
     finalizeQuote: (params: FinalizeQuoteParams) => Promise<void>;  
 
@@ -26,7 +27,7 @@ interface QuoteContextType {
     searchVehicle: (ownerId: string, ppu: string) => Promise<SearchResponse>;
     startQuotationFlow: (quoteData: QuoteVehicleParams) => Promise<QuoteVehicleResponse>;
     selectPlan: (planData: SelectPlanParams) => Promise<void>;
-    getAvailableVehicles: () => Promise<void>;
+    getAvailableVehicles: () => Promise<VehiclesResponse>;
     clearQuoteData: () => void;
 }
 

@@ -1,4 +1,4 @@
-import { ApiResponse, LoginResponse, RegisterResponse, RegisterRequest, ConfirmPasswordResetRequest, ConfirmationFlowType } from '../../types';
+import { ApiResponse, LoginResponse, RegisterResponse, RegisterRequest, ConfirmPasswordResetRequest, ConfirmationFlowType, ConfirmCodeRequest } from '../../types';
 import { api } from '../api/config';
 
 export const authService = {
@@ -27,7 +27,7 @@ export const authService = {
     }
   },
 
-  register: async (data: RegisterRequest): Promise<RegisterResponse> => {
+  register: async (data: RegisterRequest): Promise<ApiResponse> => {
     const response = await api.post('/auth/register', data);
     return response.data;
   },
@@ -38,21 +38,19 @@ export const authService = {
   },
 
   confirmPasswordReset: async (data: ConfirmPasswordResetRequest): Promise<ApiResponse> => {
-    const response = await api.post('/auth/confirm/password/reset', data);
+    const response = await api.put('/auth/confirm/password/reset', data);
     return response.data;
   },
 
-  confirmCode: async (
-    email: string, 
-    code: string, 
-    flow: ConfirmationFlowType,
-    newPassword?: { pwd: string, repeatedPwd: string }
-  ): Promise<ApiResponse> => {
-    switch (flow) {
-      case 'changeDevice':
-        return await api.post('/auth/confirm/device/change', { email, code });
+  confirmCode: async (data: ConfirmCodeRequest): Promise<ApiResponse | RegisterResponse> => {
+    let response: ApiResponse | RegisterResponse;
+    switch (data.flow) {
       case 'registerUser':
-        return await api.post('/auth/confirm/registration', { email, code });
+        response = await api.post('/auth/confirm/registration', { email: data.email, code: data.code });
+        return response.data;
+      case 'changeDevice':
+        response = await api.put('/auth/confirm/device/change', { email: data.email, code: data.code });
+        return response.data;
       default:
         throw new Error('Invalid flow type');
     }

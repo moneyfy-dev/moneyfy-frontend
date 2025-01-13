@@ -1,4 +1,5 @@
 import { QuoterStatus } from "../quoter/quoter";
+import { User } from "../user/user";
 
 // Tipos base
 export interface Vehicle {
@@ -110,22 +111,27 @@ export interface QuoteResult {
   insurer?: Insurer;
 }
 
-export interface VehicleModel {
-  id: string;
-  name: string;
-  models: string[];
+export interface Model {
+  modelId: string;
+  model: string;
+}
+
+export interface Brand {
+  brandId: string;
+  brand: string;
+  models: Model[];
 }
 
 export interface VehiclesResponse {
   message: string;
   status: number;
   data: {
-      vehicles: VehicleModel[];
+      brands: Brand[];
       tokens: {
           jwtSession: string;
           jwtRefresh: string;
       };
-      user: any;
+      user: User;
   };
 }
 

@@ -12,7 +12,7 @@ interface ResendCodeProps {
 export const ResendCode: React.FC<ResendCodeProps> = ({ 
   onResend, 
   disabled = false,
-  initialTimer = 60 
+  initialTimer = 10 
 }) => {
   const [isResendDisabled, setIsResendDisabled] = useState(disabled);
   const [resendTimer, setResendTimer] = useState(0);

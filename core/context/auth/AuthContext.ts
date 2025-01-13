@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { ConfirmationFlowType, LoginResponse, PasswordResetResponse, User, RegisterResponse } from '@/core/types';
+import { ConfirmationFlowType, LoginResponse, PasswordResetResponse, User, RegisterResponse, RegisterRequest, ApiResponse } from '@/core/types';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -9,8 +9,9 @@ interface AuthState {
 }
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<User>;
+  login: (email: string, password: string) => Promise<ApiResponse>;
   logout: () => Promise<void>;
+  register: (data: RegisterRequest) => Promise<RegisterResponse>;
   handlePersistentAuthSuccess: () => Promise<void>;
   checkPersistentAuth: () => Promise<boolean>;
   checkAuthStatus: () => Promise<void>;

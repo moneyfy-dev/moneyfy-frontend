@@ -4,11 +4,12 @@ import { RegisterRequest, ROUTES } from '@/core/types';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, MessageModal } from '@/shared/components';
-import { authService } from '@/core/services';
 import { validateEmail, validatePassword, validateName, sanitizeName } from '@/shared/utils/validations';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/core/context';
 
 export default function RegisterScreen() {
+    const { register } = useAuth();
     const [nombre, setNombre] = useState('');
     const [apellido, setApellido] = useState('');
     const [email, setEmail] = useState('');
@@ -33,7 +34,6 @@ export default function RegisterScreen() {
     const [referralCode, setReferralCode] = useState('');
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
         const isValid = validateName(nombre) && validateName(apellido) &&
@@ -136,7 +136,7 @@ export default function RegisterScreen() {
                 codeToRefer: referralCode.trim() || undefined
             };
 
-            const response = await authService.register(formData);
+            const response = await register(formData);
             
             if (response.status === 200) {
                 router.push({

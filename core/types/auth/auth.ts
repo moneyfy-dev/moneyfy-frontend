@@ -20,4 +20,11 @@ export interface LoginResponse {
     data?: any;
   }
 
+  export interface ConfirmCodeRequest {
+    email: string, 
+    code: string, 
+    flow: ConfirmationFlowType,
+    newPassword?: { pwd: string, repeatedPwd: string }
+  }
+
   export type ConfirmationFlowType = 'changeDevice' | 'registerUser' | 'restorePassword';

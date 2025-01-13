@@ -76,8 +76,9 @@ export const quoteService = {
     },
 
     // Obtener vehículos disponibles
-    getAvailableVehicles(): Promise<VehiclesResponse> {
-        return api.get('/quoter/search/available/vehicles');
+    getAvailableVehicles: async (): Promise<VehiclesResponse> => {
+        const response = await api.get('/quoter/search/vehicle/brands');
+        return response.data;
     },
 
     // Flujo completo de cotización

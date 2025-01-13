@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { VehicleModel, OWNER_OPTIONS_MAP, ROUTES } from '@/core/types';
+import { Brand, Model, OWNER_OPTIONS_MAP, ROUTES } from '@/core/types';
 import { View, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import {
@@ -25,7 +25,8 @@ export default function ManualSearchScreen() {
         availableVehicles,
         isLoading
     } = useQuote();
-    const [selectedVehicle, setSelectedVehicle] = useState<VehicleModel | null>(null);
+    const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
+    const [selectedModel, setSelectedModel] = useState<Model | null>(null);
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -66,13 +67,25 @@ export default function ManualSearchScreen() {
     };
 
     const handleBrandSelect = (brandName: string) => {
-        const vehicle = availableVehicles.find(v => v.name === brandName);
-        setSelectedVehicle(vehicle || null);
+        const brand = availableVehicles.find(b => b.brand === brandName);
+        setSelectedBrand(brand || null);
+        setSelectedModel(null); // Resetear modelo cuando cambia la marca
         setFormData(prev => ({
             ...prev,
             marca: brandName,
             modelo: '' // Resetear modelo cuando cambia la marca
         }));
+    };
+
+    const handleModelSelect = (modelName: string) => {
+        if (selectedBrand) {
+            const model = selectedBrand.models.find(m => m.model === modelName);
+            setSelectedModel(model || null);
+            setFormData(prev => ({
+                ...prev,
+                modelo: modelName
+            }));
+        }
     };
 
     const handleSubmit = async () => {
@@ -101,7 +114,6 @@ export default function ManualSearchScreen() {
                 params: {
                     plans: encodeURIComponent(JSON.stringify(response.data.plans)),
                     quoterId: response.data.quoterId,
-                    vehicle: encodeURIComponent(JSON.stringify(response.data.vehicle))
                 }
             });
         } catch (error) {
@@ -114,14 +126,6 @@ export default function ManualSearchScreen() {
     return (
         <ThemedLayout padding={[0, 40]}>
             <View style={styles.content}>
-                <View style={styles.header}>
-                    <ThemedText variant="title" textAlign="center">
-                        Ingreso manual
-                    </ThemedText>
-                    <ThemedText variant="paragraph" textAlign="center">
-                        Ingresa los datos del vehículo manualmente
-                    </ThemedText>
-                </View>
 
                 <ThemedInput
                     label="Patente"
@@ -136,7 +140,7 @@ export default function ManualSearchScreen() {
                     value={formData.marca}
                     onChangeText={(value) => setFormData({ ...formData, marca: value })}
                     onSelect={handleBrandSelect}
-                    options={availableVehicles.map(v => v.name)}
+                    options={availableVehicles.map(b => b.brand)}
                     placeholder="Selecciona una marca"
                     zIndex={2}
                 />
@@ -145,10 +149,10 @@ export default function ManualSearchScreen() {
                     label="Modelo"
                     value={formData.modelo}
                     onChangeText={(value) => setFormData({ ...formData, modelo: value })}
-                    onSelect={(value) => setFormData({ ...formData, modelo: value })}
-                    options={selectedVehicle?.models || []}
+                    onSelect={handleModelSelect}
+                    options={selectedBrand?.models.map(m => m.model) || []}
                     placeholder="Selecciona un modelo"
-                    disabled={!selectedVehicle}
+                    disabled={!selectedBrand}
                     zIndex={1}
                 />
 

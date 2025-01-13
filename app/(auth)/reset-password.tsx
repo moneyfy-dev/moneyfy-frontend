@@ -21,6 +21,8 @@ export default function ResetPasswordScreen() {
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+    const [successModalVisible, setSuccessModalVisible] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
     const handlePasswordChange = (text: string) => {
         setNewPassword(text);
@@ -34,8 +36,12 @@ export default function ResetPasswordScreen() {
 
     const handleResendCode = async () => {
         try {
-            await resendCode(email as string, 'restorePassword');
-            // Mostrar mensaje de éxito si es necesario
+            const response = await resendCode(email as string, 'restorePassword');
+
+            if (response.status === 200) {
+                setSuccessMessage('Se ha enviado un nuevo código de confirmación.');
+                setSuccessModalVisible(true);
+            }
         } catch (error: any) {
             setErrorMessage(error.message || 'No se pudo reenviar el código');
             setIsErrorModalVisible(true);
@@ -69,7 +75,7 @@ export default function ResetPasswordScreen() {
                 confirmPassword
             );
 
-            router.replace(ROUTES.AUTH.LOGIN);
+            router.replace(ROUTES.TABS.INDEX);
         } catch (error: any) {
             setErrorMessage(error.message || 'Error al restablecer la contraseña');
             setIsErrorModalVisible(true);
@@ -149,6 +155,21 @@ export default function ResetPasswordScreen() {
                 primaryButton={{
                     text: "Entendido",
                     onPress: () => setIsErrorModalVisible(false)
+                }}
+            />
+
+            <MessageModal
+                isVisible={successModalVisible}
+                onClose={() => setSuccessModalVisible(false)}
+                title="Éxito"
+                message={successMessage}
+                icon={{
+                    name: "checkmark-circle-outline",
+                    color: themeColors.status.success
+                }}
+                primaryButton={{
+                    text: "Entendido",
+                    onPress: () => setSuccessModalVisible(false)
                 }}
             />
         </ThemedLayout>
