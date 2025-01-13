@@ -12,8 +12,10 @@ interface SettingsContextType {
   addAccount: (account: Omit<BankAccount, 'accountId'>) => Promise<void>;
   deleteAccount: (accountId: string) => Promise<BaseAuthResponse>;
   updateNotifications: (prefs: Partial<NotificationPreferences>) => Promise<void>;
-  changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
+  changePassword: (oldPassword: string, newPassword: string) => Promise<BaseAuthResponse>;
   selectAccount: (accountId: string) => Promise<BaseAuthResponse>;
+  isBiometricAvailable: () => Promise<boolean>;
+  authenticateBiometric: () => Promise<boolean>;
 }
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined); 

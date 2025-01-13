@@ -6,7 +6,6 @@ import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, MessageModal } from '@/shared/components';
 import { useSettings, useAuth } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
-import { isBiometricAvailable } from '@/core/services/biometricService';
 import { storage } from '@/shared/utils/storage';
 import { STORAGE_KEYS } from '@/core/types';
 
@@ -21,7 +20,7 @@ interface SecurityOption {
 export default function PrivacySecurityScreen() {
     const themeColors = useThemeColor();
     const router = useRouter();
-    const { security, updateSecurity } = useSettings();
+    const { security, updateSecurity, isBiometricAvailable } = useSettings();
     const { checkAuthStatus } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);

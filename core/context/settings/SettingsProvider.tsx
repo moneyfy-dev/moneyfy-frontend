@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { SettingsContext } from './SettingsContext';
 import { SecuritySettings }  from '../../types/user/settings';
 import { PersonalData } from '../../types/user/settings';
@@ -8,7 +9,6 @@ import { settingsService } from '../../services/settings/index';
 import { useUser } from '../user/useUser';
 import { storage } from '@/shared/utils/storage';
 import { STORAGE_KEYS } from '@/core/types';
-import { api } from '../../services/api';
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, updateUserData } = useUser();
@@ -36,8 +36,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
 
         // Cargar preferencias de notificaciones desde el usuario actual
-        if (user?.notifs) {
-          setNotifications(user.notifs);
+        if (user?.notifPreference) {
+          setNotifications(user.notifPreference);
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -181,6 +181,21 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+
+const isBiometricAvailable = async (): Promise<boolean> => {
+  const compatible = await LocalAuthentication.hasHardwareAsync();
+  const enrolled = await LocalAuthentication.isEnrolledAsync();
+  return compatible && enrolled;
+};
+
+const authenticateBiometric = async (): Promise<boolean> => {
+  const result = await LocalAuthentication.authenticateAsync({
+    promptMessage: 'Autenticar con huella digital',
+    fallbackLabel: 'Usar PIN',
+  });
+  return result.success;
+};
+
   const updateNotifications = async (prefs: Partial<NotificationPreferences>) => {
     try {
       const updatedPrefs = await settingsService.updateNotifications(prefs);
@@ -204,6 +219,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         addAccount,
         deleteAccount,
         changePassword,
+        isBiometricAvailable,
+        authenticateBiometric,
         updateNotifications,
         selectAccount,
       }}
