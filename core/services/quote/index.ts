@@ -7,7 +7,8 @@ import type {
     VehiclesResponse,
     QuoteResult,
     GenerateTransactionParams,
-    FinalizeQuoteParams
+    FinalizeQuoteParams,
+    ApiResponse
 } from '@/core/types';
 
 export const quoteService = {
@@ -49,7 +50,7 @@ export const quoteService = {
     // Cotización de vehículo
     quoteVehicle(quoteData: QuoteVehicleParams): Promise<QuoteVehicleResponse> {
         console.log('📤 Request quoteVehicle iniciando para:', quoteData.insurerAlias);
-        return api.post('/quoter/vehicle/quote', quoteData)
+        return api.post('/quoter/search/plan', quoteData)
             .then(response => {
                 console.log('📥 Response quoteVehicle raw:', {
                     status: response.status,
@@ -174,6 +175,10 @@ export const quoteService = {
             console.error('Error en startQuotationFlow:', error);
             throw error;
         }
+    },
+
+    searchPlanById(planId: string): Promise<ApiResponse> {
+        return api.get(`/plans/${planId}`);
     },
 
     generateTransaction(params: GenerateTransactionParams): Promise<any> {

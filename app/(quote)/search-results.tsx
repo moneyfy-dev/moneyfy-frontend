@@ -21,7 +21,15 @@ export default function SearchResultsScreen() {
   const themeColors = useThemeColor();
   const router = useRouter();
   const { startQuotationFlow, isLoading, vehicle, quoterId } = useQuote();
-  const [buyerRut, setBuyerRut] = useState('');
+  const [formData, setFormData] = useState({
+    purchaserId: '',
+    purchaserName: '',
+    purchaserPaternalSur: '',
+    purchaserMaternalSur: '',
+    purchaserEmail: '',
+    purchaserPhone: '',
+    isOwner: 'Si, soy el dueño del vehículo'
+  });
   const [ownerOption, setOwnerOption] = useState(Object.keys(OWNER_OPTIONS_MAP)[0]);
   const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -29,22 +37,22 @@ export default function SearchResultsScreen() {
   // Verificar que tenemos los datos necesarios
   useEffect(() => {
     console.log('🔍 Verificando datos en search-results:', {
-        hasVehicle: !!vehicle,
-        hasQuoterId: !!quoterId,
-        vehicle,
-        quoterId
+      hasVehicle: !!vehicle,
+      hasQuoterId: !!quoterId,
+      vehicle,
+      quoterId
     });
 
     if (!vehicle || !quoterId) {
-        console.log('⚠️ Datos faltantes, redirigiendo a búsqueda');
-        setErrorMessage('No se encontraron datos del vehículo');
-        setIsErrorModalVisible(true);
-        router.replace(ROUTES.TABS.QUOTE);
+      console.log('⚠️ Datos faltantes, redirigiendo a búsqueda');
+      setErrorMessage('No se encontraron datos del vehículo');
+      setIsErrorModalVisible(true);
+      router.replace(ROUTES.TABS.QUOTE);
     }
   }, [vehicle, quoterId]);
 
   const handleQuote = async () => {
-    if (!vehicle || !buyerRut || !ownerOption || !quoterId) {
+    if (!vehicle || !formData.purchaserId || !formData.purchaserName || !formData.purchaserPaternalSur || !formData.purchaserMaternalSur || !ownerOption || !quoterId) {
       setErrorMessage('Por favor complete todos los campos requeridos');
       setIsErrorModalVisible(true);
       return;
@@ -52,16 +60,19 @@ export default function SearchResultsScreen() {
 
     try {
       const response = await startQuotationFlow({
+        quoterId: quoterId,
         ppu: vehicle.ppu,
         brand: vehicle.brand,
         model: vehicle.model,
         year: vehicle.year,
-        purchaserId: buyerRut,
-        ownerOption: OWNER_OPTIONS_MAP[ownerOption as keyof typeof OWNER_OPTIONS_MAP],
-        quoterId: quoterId,
-        colour: vehicle.colour,
-        engineNum: vehicle.engineNum,
-        chassisNum: vehicle.chassisNum
+        requestType: 'Auto',
+        purchaserId: formData.purchaserId,
+        purchaserName: formData.purchaserName,
+        purchaserPaternalSur: formData.purchaserPaternalSur,
+        purchaserMaternalSur: formData.purchaserMaternalSur,
+        purchaserEmail: formData.purchaserEmail,
+        purchaserPhone: formData.purchaserPhone,
+        ownerRelationOption: OWNER_OPTIONS_MAP[ownerOption as keyof typeof OWNER_OPTIONS_MAP],
       });
 
       router.push(ROUTES.QUOTE.QUOTE_RESULTS);
@@ -135,16 +146,51 @@ export default function SearchResultsScreen() {
 
         <ThemedInput
           label="RUT del comprador"
-          value={buyerRut}
-          onChangeText={setBuyerRut}
+          value={formData.purchaserId}
+          onChangeText={(value) => setFormData({ ...formData, purchaserId: value })}
           placeholder="RUT"
           isRUT={true}
         />
 
         <ThemedInput
+          label="Nombre"
+          placeholder="Nombre"
+          value={formData.purchaserName}
+          onChangeText={(value) => setFormData({ ...formData, purchaserName: value })}
+        />
+        <ThemedInput
+          label='Apellido Paterno'
+          placeholder="Apellido Paterno"
+          value={formData.purchaserPaternalSur}
+          onChangeText={(value) => setFormData({ ...formData, purchaserPaternalSur: value })}
+        />
+        <ThemedInput
+          label='Apellido Materno'
+          placeholder="Apellido Materno"
+          value={formData.purchaserMaternalSur}
+          onChangeText={(value) => setFormData({ ...formData, purchaserMaternalSur: value })}
+        />
+
+        <ThemedInput
+          label="Email"
+          placeholder="Email"
+          value={formData.purchaserEmail}
+          onChangeText={(value) => setFormData({ ...formData, purchaserEmail: value })}
+          keyboardType="email-address"
+        />
+        <ThemedInput
+          label="Teléfono"
+          placeholder="Teléfono"
+          value={formData.purchaserPhone}
+          onChangeText={(value) => setFormData({ ...formData, purchaserPhone: value })}
+          keyboardType="phone-pad"
+        />
+
+        <ThemedInput
+          style={{ marginBottom: 48 }}
           label="¿Es el dueño del vehículo?"
-          value={ownerOption}
-          onChangeText={setOwnerOption}
+          value={formData.isOwner}
+          onChangeText={(value) => setFormData({ ...formData, isOwner: value })}
           placeholder="Si, soy el dueño del vehículo"
           isSelect={true}
           options={Object.keys(OWNER_OPTIONS_MAP)}
@@ -154,7 +200,7 @@ export default function SearchResultsScreen() {
       <ThemedButton
         text="Siguiente"
         onPress={handleQuote}
-        disabled={!vehicle || !buyerRut || !ownerOption}
+        disabled={!vehicle || !formData.purchaserId || !formData.purchaserName || !formData.purchaserPaternalSur || !formData.purchaserMaternalSur || !ownerOption}
       />
 
       {isLoading ? <LoadingScreen /> : null}
@@ -178,24 +224,24 @@ export default function SearchResultsScreen() {
 }
 
 const styles = StyleSheet.create({
-    content: {
-        flex: 1,
-    },
-    header: {
-        marginBottom: 24,
-    },
-    divider: {
-        height: 1,
-        width: '100%',
-        marginVertical: 20,
-    },
-    searchValueContainer: {
-        marginVertical: 16,
-        gap: 8,
-    },
-    searchItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
+  content: {
+    flex: 1,
+  },
+  header: {
+    marginBottom: 24,
+  },
+  divider: {
+    height: 1,
+    width: '100%',
+    marginVertical: 20,
+  },
+  searchValueContainer: {
+    marginVertical: 16,
+    gap: 8,
+  },
+  searchItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
 });  

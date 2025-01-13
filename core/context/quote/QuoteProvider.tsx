@@ -13,6 +13,7 @@ import type {
     Brand,
     GenerateTransactionParams,
     FinalizeQuoteParams,
+    ApiResponse,
 } from '@/core/types';
 
 export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -188,6 +189,22 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     }, []);
 
+    const searchPlanById = useCallback(async (
+        planId: string
+    ): Promise<ApiResponse> => {
+        console.log('🔄 Buscando plan por ID:', planId);
+        setIsLoading(true);
+        try {
+            const response = await quoteService.searchPlanById(planId);
+            return response;
+        } catch (error) {
+            console.error('❌ Error al buscar plan:', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
     const generateTransaction = useCallback(async (
         params: GenerateTransactionParams
     ): Promise<void> => {
@@ -208,7 +225,12 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     ): Promise<void> => {
         setIsLoading(true);
         try {
-            await quoteService.finalizeQuote(params);
+            const response = await quoteService.finalizeQuote(params);
+            if (response.data?.user) {
+                await updateUserData(response.data.user);
+            }
+
+            await clearQuoteData();
             console.log('✅ Cotización finalizada exitosamente');
         } catch (error) {
             console.error('❌ Error al finalizar cotización:', error);
@@ -216,7 +238,7 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [updateUserData]);
 
     return (
         <QuoteContext.Provider
@@ -232,6 +254,7 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 availableVehicles,
                 getAvailableVehicles,
                 clearQuoteData,
+                searchPlanById,
                 generateTransaction,
                 finalizeQuote,
             }}

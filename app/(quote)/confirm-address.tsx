@@ -17,23 +17,22 @@ export default function ConfirmAddressScreen() {
     const { planId } = useLocalSearchParams();
     const router = useRouter();
     const { selectPlan, isLoading, vehicle, plans, quoterId } = useQuote();
-    const [street, setStreet] = useState('');
-    const [streetNumber, setStreetNumber] = useState('');
-    const [department, setDepartment] = useState('');
+    const [formData, setFormData] = useState({
+        ownerName: '',
+        ownerPaternalSur: '',
+        ownerMaternalSur: '',
+        street: '',
+        streetNumber: '',
+        department: ''
+    });
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const themeColors = useThemeColor();
 
-    console.log('🔍 Datos en confirm-address:', {
-        planId,
-        plansLength: plans?.length,
-        hasVehicle: !!vehicle
-    });
-
     const selectedPlan = plans.find(plan => plan.planId === planId);
 
     const handleSubmit = async () => {
-        if (!street || !streetNumber || !selectedPlan) {
+        if (!formData.street || !formData.streetNumber || !selectedPlan) {
             setErrorMessage('Por favor complete los campos requeridos');
             setIsErrorModalVisible(true);
             return;
@@ -48,9 +47,12 @@ export default function ConfirmAddressScreen() {
                 price: selectedPlan.price,
                 priceUf: selectedPlan.priceUf,
                 deductible: selectedPlan.deductible,
-                street,
-                streetNumber,
-                department
+                ownerName: formData.ownerName,
+                ownerPaternalSur: formData.ownerPaternalSur,
+                ownerMaternalSur: formData.ownerMaternalSur,
+                street: formData.street,
+                streetNumber: formData.streetNumber,
+                department: formData.department
             });
 
             router.push({
@@ -79,37 +81,56 @@ export default function ConfirmAddressScreen() {
                     {vehicle.year} {vehicle.brand} {vehicle.model}
                 </ThemedText>
                 <ThemedText variant="subTitle" textAlign="center" marginBottom={16}>
-                    Dirección del propietario
+                    Datos del propietario
                 </ThemedText>
                 <ThemedText variant="paragraph" textAlign="center" marginBottom={16}>
-                    La dirección se utiliza para comunicaciones importantes como la carta de cancelación y para ajustar la cobertura y condiciones del seguro según la ubicación del vehículo.
+                    Los datos del propietario se utilizan para comunicaciones importantes como la carta de cancelación y para ajustar la cobertura y condiciones del seguro según la ubicación del vehículo.
                 </ThemedText>
+
+                <ThemedInput
+                    label="Nombre"
+                    placeholder="Nombre"
+                    value={formData.ownerName}
+                    onChangeText={(value) => setFormData({ ...formData, ownerName: value })}
+                />
+                <ThemedInput
+                    label='Apellido Paterno'
+                    placeholder="Apellido Paterno"
+                    value={formData.ownerPaternalSur}
+                    onChangeText={(value) => setFormData({ ...formData, ownerPaternalSur: value })}
+                />
+                <ThemedInput
+                    label='Apellido Materno'
+                    placeholder="Apellido Materno"
+                    value={formData.ownerMaternalSur}
+                    onChangeText={(value) => setFormData({ ...formData, ownerMaternalSur: value })}
+                />
 
                 <ThemedInput
                     label="Calle"
                     placeholder="Calle"
-                    value={street}
-                    onChangeText={setStreet}
+                    value={formData.street}
+                    onChangeText={(value) => setFormData({ ...formData, street: value })}
                 />
                 <ThemedInput
                     label="Número"
                     placeholder="Número"
-                    value={streetNumber}
-                    onChangeText={setStreetNumber}
+                    value={formData.streetNumber}
+                    onChangeText={(value) => setFormData({ ...formData, streetNumber: value })}
                     keyboardType="numeric"
                 />
                 <ThemedInput
                     label="Departamento (opcional)"
                     placeholder="Departamento"
-                    value={department}
-                    onChangeText={setDepartment}
+                    value={formData.department}
+                    onChangeText={(value) => setFormData({ ...formData, department: value })}
                 />
             </View>
 
             <ThemedButton
                 text="Continuar"
                 onPress={handleSubmit}
-                disabled={!street || !streetNumber}
+                disabled={!formData.street || !formData.streetNumber}
             />
 
             <MessageModal

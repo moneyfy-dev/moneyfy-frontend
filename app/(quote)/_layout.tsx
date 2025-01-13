@@ -21,8 +21,8 @@ const headerInfo: Record<string, HeaderInfo> = {
     subtitle: "Resultados de la búsqueda"
   },
   'confirm-address': {
-    title: "Confirmación de dirección",
-    subtitle: "Confirmación de dirección"
+    title: "Datos del propietario",
+    subtitle: "Ingresa los datos del propietario"
   },
   'payment-qr': {
     title: "Código de pago",

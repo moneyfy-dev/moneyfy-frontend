@@ -9,7 +9,8 @@ import {
     QuoteVehicleResponse,
     GenerateTransactionParams,
     FinalizeQuoteParams,
-    Brand
+    Brand,
+    ApiResponse
 } from '@/core/types';
 
 interface QuoteContextType {
@@ -29,6 +30,7 @@ interface QuoteContextType {
     selectPlan: (planData: SelectPlanParams) => Promise<void>;
     getAvailableVehicles: () => Promise<VehiclesResponse>;
     clearQuoteData: () => void;
+    searchPlanById: (planId: string) => Promise<ApiResponse>;
 }
 
 export const QuoteContext = createContext<QuoteContextType | undefined>(undefined); 

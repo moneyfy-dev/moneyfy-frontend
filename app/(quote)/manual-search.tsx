@@ -31,13 +31,18 @@ export default function ManualSearchScreen() {
     const [errorMessage, setErrorMessage] = useState('');
 
     const [formData, setFormData] = useState({
-        patente: '',
-        marca: '',
-        modelo: '',
-        año: '',
+        plate: '',
+        brand: '',
+        model: '',
+        year: '',
         version: '',
-        rut: '',
-        isDueño: 'Si, soy el dueño del vehículo'
+        purchaserId: '',
+        purchaserName: '',
+        purchaserPaternalSur: '',
+        purchaserMaternalSur: '',
+        purchaserEmail: '',
+        purchaserPhone: '',
+        isOwner: 'Si, soy el dueño del vehículo'
     });
 
     const [errors, setErrors] = useState({
@@ -89,7 +94,7 @@ export default function ManualSearchScreen() {
     };
 
     const handleSubmit = async () => {
-        if (!validateRUT(formData.rut)) {
+        if (!validateRUT(formData.purchaserId)) {
             setErrors({ ...errors, rut: 'RUT inválido' });
             setErrorMessage('Por favor, corrija los errores en el formulario.');
             setIsErrorModalVisible(true);
@@ -98,15 +103,19 @@ export default function ManualSearchScreen() {
 
         try {
             const response = await startQuotationFlow({
-                ppu: formData.patente.toUpperCase(),
-                brand: formData.marca,
-                model: formData.modelo,
-                year: formData.año,
-                purchaserId: formData.rut,
-                ownerOption: OWNER_OPTIONS_MAP[formData.isDueño as keyof typeof OWNER_OPTIONS_MAP],
-                colour: '',
-                engineNum: '',
-                chassisNum: ''
+                quoterId: '',
+                ppu: formData.plate.toUpperCase(),
+                brand: formData.brand,
+                model: formData.model,
+                year: formData.year,
+                requestType: 'Manual',
+                purchaserId: formData.purchaserId,
+                purchaserName: formData.purchaserName,
+                purchaserPaternalSur: formData.purchaserPaternalSur,
+                purchaserMaternalSur: formData.purchaserMaternalSur,
+                purchaserEmail: formData.purchaserEmail,
+                purchaserPhone: formData.purchaserPhone,
+                ownerRelationOption: OWNER_OPTIONS_MAP[formData.isOwner as keyof typeof OWNER_OPTIONS_MAP]
             });
 
             router.push({
@@ -129,16 +138,16 @@ export default function ManualSearchScreen() {
 
                 <ThemedInput
                     label="Patente"
-                    value={formData.patente}
-                    onChangeText={(value) => setFormData({ ...formData, patente: value.toUpperCase() })}
+                    value={formData.plate}
+                    onChangeText={(value) => setFormData({ ...formData, plate: value.toUpperCase() })}
                     placeholder="Patente"
                     isPlate={true}
                 />
 
                 <ThemedAutocomplete
                     label="Marca"
-                    value={formData.marca}
-                    onChangeText={(value) => setFormData({ ...formData, marca: value })}
+                    value={formData.brand}
+                    onChangeText={(value) => setFormData({ ...formData, brand: value })}
                     onSelect={handleBrandSelect}
                     options={availableVehicles.map(b => b.brand)}
                     placeholder="Selecciona una marca"
@@ -147,8 +156,8 @@ export default function ManualSearchScreen() {
 
                 <ThemedAutocomplete
                     label="Modelo"
-                    value={formData.modelo}
-                    onChangeText={(value) => setFormData({ ...formData, modelo: value })}
+                    value={formData.model}
+                    onChangeText={(value) => setFormData({ ...formData, model: value })}
                     onSelect={handleModelSelect}
                     options={selectedBrand?.models.map(m => m.model) || []}
                     placeholder="Selecciona un modelo"
@@ -158,8 +167,8 @@ export default function ManualSearchScreen() {
 
                 <ThemedInput
                     label="Año"
-                    value={formData.año}
-                    onChangeText={(value) => setFormData({ ...formData, año: value })}
+                    value={formData.year}
+                    onChangeText={(value) => setFormData({ ...formData, year: value })}
                     placeholder="Selecciona el año"
                     isSelect={true}
                     options={availableYears}
@@ -180,18 +189,51 @@ export default function ManualSearchScreen() {
 
                 <ThemedInput
                     label="RUT del comprador"
-                    value={formData.rut}
-                    onChangeText={(value) => setFormData({ ...formData, rut: value })}
+                    value={formData.purchaserId}
+                    onChangeText={(value) => setFormData({ ...formData, purchaserId: value })}
                     placeholder="RUT"
                     error={errors.rut}
                     isRUT={true}
                 />
 
                 <ThemedInput
+                    label="Nombre"
+                    placeholder="Nombre"
+                    value={formData.purchaserName}
+                    onChangeText={(value) => setFormData({ ...formData, purchaserName: value })}
+                />
+                <ThemedInput
+                    label='Apellido Paterno'
+                    placeholder="Apellido Paterno"
+                    value={formData.purchaserPaternalSur}
+                    onChangeText={(value) => setFormData({ ...formData, purchaserPaternalSur: value })}
+                />
+                <ThemedInput
+                    label='Apellido Materno'
+                    placeholder="Apellido Materno"
+                    value={formData.purchaserMaternalSur}
+                    onChangeText={(value) => setFormData({ ...formData, purchaserMaternalSur: value })}
+                />
+                <ThemedInput
+                    label="Email"
+                    placeholder="Email"
+                    value={formData.purchaserEmail}
+                    onChangeText={(value) => setFormData({ ...formData, purchaserEmail: value })}
+                    keyboardType="email-address"
+                />
+                <ThemedInput
+                    label="Teléfono"
+                    placeholder="Teléfono"
+                    value={formData.purchaserPhone}
+                    onChangeText={(value) => setFormData({ ...formData, purchaserPhone: value })}
+                    keyboardType="phone-pad"
+                />
+
+                <ThemedInput
                     style={{ marginBottom: 48 }}
                     label="¿Es el dueño del vehículo?"
-                    value={formData.isDueño}
-                    onChangeText={(value) => setFormData({ ...formData, isDueño: value })}
+                    value={formData.isOwner}
+                    onChangeText={(value) => setFormData({ ...formData, isOwner: value })}
                     placeholder="Si, soy el dueño del vehículo"
                     isSelect={true}
                     options={Object.keys(OWNER_OPTIONS_MAP)}
@@ -201,7 +243,7 @@ export default function ManualSearchScreen() {
             <ThemedButton
                 text="Siguiente"
                 onPress={handleSubmit}
-                disabled={!formData.marca || !formData.modelo || !formData.patente || !formData.rut || !formData.isDueño}
+                disabled={!formData.brand || !formData.model || !formData.plate || !formData.purchaserId || !formData.purchaserName || !formData.purchaserPaternalSur || !formData.purchaserMaternalSur || !formData.purchaserEmail || !formData.purchaserPhone || !formData.isOwner}
             />
 
             <MessageModal

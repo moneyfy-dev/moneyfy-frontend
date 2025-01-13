@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Quoter, QuoterStatus, InsurancePlan, QuoterPlanData } from '@/core/types';
+import { Quoter, QuoterStatus, InsurancePlan } from '@/core/types';
 import { View, StyleSheet } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, QuoteCard, VehicleCard, IconContainer, QuoterInfoCard, LoadingScreen } from '@/shared/components';
 import { format } from 'date-fns';
 import { useUser } from '@/core/context';
+import { useQuote } from '@/core/context';
 
 export default function QuoterDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const themeColors = useThemeColor();
   const [quoter, setQuoter] = useState<Quoter | null>(null);
+  const [plan, setPlan] = useState<InsurancePlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { user, hydrateUserData } = useUser();
+  const { user } = useUser();
+  const { searchPlanById } = useQuote();
 
   useEffect(() => {
     let isMounted = true;
@@ -22,11 +25,13 @@ export default function QuoterDetailScreen() {
     const loadQuoterData = async () => {
       setIsLoading(true);
       try {
-        await hydrateUserData(true);
+        const response = await searchPlanById(params.idPlan as string);
         if (isMounted && user?.quoters) {
           const quoterData = user.quoters.find(r => r.quoterId === params.id);
           setQuoter(quoterData || null);
-          console.log('quoterData', quoterData?.quoterPlanData);
+          const planData = response.data;
+          setPlan(planData || null);
+          console.log('quoterData', quoterData);
         }
       } catch (error) {
         console.error('Error loading quoter data:', error);
@@ -61,17 +66,6 @@ export default function QuoterDetailScreen() {
 
   const getTextColor = (status: QuoterStatus) => {
     return status === 'Caducado' ? Colors.common.black : Colors.common.white;
-  };
-
-  const mapToPlanFormat = (quoterPlan: typeof quoter.quoterPlanData): QuoterPlanData => {
-    return {
-      quoterPlanId: quoterPlan.quoterPlanId || '',
-      planName: quoterPlan.planName || '',
-      insurer: quoterPlan.insurer || '',
-      deductible: quoterPlan.deductible || 0,
-      price: quoterPlan.price || 0,
-      priceUf: quoterPlan.priceUf || 0,
-    };
   };
 
   return (
@@ -114,9 +108,9 @@ export default function QuoterDetailScreen() {
               Cotizado el: {format(new Date(quoter.createdDate), 'dd/MM/yyyy')}
             </ThemedText>
 
-            {quoter.quoterPersonalData.purchaserId && (
+            {quoter.quoterOwnerData.personalId && (
               <ThemedText variant="notes">
-                RUT: {quoter.quoterPersonalData.purchaserId}
+                RUT: {quoter.quoterOwnerData.personalId}
               </ThemedText>
             )}
           </View>
@@ -133,10 +127,11 @@ export default function QuoterDetailScreen() {
 
         {/* Plan seleccionado */}
         {quoter.quoterPlanData && 
-            quoter.quoterPlanData.planName && (
+            quoter.quoterPlanData.planName &&
+            plan && (
           <View style={styles.section}>
             <QuoteCard
-              plan={mapToPlanFormat(quoter.quoterPlanData)}
+              plan={plan}
               showButton={false}
             />
           </View>
@@ -144,7 +139,7 @@ export default function QuoterDetailScreen() {
 
         {/* Información adicional */}
         <QuoterInfoCard
-          personalData={quoter.quoterPersonalData}
+          personalData={quoter.quoterOwnerData}
           addressData={quoter.quoterAddressData}
         />
       </View>

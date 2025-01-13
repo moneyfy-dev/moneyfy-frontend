@@ -52,9 +52,15 @@ export interface QuoteVehicleParams {
   brand: string;
   model: string;
   year: string;
-  purchaserId: string;
-  ownerOption: string;
   insurerAlias?: string;
+  requestType: string;
+  purchaserId: string;
+  purchaserName: string;
+  purchaserPaternalSur: string;
+  purchaserMaternalSur: string;
+  purchaserEmail: string;
+  purchaserPhone: string;
+  ownerRelationOption: string;
   colour?: string;
   engineNum?: string;
   chassisNum?: string;
@@ -68,6 +74,9 @@ export interface SelectPlanParams {
   price: number;
   priceUf: number;
   deductible: number;
+  ownerName: string;
+  ownerPaternalSur: string;
+  ownerMaternalSur: string;
   street: string;
   streetNumber: string;
   department: string;

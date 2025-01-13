@@ -89,7 +89,7 @@ export default function QuotersScreen() {
 
         if (filters.dateRange.start && filters.dateRange.end) {
           return quoterDate >= filters.dateRange.start &&
-              quoterDate <= filters.dateRange.end;
+            quoterDate <= filters.dateRange.end;
         }
 
         if (filters.dateRange.start) {
@@ -160,7 +160,10 @@ export default function QuotersScreen() {
       <Pressable
         onPress={() => router.push({
           pathname: ROUTES.QUOTERS.DETAIL,
-          params: { id: item.quoterId }
+          params: {
+            id: item.quoterId,
+            idPlan: item.quoterPlanData.quoterPlanId
+          }
         })}
         style={styles.quoterContent}
       >
@@ -172,10 +175,10 @@ export default function QuotersScreen() {
           <View style={styles.quoterInfo}>
             <View style={styles.nameContainer}>
               <ThemedText variant="subTitleBold">
-                {item.quoterCarData.brand} {' '}
                 <ThemedText variant="subTitleBold" color={themeColors.textColorAccent}>
-                  {item.quoterCarData.model}
+                  {item.quoterOwnerData.name}
                 </ThemedText>
+                {' '} {item.quoterOwnerData.paternalSurname}
               </ThemedText>
 
               <ThemedText variant="notes">
@@ -197,7 +200,7 @@ export default function QuotersScreen() {
               </View>
 
               <ThemedText variant='paragraph'>|</ThemedText>
-              
+
               <View style={styles.carInfo}>
                 <ThemedText variant="paragraphBold">
                   Vehículo:
@@ -209,6 +212,9 @@ export default function QuotersScreen() {
             </View>
 
             <ThemedText variant="notes">
+              <ThemedText variant="notes" marginBottom={6} color={themeColors.textColorAccent}>
+                {item.quoterCarData.brand} {item.quoterCarData.model}
+              </ThemedText> {' '}
               Cotizado el: {format(new Date(item.createdDate), 'dd/MM/yyyy')}
             </ThemedText>
           </View>

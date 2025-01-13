@@ -1,12 +1,10 @@
 export type QuoterStatus = 'Iniciando' | 'Cotizando' | 'Recopilando' | 'Pendiente' | 'Aprobado' | 'Rechazado' | 'Caducado';
 
-export interface QuoterPersonalData {
-  purchaserId: string;
+export interface QuoterOwnerData {
+  personalId: string;
   name: string;
-  surname: string;
-  phone: string;
-  email: string;
-  ownerOption: string;
+  paternalSurname: string;
+  maternalSurname: string;
 }
 
 export interface QuoterCarData {
@@ -48,7 +46,7 @@ export interface Quoter {
   createdDate: string;
   updatedDate: string;
   approvalDate: string;
-  quoterPersonalData: QuoterPersonalData;
+  quoterOwnerData: QuoterOwnerData;
   quoterCarData: QuoterCarData;
   quoterPlanData: QuoterPlanData;
   quoterAddressData: QuoterAddressData;
