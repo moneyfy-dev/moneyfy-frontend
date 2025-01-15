@@ -3,5 +3,15 @@ export interface Wallet {
     outstandingBalance: number;
     availableBalance: number;
     paymentBalance: number;
-    history: any[];
+    records: any[];
+  }
+
+  export interface WalletRecord {
+    amount: number;
+    createdDate: string;
+    historicalId: string;
+    status: string;
+    type: string;
+    updatedDate: string;
+    walletDetail: any[];
   }

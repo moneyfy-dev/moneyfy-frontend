@@ -131,6 +131,7 @@ export default function ConfirmAddressScreen() {
                 text="Continuar"
                 onPress={handleSubmit}
                 disabled={!formData.street || !formData.streetNumber}
+                style={styles.button}
             />
 
             <MessageModal
@@ -157,5 +158,8 @@ export default function ConfirmAddressScreen() {
 const styles = StyleSheet.create({
     content: {
         flex: 1,
-    }
+    },
+    button: {
+        marginTop: 24,
+    },
 }); 

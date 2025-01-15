@@ -1,0 +1,108 @@
+{
+  "availableBalance": 60000,
+  "outstandingBalance": 0,
+  "paymentBalance": 0,
+  "records": [
+    {
+      "amount": 5000,
+      "createdDate": "2025-01-15T13:14:31.146",
+      "historicalId": "6787dee7052e0529174b25ad",
+      "status": "Aprobado",
+      "type": "Ingreso",
+      "updatedDate": "2025-01-15T13:14:32.256",
+      "walletDetail": [Object
+      ]
+    },
+    {
+      "amount": 10000,
+      "createdDate": "2025-01-15T13:26:57.398",
+      "historicalId": "6787e1d1052e0529174b25b8",
+      "status": "Aprobado",
+      "type": "Ingreso",
+      "updatedDate": "2025-01-15T13:26:57.592",
+      "walletDetail": [Object
+      ]
+    },
+    {
+      "amount": 10000,
+      "createdDate": "2025-01-15T13:30:03.409",
+      "historicalId": "6787e28b052e0529174b25bf",
+      "status": "Aprobado",
+      "type": "Ingreso",
+      "updatedDate": "2025-01-15T13:30:03.641",
+      "walletDetail": [Object
+      ]
+    },
+    {
+      "amount": 35000,
+      "createdDate": "2025-01-15T13:41:50.968",
+      "historicalId": "6787e54e052e0529174b25c6",
+      "status": "Aprobado",
+      "type": "Ingreso",
+      "updatedDate": "2025-01-15T13:41:51.148",
+      "walletDetail": [Object
+      ]
+    }
+  ],
+  "totalBalance": 60000
+}
+
+
+[
+  {
+    "amount": 5000,
+    "createdDate": "2025-01-15T13:14:31.146",
+    "historicalId": "6787dee7052e0529174b25ad",
+    "status": "Aprobado",
+    "type": "Ingreso",
+    "updatedDate": "2025-01-15T13:14:32.256",
+    "walletDetail": {
+      "accountNumber": null,
+      "accountType": null,
+      "bank": null,
+      "recordMessage": "El ingreso de la comisión ha sido Aprobado"
+    }
+  },
+  {
+    "amount": 10000,
+    "createdDate": "2025-01-15T13:26:57.398",
+    "historicalId": "6787e1d1052e0529174b25b8",
+    "status": "Aprobado",
+    "type": "Ingreso",
+    "updatedDate": "2025-01-15T13:26:57.592",
+    "walletDetail": {
+      "accountNumber": null,
+      "accountType": null,
+      "bank": null,
+      "recordMessage": "El ingreso de la comisión ha sido Aprobado"
+    }
+  },
+  {
+    "amount": 10000,
+    "createdDate": "2025-01-15T13:30:03.409",
+    "historicalId": "6787e28b052e0529174b25bf",
+    "status": "Aprobado",
+    "type": "Ingreso",
+    "updatedDate": "2025-01-15T13:30:03.641",
+    "walletDetail": {
+      "accountNumber": null,
+      "accountType": null,
+      "bank": null,
+      "recordMessage": "El ingreso de la comisión ha sido Aprobado"
+    }
+  },
+  {
+    "amount": 35000,
+    "createdDate": "2025-01-15T13:41:50.968",
+    "historicalId": "6787e54e052e0529174b25c6",
+    "status": "Aprobado",
+    "type": "Ingreso",
+    "updatedDate": "2025-01-15T13:41:51.148",
+    "walletDetail": {
+      "accountNumber": null,
+      "accountType": null,
+      "bank": null,
+      "recordMessage": "El ingreso de la comisión ha sido Aprobado"
+    }
+  }
+]

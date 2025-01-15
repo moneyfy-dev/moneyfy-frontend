@@ -113,112 +113,115 @@ export default function SearchResultsScreen() {
 
   return (
     <ThemedLayout padding={[0, 40]}>
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <ThemedText variant="superTitle">
-            Resultados de búsqueda
-          </ThemedText>
-          {getSearchValues()}
-          <ThemedText variant="paragraph" color={themeColors.textParagraph}>
-            {vehicle
-              ? 'Hemos encontrado el siguiente vehículo'
-              : 'No se encontró el vehículo'}
-          </ThemedText>
-        </View>
+      {isLoading ? <LoadingScreen /> : (
+        <>
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <ThemedText variant="superTitle">
+                Resultados de búsqueda
+              </ThemedText>
+              {getSearchValues()}
+              <ThemedText variant="paragraph" color={themeColors.textParagraph}>
+                {vehicle
+                  ? 'Hemos encontrado el siguiente vehículo'
+                  : 'No se encontró el vehículo'}
+              </ThemedText>
+            </View>
 
-        {vehicle && (
-          <VehicleCard
-            brand={vehicle.brand}
-            model={vehicle.model}
-            ppu={vehicle.ppu}
-            year={vehicle.year}
-            isSelected={true}
+            {vehicle && (
+              <VehicleCard
+                brand={vehicle.brand}
+                model={vehicle.model}
+                ppu={vehicle.ppu}
+                year={vehicle.year}
+                isSelected={true}
+              />
+            )}
+
+            <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
+
+            <View style={styles.searchValueContainer}>
+              <ThemedText variant="subTitle" textAlign="center">
+                Datos del comprador
+              </ThemedText>
+            </View>
+
+            <ThemedInput
+              label="RUT del comprador"
+              value={formData.purchaserId}
+              onChangeText={(value) => setFormData({ ...formData, purchaserId: value })}
+              placeholder="RUT"
+              isRUT={true}
+            />
+
+            <ThemedInput
+              label="Nombre"
+              placeholder="Nombre"
+              value={formData.purchaserName}
+              onChangeText={(value) => setFormData({ ...formData, purchaserName: value })}
+            />
+            <ThemedInput
+              label='Apellido Paterno'
+              placeholder="Apellido Paterno"
+              value={formData.purchaserPaternalSur}
+              onChangeText={(value) => setFormData({ ...formData, purchaserPaternalSur: value })}
+            />
+            <ThemedInput
+              label='Apellido Materno'
+              placeholder="Apellido Materno"
+              value={formData.purchaserMaternalSur}
+              onChangeText={(value) => setFormData({ ...formData, purchaserMaternalSur: value })}
+            />
+
+            <ThemedInput
+              label="Email"
+              placeholder="Email"
+              value={formData.purchaserEmail}
+              onChangeText={(value) => setFormData({ ...formData, purchaserEmail: value })}
+              keyboardType="email-address"
+            />
+            <ThemedInput
+              label="Teléfono"
+              placeholder="Teléfono"
+              value={formData.purchaserPhone}
+              onChangeText={(value) => setFormData({ ...formData, purchaserPhone: value })}
+              keyboardType="phone-pad"
+            />
+
+            <ThemedInput
+              style={{ marginBottom: 48 }}
+              label="¿Es el dueño del vehículo?"
+              value={formData.isOwner}
+              onChangeText={(value) => setFormData({ ...formData, isOwner: value })}
+              placeholder="Si, soy el dueño del vehículo"
+              isSelect={true}
+              options={Object.keys(OWNER_OPTIONS_MAP)}
+            />
+          </View>
+
+          <ThemedButton
+            text="Siguiente"
+            onPress={handleQuote}
+            disabled={!vehicle || !formData.purchaserId || !formData.purchaserName || !formData.purchaserPaternalSur || !formData.purchaserMaternalSur || !ownerOption}
+            style={styles.button}
           />
-        )}
 
-        <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
-
-        <View style={styles.searchValueContainer}>
-          <ThemedText variant="subTitle" textAlign="center">
-            Datos del comprador
-          </ThemedText>
-        </View>
-
-        <ThemedInput
-          label="RUT del comprador"
-          value={formData.purchaserId}
-          onChangeText={(value) => setFormData({ ...formData, purchaserId: value })}
-          placeholder="RUT"
-          isRUT={true}
-        />
-
-        <ThemedInput
-          label="Nombre"
-          placeholder="Nombre"
-          value={formData.purchaserName}
-          onChangeText={(value) => setFormData({ ...formData, purchaserName: value })}
-        />
-        <ThemedInput
-          label='Apellido Paterno'
-          placeholder="Apellido Paterno"
-          value={formData.purchaserPaternalSur}
-          onChangeText={(value) => setFormData({ ...formData, purchaserPaternalSur: value })}
-        />
-        <ThemedInput
-          label='Apellido Materno'
-          placeholder="Apellido Materno"
-          value={formData.purchaserMaternalSur}
-          onChangeText={(value) => setFormData({ ...formData, purchaserMaternalSur: value })}
-        />
-
-        <ThemedInput
-          label="Email"
-          placeholder="Email"
-          value={formData.purchaserEmail}
-          onChangeText={(value) => setFormData({ ...formData, purchaserEmail: value })}
-          keyboardType="email-address"
-        />
-        <ThemedInput
-          label="Teléfono"
-          placeholder="Teléfono"
-          value={formData.purchaserPhone}
-          onChangeText={(value) => setFormData({ ...formData, purchaserPhone: value })}
-          keyboardType="phone-pad"
-        />
-
-        <ThemedInput
-          style={{ marginBottom: 48 }}
-          label="¿Es el dueño del vehículo?"
-          value={formData.isOwner}
-          onChangeText={(value) => setFormData({ ...formData, isOwner: value })}
-          placeholder="Si, soy el dueño del vehículo"
-          isSelect={true}
-          options={Object.keys(OWNER_OPTIONS_MAP)}
-        />
-      </View>
-
-      <ThemedButton
-        text="Siguiente"
-        onPress={handleQuote}
-        disabled={!vehicle || !formData.purchaserId || !formData.purchaserName || !formData.purchaserPaternalSur || !formData.purchaserMaternalSur || !ownerOption}
-      />
-
-      {isLoading ? <LoadingScreen /> : null}
-
-      <MessageModal
-        isVisible={isErrorModalVisible}
-        onClose={() => setIsErrorModalVisible(false)}
-        title="Error"
-        message={errorMessage}
-        icon={{
-          name: "alert-circle-outline",
-          color: themeColors.status.error
-        }}
-        primaryButton={{
-          text: "Entendido",
-          onPress: () => setIsErrorModalVisible(false)
-        }}
-      />
+          <MessageModal
+            isVisible={isErrorModalVisible}
+            onClose={() => setIsErrorModalVisible(false)}
+            title="Error"
+            message={errorMessage}
+            icon={{
+              name: "alert-circle-outline",
+              color: themeColors.status.error
+            }}
+            primaryButton={{
+              text: "Entendido",
+              onPress: () => setIsErrorModalVisible(false)
+            }}
+          />
+        </>
+      )}
     </ThemedLayout>
   );
 }
@@ -243,5 +246,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  button: {
+    marginTop: 24,
   },
 });  

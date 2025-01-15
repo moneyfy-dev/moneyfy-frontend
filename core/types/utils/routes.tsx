@@ -3,6 +3,7 @@ export const ROUTES = {
     INDEX: '/',
     QUOTERS: '/(tabs)/quoters',
     QUOTE: '/(tabs)/quote',
+    REFERREDS: '/(tabs)/referreds',
     CONFIG: '/(tabs)/config',
   },
   AUTH: {
@@ -19,7 +20,7 @@ export const ROUTES = {
     HISTORY: '/(wallet)/withdrawal-history',
   },
   QUOTE: {
-    CONFIRM_ADDRESS: '/(quote)/confirm-address',
+    CONFIRM_ADDRESS: '/(quote)/confirm-owner-data',
     PAYMENT_QR: '/(quote)/payment-qr',
     SEARCH_RESULTS: '/(quote)/search-results',
     MANUAL_SEARCH: '/(quote)/manual-search',

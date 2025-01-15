@@ -10,6 +10,7 @@ import { useSettings } from '@/core/context';
 import { PersonalData, ROUTES } from '@/core/types';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useMessageConfig } from '@/core/hooks/useMessageConfig';
 
 interface FormData extends Omit<PersonalData, 'dateOfBirth' | 'email'> {
     dateOfBirth: Date | null;
@@ -97,41 +98,6 @@ export default function PersonalInfoScreen() {
     };
 
     const handleSave = async () => {
-        const newErrors: FormErrors = {
-            name: '',
-            surname: '',
-            phone: '',
-            address: '',
-        };
-
-        let hasErrors = false;
-
-        if (!validateName(formData.name)) {
-            newErrors.name = 'Nombre inválido';
-            hasErrors = true;
-        }
-
-        if (!validateName(formData.surname)) {
-            newErrors.surname = 'Apellido inválido';
-            hasErrors = true;
-        }
-
-        if (!validatePhoneNumber(formData.phone)) {
-            newErrors.phone = 'Teléfono inválido';
-            hasErrors = true;
-        }
-
-        if (!validateAddress(formData.address)) {
-            newErrors.address = 'Dirección inválida';
-            hasErrors = true;
-        }
-
-        setErrors(newErrors);
-
-        if (hasErrors) {
-            return;
-        }
-
         try {
             const updateData: Partial<PersonalData> = {
                 name: formData.name,
@@ -145,16 +111,11 @@ export default function PersonalInfoScreen() {
                 updateData.profilePicture = formData.profilePicture;
             }
 
-            console.log('📤 Enviando datos:', updateData);
             await updatePersonalInfo(updateData);
+            router.replace(ROUTES.TABS.INDEX);
             
-            console.log('✅ Información actualizada exitosamente');
-            setSuccessMessage('Información personal actualizada correctamente');
-            setSuccessModalVisible(true);
         } catch (error) {
-            console.error('❌ Error al actualizar información:', error);
-            setErrorMessage('No se pudo actualizar la información personal');
-            setIsErrorModalVisible(true);
+            console.error('Error al actualizar información:', error);
         }
     };
 
@@ -170,6 +131,9 @@ export default function PersonalInfoScreen() {
         setSuccessModalVisible(false)
         router.replace(ROUTES.TABS.INDEX)
     }
+
+    // Configurar mensajes para este endpoint
+    useMessageConfig(['/users/update']);
 
     return (
         <ThemedLayout padding={[0, 40]}>
@@ -235,7 +199,7 @@ export default function PersonalInfoScreen() {
                 <ThemedButton
                     text="Guardar cambios"
                     onPress={handleSave}
-                    style={styles.Button}
+                    style={styles.button}
                 />
 
             <ProfilePictureModal
@@ -245,35 +209,6 @@ export default function PersonalInfoScreen() {
                 onChange={handleImagePicker}
             />
 
-            <MessageModal
-                isVisible={successModalVisible}
-                onClose={() => successNavigate()}
-                title="Éxito"
-                message={successMessage}
-                icon={{
-                    name: "checkmark-circle-outline",
-                    color: themeColors.status.success
-                }}
-                primaryButton={{
-                    text: "Entendido",
-                    onPress: () => successNavigate()
-                }}
-            />
-
-            <MessageModal
-                isVisible={isErrorModalVisible}
-                onClose={() => setIsErrorModalVisible(false)}
-                title="Error"
-                message={errorMessage}
-                icon={{
-                    name: "alert-circle-outline",
-                    color: themeColors.status.error
-                }}
-                primaryButton={{
-                    text: "Entendido",
-                    onPress: () => setIsErrorModalVisible(false)
-                }}
-            />
         </ThemedLayout>
     );
 }
@@ -311,7 +246,7 @@ const styles = StyleSheet.create({
         right: 0,
         bottom: 0,
     },
-    Button: {
+    button: {
         marginTop: 24,
     },
 });

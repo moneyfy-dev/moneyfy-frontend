@@ -20,7 +20,7 @@ const headerInfo: Record<string, HeaderInfo> = {
     title: "Resultado de la búsqueda",
     subtitle: "Resultados de la búsqueda"
   },
-  'confirm-address': {
+  'confirm-owner-data': {
     title: "Datos del propietario",
     subtitle: "Ingresa los datos del propietario"
   },
@@ -51,7 +51,7 @@ export default function SettingsLayout() {
       <Stack.Screen name="manual-search" />
       <Stack.Screen name="search-results" />
       <Stack.Screen name="quote-results" />
-      <Stack.Screen name="confirm-address" />
+      <Stack.Screen name="confirm-owner-data" />
       <Stack.Screen name="payment-qr" />
     </Stack>
   );

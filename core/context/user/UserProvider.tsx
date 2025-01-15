@@ -115,6 +115,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const getReferreds = async () => {
+    const response = await userService.getReferreds();
+    return response;
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -125,6 +130,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         refreshUserData,
         hydrateUserData,
         syncWithAuth,
+        getReferreds,
       }}
     >
       {children}

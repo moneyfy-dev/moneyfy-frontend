@@ -4,7 +4,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedButton, AccountListScreen, TabSelector } from '@/shared/components';
-import { useAuth } from '@/core/context';
+import { useUser } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 import WithdrawalHistory  from '@/app/(wallet)/withdrawal-history';
 
@@ -14,7 +14,7 @@ export default function WithdrawalTest() {
     const [amount, setAmount] = useState('40.000');
     const [activeTab, setActiveTab] = useState<TabType>('account');
     const themeColors = useThemeColor();
-    const { user } = useAuth();
+    const { user } = useUser();
     const router = useRouter();
 
     const tabs = [

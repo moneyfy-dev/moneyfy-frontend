@@ -50,6 +50,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="referreds"
+        options={{
+          title: 'Referidos',
+          tabBarIcon: ({ color, size }) => (
+            <TabBarIcon name="qr-code-outline" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="quote"
         options={{
           title: 'Cotizar',
@@ -61,7 +70,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Configuración',
+          title: 'Config',
           tabBarIcon: ({ color, size }) => (
             <TabBarIcon name="settings-outline" color={color} size={size} />
           ),

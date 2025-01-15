@@ -48,6 +48,7 @@ export default function HomeScreen() {
   }, [user]);
 
   useEffect(() => {
+    console.log(user?.wallet.records);
     if (FORCE_SHOW_ONBOARDING || fromConfirmation === 'true') {
       setShouldShowOnboarding(true);
     }
@@ -101,7 +102,7 @@ export default function HomeScreen() {
           <ThemedText variant="title">¡Hola {personalInfo.nombre} {personalInfo.apellido}!</ThemedText>
         </View>
         <View style={styles.iconContainer}>
-          <Ionicons name="notifications-outline" size={24} color={themeColors.textColor} style={styles.icon} />
+          {/*<Ionicons name="notifications-outline" size={24} color={themeColors.textColor} style={styles.icon} />*/}
           <Ionicons name="help-circle-outline" size={24} color={themeColors.textColor} style={styles.icon} />
         </View>
       </View>
@@ -117,7 +118,7 @@ export default function HomeScreen() {
               $ {' '}
             </ThemedText>
             <ThemedText variant="superTitle" color={themeColors.textColor}>
-              {showBalance ? `${typedUser.wallet.totalBalance.toFixed(0)}` : '******'}
+              {showBalance ? `${typedUser.wallet.totalBalance.toLocaleString('es-CL')}` : '******'}
             </ThemedText>
           </View>
 
@@ -182,14 +183,14 @@ export default function HomeScreen() {
           <Ionicons style={{ width: 24, height: 24 }} name="cash-outline" size={24} color={themeColors.white} />
           <View>
             <ThemedText variant="paragraph" color={themeColors.white}>Saldo Disponible</ThemedText>
-            <ThemedText variant="title" color={themeColors.textColorAccent}>${' '}{showBalance ? `${typedUser.wallet.availableBalance.toFixed(0)}` : '******'}</ThemedText>
+            <ThemedText variant="title" color={themeColors.textColorAccent}>${' '}{showBalance ? `${typedUser.wallet.availableBalance.toLocaleString('es-CL')}` : '******'}</ThemedText>
           </View>
         </LinearGradient>
         <View style={[styles.card, { backgroundColor: themeColors.backgroundCardColor, flex: 1 }]}>
           <Ionicons style={{ width: 24, height: 24 }} name="lock-closed-outline" size={24} color={themeColors.textColor} />
           <View>
             <ThemedText variant="paragraph">Saldo Retenido</ThemedText>
-            <ThemedText variant="title">${' '}{showBalance ? `${typedUser.wallet.outstandingBalance.toFixed(0)}` : '******'}</ThemedText>
+            <ThemedText variant="title">${' '}{showBalance ? `${typedUser.wallet.outstandingBalance.toLocaleString('es-CL')}` : '******'}</ThemedText>
           </View>
         </View>
       </View>

@@ -134,134 +134,136 @@ export default function ManualSearchScreen() {
 
     return (
         <ThemedLayout padding={[0, 40]}>
-            <View style={styles.content}>
+            {isLoading ? <LoadingScreen /> : (
+                <>
+                    <View style={styles.content}>
 
-                <ThemedInput
-                    label="Patente"
-                    value={formData.plate}
-                    onChangeText={(value) => setFormData({ ...formData, plate: value.toUpperCase() })}
-                    placeholder="Patente"
-                    isPlate={true}
-                />
+                        <ThemedInput
+                            label="Patente"
+                            value={formData.plate}
+                            onChangeText={(value) => setFormData({ ...formData, plate: value.toUpperCase() })}
+                            placeholder="Patente"
+                            isPlate={true}
+                        />
 
-                <ThemedAutocomplete
-                    label="Marca"
-                    value={formData.brand}
-                    onChangeText={(value) => setFormData({ ...formData, brand: value })}
-                    onSelect={handleBrandSelect}
-                    options={availableVehicles.map(b => b.brand)}
-                    placeholder="Selecciona una marca"
-                    zIndex={2}
-                />
+                        <ThemedAutocomplete
+                            label="Marca"
+                            value={formData.brand}
+                            onChangeText={(value) => setFormData({ ...formData, brand: value })}
+                            onSelect={handleBrandSelect}
+                            options={availableVehicles.map(b => b.brand)}
+                            placeholder="Selecciona una marca"
+                            zIndex={2}
+                        />
 
-                <ThemedAutocomplete
-                    label="Modelo"
-                    value={formData.model}
-                    onChangeText={(value) => setFormData({ ...formData, model: value })}
-                    onSelect={handleModelSelect}
-                    options={selectedBrand?.models.map(m => m.model) || []}
-                    placeholder="Selecciona un modelo"
-                    disabled={!selectedBrand}
-                    zIndex={1}
-                />
+                        <ThemedAutocomplete
+                            label="Modelo"
+                            value={formData.model}
+                            onChangeText={(value) => setFormData({ ...formData, model: value })}
+                            onSelect={handleModelSelect}
+                            options={selectedBrand?.models.map(m => m.model) || []}
+                            placeholder="Selecciona un modelo"
+                            disabled={!selectedBrand}
+                            zIndex={1}
+                        />
 
-                <ThemedInput
-                    label="Año"
-                    value={formData.year}
-                    onChangeText={(value) => setFormData({ ...formData, year: value })}
-                    placeholder="Selecciona el año"
-                    isSelect={true}
-                    options={availableYears}
-                />
+                        <ThemedInput
+                            label="Año"
+                            value={formData.year}
+                            onChangeText={(value) => setFormData({ ...formData, year: value })}
+                            placeholder="Selecciona el año"
+                            isSelect={true}
+                            options={availableYears}
+                        />
 
-                <ThemedInput
-                    label="Versión"
-                    value={formData.version}
-                    onChangeText={(value) => setFormData({ ...formData, version: value })}
-                    placeholder="Versión"
-                />
+                        <ThemedInput
+                            label="Versión"
+                            value={formData.version}
+                            onChangeText={(value) => setFormData({ ...formData, version: value })}
+                            placeholder="Versión"
+                        />
 
-                <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
+                        <ThemedView style={[styles.divider, { backgroundColor: themeColors.borderBackgroundColor }]} />
 
-                <ThemedText variant="subTitle" textAlign="center" style={{ marginTop: 4, marginBottom: 4 }}>
-                    Datos del comprador
-                </ThemedText>
+                        <ThemedText variant="subTitle" textAlign="center" style={{ marginTop: 4, marginBottom: 4 }}>
+                            Datos del comprador
+                        </ThemedText>
 
-                <ThemedInput
-                    label="RUT del comprador"
-                    value={formData.purchaserId}
-                    onChangeText={(value) => setFormData({ ...formData, purchaserId: value })}
-                    placeholder="RUT"
-                    error={errors.rut}
-                    isRUT={true}
-                />
+                        <ThemedInput
+                            label="RUT del comprador"
+                            value={formData.purchaserId}
+                            onChangeText={(value) => setFormData({ ...formData, purchaserId: value })}
+                            placeholder="RUT"
+                            error={errors.rut}
+                            isRUT={true}
+                        />
 
-                <ThemedInput
-                    label="Nombre"
-                    placeholder="Nombre"
-                    value={formData.purchaserName}
-                    onChangeText={(value) => setFormData({ ...formData, purchaserName: value })}
-                />
-                <ThemedInput
-                    label='Apellido Paterno'
-                    placeholder="Apellido Paterno"
-                    value={formData.purchaserPaternalSur}
-                    onChangeText={(value) => setFormData({ ...formData, purchaserPaternalSur: value })}
-                />
-                <ThemedInput
-                    label='Apellido Materno'
-                    placeholder="Apellido Materno"
-                    value={formData.purchaserMaternalSur}
-                    onChangeText={(value) => setFormData({ ...formData, purchaserMaternalSur: value })}
-                />
-                <ThemedInput
-                    label="Email"
-                    placeholder="Email"
-                    value={formData.purchaserEmail}
-                    onChangeText={(value) => setFormData({ ...formData, purchaserEmail: value })}
-                    keyboardType="email-address"
-                />
-                <ThemedInput
-                    label="Teléfono"
-                    placeholder="Teléfono"
-                    value={formData.purchaserPhone}
-                    onChangeText={(value) => setFormData({ ...formData, purchaserPhone: value })}
-                    keyboardType="phone-pad"
-                />
+                        <ThemedInput
+                            label="Nombre"
+                            placeholder="Nombre"
+                            value={formData.purchaserName}
+                            onChangeText={(value) => setFormData({ ...formData, purchaserName: value })}
+                        />
+                        <ThemedInput
+                            label='Apellido Paterno'
+                            placeholder="Apellido Paterno"
+                            value={formData.purchaserPaternalSur}
+                            onChangeText={(value) => setFormData({ ...formData, purchaserPaternalSur: value })}
+                        />
+                        <ThemedInput
+                            label='Apellido Materno'
+                            placeholder="Apellido Materno"
+                            value={formData.purchaserMaternalSur}
+                            onChangeText={(value) => setFormData({ ...formData, purchaserMaternalSur: value })}
+                        />
+                        <ThemedInput
+                            label="Email"
+                            placeholder="Email"
+                            value={formData.purchaserEmail}
+                            onChangeText={(value) => setFormData({ ...formData, purchaserEmail: value })}
+                            keyboardType="email-address"
+                        />
+                        <ThemedInput
+                            label="Teléfono"
+                            placeholder="Teléfono"
+                            value={formData.purchaserPhone}
+                            onChangeText={(value) => setFormData({ ...formData, purchaserPhone: value })}
+                            keyboardType="phone-pad"
+                        />
 
-                <ThemedInput
-                    style={{ marginBottom: 48 }}
-                    label="¿Es el dueño del vehículo?"
-                    value={formData.isOwner}
-                    onChangeText={(value) => setFormData({ ...formData, isOwner: value })}
-                    placeholder="Si, soy el dueño del vehículo"
-                    isSelect={true}
-                    options={Object.keys(OWNER_OPTIONS_MAP)}
-                />
-            </View>
+                        <ThemedInput
+                            style={{ marginBottom: 48 }}
+                            label="¿Es el dueño del vehículo?"
+                            value={formData.isOwner}
+                            onChangeText={(value) => setFormData({ ...formData, isOwner: value })}
+                            placeholder="Si, soy el dueño del vehículo"
+                            isSelect={true}
+                            options={Object.keys(OWNER_OPTIONS_MAP)}
+                        />
+                    </View>
 
-            <ThemedButton
-                text="Siguiente"
-                onPress={handleSubmit}
-                disabled={!formData.brand || !formData.model || !formData.plate || !formData.purchaserId || !formData.purchaserName || !formData.purchaserPaternalSur || !formData.purchaserMaternalSur || !formData.purchaserEmail || !formData.purchaserPhone || !formData.isOwner}
-            />
+                    <ThemedButton
+                        text="Siguiente"
+                        onPress={handleSubmit}
+                        disabled={!formData.brand || !formData.model || !formData.plate || !formData.purchaserId || !formData.purchaserName || !formData.purchaserPaternalSur || !formData.purchaserMaternalSur || !formData.purchaserEmail || !formData.purchaserPhone || !formData.isOwner}
+                        style={styles.button}
+                    />
 
-            <MessageModal
-                isVisible={isErrorModalVisible}
-                onClose={() => setIsErrorModalVisible(false)}
-                title="Error"
-                message={errorMessage}
-                icon={{
-                    name: "alert-circle-outline",
-                    color: themeColors.status.error
-                }}
-                primaryButton={{
-                    text: "Entendido",
-                    onPress: () => setIsErrorModalVisible(false)
-                }}
-            />
-
-            {isLoading && <LoadingScreen />}
+                    <MessageModal
+                        isVisible={isErrorModalVisible}
+                        onClose={() => setIsErrorModalVisible(false)}
+                        title="Error"
+                        message={errorMessage}
+                        icon={{
+                            name: "alert-circle-outline",
+                            color: themeColors.status.error
+                        }}
+                        primaryButton={{
+                            text: "Entendido",
+                            onPress: () => setIsErrorModalVisible(false)
+                        }}
+                    />
+                </>)}
         </ThemedLayout>
     );
 }
@@ -277,5 +279,8 @@ const styles = StyleSheet.create({
         height: 1,
         width: '100%',
         marginVertical: 20,
+    },
+    button: {
+        marginTop: 24,
     },
 });

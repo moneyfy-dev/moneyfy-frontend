@@ -21,9 +21,7 @@ interface QuoteContextType {
     isLoading: boolean;
     error: string | null;
     availableVehicles: Brand[];
-    generateTransaction: (params: GenerateTransactionParams) => Promise<void>;
-    finalizeQuote: (params: FinalizeQuoteParams) => Promise<void>;  
-
+    
     // Acciones
     searchVehicle: (ownerId: string, ppu: string) => Promise<SearchResponse>;
     startQuotationFlow: (quoteData: QuoteVehicleParams) => Promise<QuoteVehicleResponse>;
@@ -31,6 +29,8 @@ interface QuoteContextType {
     getAvailableVehicles: () => Promise<VehiclesResponse>;
     clearQuoteData: () => void;
     searchPlanById: (planId: string) => Promise<ApiResponse>;
+    generateTransaction: (params: GenerateTransactionParams) => Promise<void>;
+    finalizeQuote: (params: FinalizeQuoteParams) => Promise<void>;  
 }
 
 export const QuoteContext = createContext<QuoteContextType | undefined>(undefined); 

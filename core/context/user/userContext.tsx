@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { User } from '@/core/types';
+import { ApiResponse, User } from '@/core/types';
 
 interface UserState {
   user: User | null;
@@ -12,6 +12,7 @@ interface UserContextType extends UserState {
   refreshUserData: () => Promise<void>;
   hydrateUserData: (force?: boolean) => Promise<void>;
   syncWithAuth: (userData: User) => Promise<void>;
+  getReferreds: () => Promise<ApiResponse>;
 }
 
 export const UserContext = createContext<UserContextType>({} as UserContextType);

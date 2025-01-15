@@ -12,6 +12,7 @@ const { height } = Dimensions.get('window');
 
 export default function LoginScreen() {
     const [isLoading, setIsLoading] = useState(false);
+    const themeColors = useThemeColor();
     //const { isVisible, showCard, hideCard } = useCardVisibility();
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
@@ -22,8 +23,6 @@ export default function LoginScreen() {
     const [passwordError, setPasswordError] = useState('');
     const [isFormValid, setIsFormValid] = useState(false);
     const formAnimation = useRef(new Animated.Value(height)).current;
-    const themeColors = useThemeColor();
-    const router = useRouter();
     const [touchedFields, setTouchedFields] = useState({ email: false, password: false });
     const [errorMessage, setErrorMessage] = useState('');
 

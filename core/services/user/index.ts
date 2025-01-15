@@ -68,5 +68,10 @@ export const userService = {
     });
 
     return response.data;
+  },
+
+  getReferreds: async (): Promise<ApiResponse> => {
+    const response = await api.post('/users/list/referreds');
+    return response.data;
   }
 };

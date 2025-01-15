@@ -13,8 +13,8 @@ interface InsurerLogoProps {
 export const InsurerLogo: React.FC<InsurerLogoProps> = ({ 
     darkLogo, 
     lightLogo, 
-    width = 200, 
-    height = 100 
+    width = 120, 
+    height = 60 
 }) => {
     const { currentTheme } = useTheme();
     

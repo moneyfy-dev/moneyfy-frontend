@@ -20,17 +20,18 @@ export default function QuoterDetailScreen() {
   const { searchPlanById } = useQuote();
 
   useEffect(() => {
-    let isMounted = true;
 
     const loadQuoterData = async () => {
       setIsLoading(true);
       try {
-        const response = await searchPlanById(params.idPlan as string);
-        if (isMounted && user?.quoters) {
-          const quoterData = user.quoters.find(r => r.quoterId === params.id);
-          setQuoter(quoterData || null);
+        if (params.idPlan) {
+          const response = await searchPlanById(params.idPlan as string);
           const planData = response.data;
           setPlan(planData || null);
+        }
+        if (user?.quoters) {
+          const quoterData = user.quoters.find(r => r.quoterId === params.id);
+          setQuoter(quoterData || null);
           console.log('quoterData', quoterData);
         }
       } catch (error) {
@@ -40,9 +41,6 @@ export default function QuoterDetailScreen() {
 
     loadQuoterData();
     setIsLoading(false);
-    return () => {
-      isMounted = false;
-    };
   }, [params.id]);
 
   if (!quoter) {
@@ -53,13 +51,12 @@ export default function QuoterDetailScreen() {
 
   const getStatusColor = (status: QuoterStatus) => {
     const colors: Record<QuoterStatus, string> = {
-      'Iniciando': themeColors.green4to5,
-      'Cotizando': themeColors.green3to4,
-      'Recopilando': themeColors.green2to3,
-      'Pendiente': themeColors.status.info,
-      'Aprobado': themeColors.status.success,
-      'Rechazado': themeColors.status.error,
-      'Caducado': themeColors.status.warning,
+      Iniciando: themeColors.extremeContrastGray,
+      Cotizando: themeColors.extremeContrastGray,
+      Recopilando: themeColors.status.info,
+      Aprobado: themeColors.status.success,
+      Rechazado: themeColors.status.error,
+      Caducado: themeColors.status.warning,
     };
     return colors[status];
   };
@@ -104,15 +101,10 @@ export default function QuoterDetailScreen() {
               </View>
             </View>
 
-            <ThemedText variant="notes">
-              Cotizado el: {format(new Date(quoter.createdDate), 'dd/MM/yyyy')}
-            </ThemedText>
-
-            {quoter.quoterOwnerData.personalId && (
               <ThemedText variant="notes">
-                RUT: {quoter.quoterOwnerData.personalId}
+                Cotizado el: {format(new Date(quoter.createdDate), 'dd/MM/yyyy')}
               </ThemedText>
-            )}
+
           </View>
         </View>
 
@@ -126,16 +118,16 @@ export default function QuoterDetailScreen() {
         />
 
         {/* Plan seleccionado */}
-        {quoter.quoterPlanData && 
-            quoter.quoterPlanData.planName &&
-            plan && (
-          <View style={styles.section}>
-            <QuoteCard
-              plan={plan}
-              showButton={false}
-            />
-          </View>
-        )}
+        {quoter.quoterPlanData &&
+          quoter.quoterPlanData.planName &&
+          plan && (
+            <View style={styles.section}>
+              <QuoteCard
+                plan={plan}
+                showButton={false}
+              />
+            </View>
+          )}
 
         {/* Información adicional */}
         <QuoterInfoCard

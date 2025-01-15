@@ -1,4 +1,4 @@
-export type QuoterStatus = 'Iniciando' | 'Cotizando' | 'Recopilando' | 'Pendiente' | 'Aprobado' | 'Rechazado' | 'Caducado';
+export type QuoterStatus = 'Iniciando' | 'Cotizando' | 'Recopilando' | 'Aprobado' | 'Rechazado' | 'Caducado';
 
 export interface QuoterOwnerData {
   personalId: string;

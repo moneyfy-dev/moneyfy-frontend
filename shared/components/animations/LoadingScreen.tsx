@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedView } from '../ui/ThemedView';
 import { ThemedText } from '../ui/ThemedText';
 import { LottieAnimation } from '../animations/LottieAnimation';
+
+const { height: screenHeight } = Dimensions.get('window');
 
 export const LoadingScreen = () => {
   const themeColors = useThemeColor();

@@ -47,10 +47,9 @@ export default function QuotersScreen() {
 
   const getStatusColor = (status: QuoterStatus) => {
     const colors: Record<QuoterStatus, string> = {
-      Iniciando: themeColors.green4to5,
-      Cotizando: themeColors.green3to4,
-      Recopilando: themeColors.green2to3,
-      Pendiente: themeColors.status.info,
+      Iniciando: themeColors.extremeContrastGray,
+      Cotizando: themeColors.extremeContrastGray,
+      Recopilando: themeColors.status.info,
       Aprobado: themeColors.status.success,
       Rechazado: themeColors.status.error,
       Caducado: themeColors.status.warning,
@@ -143,7 +142,6 @@ export default function QuotersScreen() {
       'Iniciando': 'Iniciando',
       'Cotizando': 'Cotizando',
       'Recopilando': 'Recopilando',
-      'Pendiente': 'Pendiente',
       'Aprobado': 'Aprobado',
       'Rechazado': 'Rechazado',
       'Caducado': 'Caducado'
@@ -168,18 +166,36 @@ export default function QuotersScreen() {
         style={styles.quoterContent}
       >
         <View style={styles.quoterHeader}>
-          <IconContainer
-            icon="person-outline"
-            size={24}
-          />
+          {item.quoterOwnerData.name ? (
+            <IconContainer
+              icon="person-outline"
+              size={24}
+              backgroundColor={getStatusColor(normalizeStatus(item.quoterStatus))}
+            />) : (
+            <IconContainer
+              icon="car-outline"
+              size={24}
+              backgroundColor={getStatusColor(normalizeStatus(item.quoterStatus))}
+            />
+          )}
           <View style={styles.quoterInfo}>
             <View style={styles.nameContainer}>
-              <ThemedText variant="subTitleBold">
-                <ThemedText variant="subTitleBold" color={themeColors.textColorAccent}>
-                  {item.quoterOwnerData.name}
+
+              {item.quoterOwnerData.name ? (
+                <ThemedText variant="subTitleBold">
+                  <ThemedText variant="subTitleBold" color={themeColors.textColorAccent}>
+                    {item.quoterOwnerData.name}
+                  </ThemedText>
+                  {' '} {item.quoterOwnerData.paternalSurname}
                 </ThemedText>
-                {' '} {item.quoterOwnerData.paternalSurname}
-              </ThemedText>
+              ) : (
+                <ThemedText variant="subTitleBold">
+                  <ThemedText variant="subTitleBold" color={themeColors.textColorAccent}>
+                    {item.quoterCarData.brand}
+                  </ThemedText>
+                  {' '} {item.quoterCarData.model}
+                </ThemedText>
+              )}
 
               <ThemedText variant="notes">
                 Actualización: {format(new Date(item.updatedDate), 'dd/MM/yyyy')}
@@ -227,7 +243,7 @@ export default function QuotersScreen() {
     <View style={styles.headerContainer}>
       <View style={styles.header}>
         <ThemedText variant="title" textAlign="center">
-          Historial de Referido
+          Historial de Cotizantes
         </ThemedText>
       </View>
 

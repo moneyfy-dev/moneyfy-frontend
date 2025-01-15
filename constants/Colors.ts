@@ -48,6 +48,6 @@ export default {
     success: '#00BE41',
     error: '#E0003E',
     warning: '#F2C905',
-    info: '#541991',
+    info: '#541991'
   }
 };

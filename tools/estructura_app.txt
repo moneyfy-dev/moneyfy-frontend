@@ -80,7 +80,7 @@
 ./app/splash-screen.tsx
 ./app/+not-found.tsx
 ./app/(quote)
-./app/(quote)/confirm-address.tsx
+./app/(quote)/confirm-owner-data.tsx
 ./app/(quote)/_layout.tsx
 ./app/(quote)/payment-qr.tsx
 ./app/(quote)/search-results.tsx

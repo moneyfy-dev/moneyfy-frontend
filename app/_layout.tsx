@@ -8,6 +8,7 @@ import { screens } from '@/core/types';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/shared/hooks';
 import { ThemeProvider, OnboardingProvider, AuthProvider, useAuth, UserProvider, QuoteProvider, SettingsProvider, useUser } from '@/core/context';
+import { MessageProvider } from '@/core/context/message';
 
 const SPLASH_SCREEN_DURATION = 4000; // Duración fija para la animación de marca
 
@@ -51,13 +52,38 @@ export default function RootLayout() {
     <ThemeProvider>
       <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <SafeAreaProvider>
-          <AuthProvider>
-            <UserProvider>
-              <QuoteProvider>
-                <SettingsProvider>
-                  <OnboardingProvider>
-                  {isAuthenticated ? (
-                    isPersistentAuthRequired ? (
+          <MessageProvider>
+            <AuthProvider>
+              <UserProvider>
+                <QuoteProvider>
+                  <SettingsProvider>
+                    <OnboardingProvider>
+                    {isAuthenticated ? (
+                      isPersistentAuthRequired ? (
+                        <Stack
+                          screenOptions={{
+                            headerShown: false,
+                            animation: 'fade'
+                          }}
+                          initialRouteName="(auth)"
+                        >
+                          {screens.map(screen => (
+                            <Stack.Screen key={screen.name} name={screen.name} options={screen.options} />
+                          ))}
+                        </Stack>
+                      ) : (
+                        <Stack
+                          screenOptions={{
+                            animation: 'fade'
+                          }}
+                          initialRouteName="(tabs)"
+                        >
+                          {screens.map(screen => (
+                            <Stack.Screen key={screen.name} name={screen.name} options={screen.options} />
+                          ))}
+                        </Stack>
+                      )
+                    ) : (
                       <Stack
                         screenOptions={{
                           headerShown: false,
@@ -69,36 +95,13 @@ export default function RootLayout() {
                           <Stack.Screen key={screen.name} name={screen.name} options={screen.options} />
                         ))}
                       </Stack>
-                    ) : (
-                      <Stack
-                        screenOptions={{
-                          animation: 'fade'
-                        }}
-                        initialRouteName="(tabs)"
-                      >
-                        {screens.map(screen => (
-                          <Stack.Screen key={screen.name} name={screen.name} options={screen.options} />
-                        ))}
-                      </Stack>
-                    )
-                  ) : (
-                    <Stack
-                      screenOptions={{
-                        headerShown: false,
-                        animation: 'fade'
-                      }}
-                      initialRouteName="(auth)"
-                    >
-                      {screens.map(screen => (
-                        <Stack.Screen key={screen.name} name={screen.name} options={screen.options} />
-                      ))}
-                    </Stack>
-                  )}
-                  </OnboardingProvider>
-                </SettingsProvider>
-              </QuoteProvider>
-            </UserProvider>
-          </AuthProvider>
+                    )}
+                    </OnboardingProvider>
+                  </SettingsProvider>
+                </QuoteProvider>
+              </UserProvider>
+            </AuthProvider>
+          </MessageProvider>
         </SafeAreaProvider>
       </NavigationThemeProvider>
     </ThemeProvider>

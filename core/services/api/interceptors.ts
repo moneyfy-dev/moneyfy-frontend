@@ -1,16 +1,56 @@
-import { AxiosError, AxiosRequestHeaders } from 'axios';
+import { AxiosError, AxiosRequestHeaders, AxiosResponse } from 'axios';
 import { api } from './config';
-import type { ApiError } from '@/core/types';
+import { ApiError } from '@/core/types';
 import { storage } from '@/shared/utils/storage';
+import { MessageConfig } from '@/core/context/message';
+
+interface ApiErrorResponse {
+  message: string;
+  status: number;
+  data?: any;
+}
+
+let messageHandler: {
+  showError: (message: string) => void;
+  showSuccess: (message: string) => void;
+  getEndpointConfig: (endpoint: string) => MessageConfig | undefined;
+} | null = null;
+
+export const setMessageHandler = (handler: typeof messageHandler) => {
+  console.log('🔄 Configurando message handler en interceptor');
+  messageHandler = handler;
+};
+
+const getEndpointFromUrl = (url: string | undefined) => {
+  if (!url) return '';
+  const urlObj = new URL(url);
+  const path = urlObj.pathname;
+  console.log('🔍 URL procesada:', { original: url, processed: path });
+  return path;
+};
 
 export const setupErrorInterceptor = () => {
   api.interceptors.response.use(
-    response => {
+    (response: AxiosResponse) => {
       console.log('✅ Response Success:', {
         url: response.config.url,
         status: response.status,
         hasData: !!response.data
       });
+
+      if (messageHandler) {
+        const endpoint = getEndpointFromUrl(response.config.url);
+        console.log('🎯 Endpoint detectado:', endpoint);
+        const config = messageHandler.getEndpointConfig(endpoint);
+        console.log('⚙️ Configuración encontrada:', config);
+        
+        if (config?.showSuccessMessage) {
+          const successMessage = config.customSuccessMessage || response.data?.message || 'Operación exitosa';
+          console.log('📢 Mostrando mensaje de éxito:', successMessage);
+          messageHandler.showSuccess(successMessage);
+        }
+      }
+
       return response;
     },
     async (error: AxiosError) => {
@@ -18,15 +58,12 @@ export const setupErrorInterceptor = () => {
         url: error.config?.url,
         method: error.config?.method,
         status: error.response?.status,
-        data: error.response?.data,
-        headers: error.config?.headers
+        data: error.response?.data
       });
 
       // Manejar error de token expirado (417)
       if (error.response?.status === 417) {
-        console.log('🔄 Intentando recuperar sesión por error 417');
         try {
-          // Usar un endpoint específico para verificar sesión
           const { token, sessionToken } = await storage.auth.getTokens();
           const response = await api.post('/auth/verify-session', {}, {
             headers: {
@@ -35,16 +72,12 @@ export const setupErrorInterceptor = () => {
             }
           });
           
-          console.log('✅ Verificación de sesión exitosa:', response.data);
-          
           if (response.data.tokens) {
-            console.log('🔄 Actualizando tokens después de verificación');
             await storage.auth.setTokens(
               response.data.tokens.jwtRefresh,
               response.data.tokens.jwtSession
             );
             
-            // Reintentar la petición original con los nuevos tokens
             if (error.config) {
               return api(error.config);
             }
@@ -54,6 +87,13 @@ export const setupErrorInterceptor = () => {
           await storage.auth.clearAuth();
           await storage.user.clearUser();
         }
+      }
+
+      if (messageHandler) {
+        const endpoint = getEndpointFromUrl(error.config?.url);
+        const errorMessage = (error.response?.data as ApiErrorResponse)?.message || error.message || 'Error de conexión';
+        console.log('📢 Mostrando mensaje de error:', errorMessage);
+        messageHandler.showError(errorMessage);
       }
 
       const customError: ApiError = {

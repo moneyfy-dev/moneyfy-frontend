@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, StyleSheet, TouchableOpacity, Dimensions, FlatList } from 'react-native';
-import { useThemeColor, useCardVisibility } from '@/shared/hooks';
+import { StyleSheet, TouchableOpacity, Dimensions, FlatList, Animated, View } from 'react-native';
+import { useThemeColor } from '@/shared/hooks';
 import { ThemedView, ThemedLayoutFlatList, ThemedText, IconContainer, TabSelector, AccountListScreen, AnimatedCard } from '@/shared/components';
 import { es } from 'date-fns/locale';
 import { format } from 'date-fns';
-import { useAuth } from '@/core/context';
+import { useUser } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: screenHeight } = Dimensions.get('window');
 
 type TabType = 'account' | 'history';
 
@@ -62,25 +62,86 @@ const mockWithdrawals: WithdrawalRecord[] = [
         amount: 55000,
         date: '2023-11-15',
         remaining: 325000
+    },
+    {
+        id: '6',
+        bank: 'Banco Falabella',
+        accountNumber: '17286536',
+        amount: 45000,
+        date: '2024-03-15',
+        remaining: 155000
+    },
+    {
+        id: '7',
+        bank: 'Banco Falabella',
+        accountNumber: '17286536',
+        amount: 35000,
+        date: '2024-02-15',
+        remaining: 200000
+    },
+    {
+        id: '8',
+        bank: 'Banco Falabella',
+        accountNumber: '17286536',
+        amount: 50000,
+        date: '2024-01-15',
+        remaining: 235000
+    },
+    {
+        id: '9',
+        bank: 'Banco Falabella',
+        accountNumber: '17286536',
+        amount: 40000,
+        date: '2023-12-15',
+        remaining: 285000
+    },
+    {
+        id: '10',
+        bank: 'Banco Estado',
+        accountNumber: '23451789',
+        amount: 55000,
+        date: '2023-11-15',
+        remaining: 325000
     }
 ];
 
 export default function WithdrawalScreen() {
     const themeColors = useThemeColor();
-    const { user } = useAuth();
+    const [isFormVisible, setIsFormVisible] = useState(false);
+    const { user } = useUser();
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<TabType>('account');
-    const { isVisible, showCard, hideCard } = useCardVisibility();
+    const [activeTab, setActiveTab] = useState<TabType>('history');
     const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>(mockWithdrawals);
+    const formAnimation = useRef(new Animated.Value(screenHeight)).current;
+
+    function calcularProximoPago(): Date {
+        const hoy = new Date();
+        const diaActual = hoy.getDate();
+        const mesActual = hoy.getMonth();
+        const añoActual = hoy.getFullYear();
+
+        let mesPago = mesActual;
+        let añoPago = añoActual;
+
+        if (diaActual > 15) {
+            mesPago += 1;
+            if (mesPago > 11) { // Si el mes es diciembre, pasamos al siguiente año
+                mesPago = 0;
+                añoPago += 1;
+            }
+        }
+
+        return new Date(añoPago, mesPago, 15);
+    }
 
     const nextPayment = {
         amount: user?.wallet?.availableBalance || 0,
-        date: new Date(2024, 3, 15),
+        date: calcularProximoPago(),
     };
 
     const tabs = [
+        { type: 'history', label: 'Últimos', title: 'Pagos', icon: 'time-outline' },
         { type: 'account', label: 'Cuentas', title: 'Mis Cuentas', icon: 'card-outline' },
-        { type: 'history', label: 'Historial', title: 'Mis Pagos', icon: 'time-outline' }
     ];
 
     const WithdrawalItem = ({ item, index, isLast }: { item: WithdrawalRecord, index: number, isLast: boolean }) => (
@@ -92,13 +153,13 @@ export default function WithdrawalScreen() {
                 <IconContainer
                     icon="card-outline"
                     size={24}
-                    backgroundColor={themeColors.textColorAccent}
+                    backgroundColor={themeColors.buttonBackgroundColor}
                 />
                 <View>
                     <ThemedText variant="subTitleBold">{item.bank}</ThemedText>
                     <ThemedText variant="paragraph">{item.accountNumber}</ThemedText>
                     <ThemedText variant="paragraph" color={themeColors.textParagraph}>
-                        Fecha de retiro: {format(new Date(item.date), 'dd/MM/yyyy')}
+                        Fecha de pago: {format(new Date(item.date), 'dd/MM/yyyy')}
                     </ThemedText>
                 </View>
             </View>
@@ -107,18 +168,34 @@ export default function WithdrawalScreen() {
                     -${item.amount.toLocaleString()}
                 </ThemedText>
                 <ThemedText variant="paragraph">
-                    restante ${item.remaining.toLocaleString()}
+                    Retenido ${item.remaining.toLocaleString()}
                 </ThemedText>
             </View>
         </View>
     );
 
+    const showDetails = () => {
+        setIsFormVisible(true);
+        Animated.spring(formAnimation, {
+            toValue: 0,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const hideDetails = () => {
+        Animated.spring(formAnimation, {
+            toValue: screenHeight,
+            useNativeDriver: true,
+        }).start(() => {
+            setIsFormVisible(false);
+        });
+    };
 
     return (
         <ThemedLayoutFlatList padding={[0, 0]}
         >
-            <View style={styles.container}>
-                <View style={styles.headerContainer}>
+            <ThemedView style={styles.container}>
+                <ThemedView style={styles.headerContainer}>
                     <TouchableOpacity onPress={() => router.back()}>
                         <Ionicons
                             name="chevron-back"
@@ -126,13 +203,13 @@ export default function WithdrawalScreen() {
                             color={themeColors.accentInDarkMode}
                         />
                     </TouchableOpacity>
-                </View>
+                </ThemedView>
 
-                <View style={styles.headerSection}>
-                    <View style={styles.header}>
+                <TouchableOpacity onPress={hideDetails} activeOpacity={1} style={styles.headerSection}>
+                    <ThemedView style={styles.header}>
                         <ThemedText variant="title" color={themeColors.white}>Próximo Pago</ThemedText>
-                        <View style={styles.amountContainer}>
-                            <View style={styles.inputContainer}>
+                        <ThemedView style={styles.amountContainer}>
+                            <ThemedView style={styles.inputContainer}>
                                 <ThemedText
                                     variant="gigaTitle"
                                     style={[styles.currencySymbol, { color: themeColors.textColorAccent }]}
@@ -145,49 +222,59 @@ export default function WithdrawalScreen() {
                                 >
                                     {nextPayment.amount.toLocaleString('es-CL')}
                                 </ThemedText>
-                            </View>
-                        </View>
+                            </ThemedView>
+                        </ThemedView>
                         <ThemedText variant="paragraph" color={themeColors.textParagraph}>
-                            {format(nextPayment.date, "d 'de' MMMM, yyyy", { locale: es })}
+                            El pago se realizará el{' '}
+                            <ThemedText variant="paragraph" color={themeColors.textColorAccent}>
+                                {format(nextPayment.date, "d 'de' MMMM, yyyy", { locale: es })}
+                            </ThemedText>
                         </ThemedText>
-                    </View>
-
-                    <ThemedView style={[styles.buttonContainer, { backgroundColor: themeColors.backgroundCardColor }]}>
-                        <TouchableOpacity
-                            style={styles.detailsButton}
-                            onPress={showCard}
-                            activeOpacity={0.7}
-                        >
-                            <ThemedText variant="paragraph">Ver detalles y cuentas</ThemedText>
-                            <Ionicons
-                                name="chevron-up"
-                                size={24}
-                                color={themeColors.textColorAccent}
-                            />
-                        </TouchableOpacity>
                     </ThemedView>
-                </View>
+                </TouchableOpacity>
+                <ThemedView style={[styles.buttonContainer, { backgroundColor: themeColors.backgroundCardColor }]}>
+                    <TouchableOpacity
+                        style={styles.detailsButton}
+                        onPress={showDetails}
+                        activeOpacity={0.7}
+                    >
+                        <ThemedText variant="paragraph">Ver detalles y cuentas</ThemedText>
+                        <Ionicons
+                            name="chevron-up"
+                            size={24}
+                            color={themeColors.textColorAccent}
+                        />
+                    </TouchableOpacity>
+                </ThemedView>
 
-            </View>
+            </ThemedView>
 
-            <AnimatedCard
-                isVisible={isVisible}
-                hideCard={hideCard}
-                style={styles.formContainer}
-                openPercentage={80}
+            <Animated.View
+                style={[
+                    styles.formContainer,
+                    {
+                        transform: [{ translateY: formAnimation }]
+                    }
+                ]}
             >
-                <View style={styles.cardContent}>
+                <ThemedView style={[styles.card, { backgroundColor: themeColors.backgroundCardColor }]}>
+                    <TouchableOpacity onPress={hideDetails}>
+                        <ThemedView style={[styles.bar, { backgroundColor: themeColors.extremeContrastGray }]} />
+                    </TouchableOpacity>
+
                     <TabSelector
                         tabs={tabs}
                         activeTab={activeTab}
                         onTabChange={(type) => setActiveTab(type as TabType)}
                     />
                     {activeTab === 'account' ? (
-                        <AccountListScreen
-                            accounts={user?.accounts || []}
-                            onSelectAccount={(accountId) => {/* Manejar selección */ }}
-                            onAccountUpdated={() => {/* Manejar actualización */ }}
-                        />
+                        <View style={styles.accountListContainer}>
+                            <AccountListScreen
+                                accounts={user?.accounts || []}
+                                onSelectAccount={(accountId) => {/* Manejar selección */ }}
+                                onAccountUpdated={() => {/* Manejar actualización */ }}
+                            />
+                        </View>
                     ) : (
                         <FlatList
                             data={withdrawals}
@@ -201,10 +288,11 @@ export default function WithdrawalScreen() {
                             keyExtractor={(item) => item.id}
                             style={[styles.list, { borderTopColor: themeColors.borderBackgroundColor }]}
                             contentContainerStyle={styles.listContent}
+                            scrollEnabled={true}
                         />
                     )}
-                </View>
-            </AnimatedCard>
+                </ThemedView>
+            </Animated.View>
         </ThemedLayoutFlatList>
     );
 }
@@ -215,13 +303,13 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        marginBottom: 60,
     },
     formContainer: {
         position: 'absolute',
         left: 0,
         right: 0,
         bottom: 0,
+        height: screenHeight * 0.8,
     },
     headerContainer: {
         flexDirection: 'row',
@@ -256,9 +344,11 @@ const styles = StyleSheet.create({
         marginRight: 4,
     },
     buttonContainer: {
-        borderRadius: 30,
-        paddingVertical: 24,
+        paddingVertical: 40,
         paddingHorizontal: 24,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        alignItems: 'center',
     },
     detailsButton: {
         flexDirection: 'row',
@@ -266,12 +356,18 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         width: '100%',
     },
-    cardContent: {
+    card: {
         flex: 1,
-        width: '100%',
+        paddingBottom: 40,
+        paddingTop: 20,
+        paddingHorizontal: 24,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        alignItems: 'center',
     },
     list: {
         flex: 1,
+        width: '100%',
         borderTopWidth: 1,
     },
     listContent: {
@@ -290,5 +386,17 @@ const styles = StyleSheet.create({
     rightContent: {
         alignItems: 'flex-end',
         justifyContent: 'center',
-    }
+    },
+    accountListContainer: {
+        flex: 1,
+        width: '100%',
+        maxHeight: screenHeight * 0.8,
+    },
+    bar: {
+        width: 60,
+        height: 8,
+        borderRadius: 4,
+        marginBottom: 20,
+        alignSelf: 'center',
+    },
 });
