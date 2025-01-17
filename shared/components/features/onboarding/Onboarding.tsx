@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, StyleSheet, Dimensions, FlatList } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../../hooks/useThemeColor';
 import { ThemedText } from '../../ui/ThemedText';
 import { ThemedButton } from '../../ui/ThemedButton';
 import { LottieAnimation } from '../../animations/LottieAnimation';

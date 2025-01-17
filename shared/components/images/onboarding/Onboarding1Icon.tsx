@@ -1,6 +1,6 @@
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../../hooks/useThemeColor';
 import colors from '@/constants/Colors';
 import { ViewStyle } from 'react-native';
 

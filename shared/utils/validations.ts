@@ -18,7 +18,7 @@ export const validatePassword = (password: string): boolean => {
 
 export const validateName = (name: string): boolean => {
     const trimmedName = name.trim();
-    const nameRegex = /^[a-zA-Z\s]{2,}$/;
+    const nameRegex = /^[a-zA-Z]{2,}$/;
     return nameRegex.test(trimmedName) && trimmedName.length >= 2;
 };
 
@@ -67,6 +67,34 @@ export const validateRUT = (rut: string): boolean => {
 };
 
 export const validatePPU = (ppu: string): boolean => {
-    const ppuRegex = /^[a-zA-Z0-9]{6}$/;
-    return ppuRegex.test(ppu.trim());
+    // Limpiamos y convertimos a minúsculas para la validación
+    ppu = ppu.trim().toLowerCase();
+    
+    // Validar longitud (5 o 6 caracteres)
+    if (![5, 6].includes(ppu.length)) return false;
+
+    // Contadores para letras, números y consonantes
+    const counts = {
+        letters: ppu.match(/[a-z]/g)?.length || 0,
+        numbers: ppu.match(/[0-9]/g)?.length || 0,
+        consonants: ppu.match(/[bcdfghjklmnpqrstvwxyz]/g)?.length || 0
+    };
+
+    // Patentes de 5 caracteres (motos)
+    if (ppu.length === 5) {
+        return (
+            (counts.letters === 3 && counts.numbers === 2) || // Formato AAA11
+            (counts.letters === 2 && counts.numbers === 3)    // Formato AA111
+        );
+    }
+
+    // Patentes de 6 caracteres (autos)
+    if (ppu.length === 6) {
+        return (
+            (counts.letters === 2 && counts.numbers === 4) || // Formato AA1111
+            (counts.consonants === 4 && counts.numbers === 2) // Formato BBBB11
+        );
+    }
+
+    return false;
 };

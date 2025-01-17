@@ -24,20 +24,7 @@ export default function QuotersScreen() {
     }
   });
 
-  const { user, hydrateUserData } = useUser();
-
-  useEffect(() => {
-    setIsLoading(true);
-    const loadInitialData = async () => {
-      await hydrateUserData(true);
-      if (user?.quoters) {
-        setQuoters(user?.quoters);
-      }
-    };
-
-    loadInitialData();
-    setIsLoading(false);
-  }, []);
+  const { user } = useUser();
 
   useEffect(() => {
     if (user?.quoters) {

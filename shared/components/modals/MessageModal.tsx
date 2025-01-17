@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Modal, StyleSheet } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { View, Modal, StyleSheet, ViewStyle } from 'react-native';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import { ThemedText } from '../ui/ThemedText';
 import { ThemedButton } from '../ui/ThemedButton';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +22,7 @@ interface MessageModalProps {
   };
   primaryButton: ButtonConfig;
   secondaryButton?: ButtonConfig;
+  modalStyle?: ViewStyle;
 }
 
 export const MessageModal: React.FC<MessageModalProps> = ({
@@ -31,7 +32,8 @@ export const MessageModal: React.FC<MessageModalProps> = ({
   message,
   icon,
   primaryButton,
-  secondaryButton
+  secondaryButton,
+  modalStyle
 }) => {
   const themeColors = useThemeColor();
 
@@ -41,8 +43,9 @@ export const MessageModal: React.FC<MessageModalProps> = ({
       transparent={true}
       visible={isVisible}
       onRequestClose={onClose}
+      statusBarTranslucent={true}
     >
-      <View style={styles.centeredView}>
+      <View style={[styles.centeredView, modalStyle]}>
         <View style={[styles.modalView, { backgroundColor: themeColors.backgroundCardColor }]}>
           {icon && (
             <View style={[styles.iconContainer, { backgroundColor: themeColors.extremeContrastGray }]}>

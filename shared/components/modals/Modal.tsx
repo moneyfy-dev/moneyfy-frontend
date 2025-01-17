@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import Colors from '@/constants/Colors';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import { ThemedText } from '../ui/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 interface ModalProps {

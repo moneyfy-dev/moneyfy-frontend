@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'expo-router';
 import { View, StyleSheet, Dimensions } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../../hooks/useThemeColor';
 import { ThemedText } from '../../ui/ThemedText';
 import { ThemedButton } from '../../ui/ThemedButton';
 import { LottieAnimation } from '../../animations/LottieAnimation';

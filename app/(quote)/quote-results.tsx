@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { InsurancePlan, Vehicle, ROUTES } from '@/core/types';
+import { useRouter } from 'expo-router';
+import { InsurancePlan, ROUTES } from '@/core/types';
 import { View, StyleSheet, Pressable, FlatList } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
@@ -19,9 +19,7 @@ export default function QuoteResults() {
     const themeColors = useThemeColor();
     const [showFilters, setShowFilters] = useState(false);
     const router = useRouter();
-    const { plans, vehicle, quoterId, isLoading } = useQuote();
-    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const { plans, vehicle } = useQuote();
     const [filteredPlans, setFilteredPlans] = useState<InsurancePlan[]>([]);
     const [filters, setFilters] = useState<Filters>({
         insuranceType: 'Seguro por kilómetro',
@@ -110,7 +108,7 @@ export default function QuoteResults() {
                             onChangeText={(value) => setFilters({ ...filters, company: value })}
                             placeholder="Seguros Falabella"
                             isSelect={true}
-                            options={Array.from(new Set(plans.map(plan => plan.insuranceCompany)))}
+                            options={Array.from(new Set(plans.map(plan => plan.insurer.name)))}
                         />
 
                         <View style={styles.radioGroup}>
@@ -133,20 +131,6 @@ export default function QuoteResults() {
                 </FiltersModal>
             </View>
 
-            <MessageModal
-                isVisible={isErrorModalVisible}
-                onClose={() => setIsErrorModalVisible(false)}
-                title="Error"
-                message={errorMessage}
-                icon={{
-                    name: "alert-circle-outline",
-                    color: themeColors.status.error
-                }}
-                primaryButton={{
-                    text: "Entendido",
-                    onPress: () => setIsErrorModalVisible(false)
-                }}
-            />
         </ThemedLayoutFlatList>
     );
 }

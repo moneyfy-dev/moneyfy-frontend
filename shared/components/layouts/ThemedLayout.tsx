@@ -1,6 +1,6 @@
 import React from 'react';
 import { KeyboardAvoidingView, ScrollView, Platform, StyleSheet, ViewStyle, RefreshControl, RefreshControlProps } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import { ThemedSafeAreaView } from '../layouts/ThemedSafeAreaView';
 import { BgSection } from '../images/BgSection';
 import { LinearGradient } from 'expo-linear-gradient';

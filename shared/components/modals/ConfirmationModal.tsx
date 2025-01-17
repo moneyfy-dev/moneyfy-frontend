@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Modal, StyleSheet } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import { ThemedText } from '../ui/ThemedText';
 import { ThemedButton } from '../ui/ThemedButton';
 

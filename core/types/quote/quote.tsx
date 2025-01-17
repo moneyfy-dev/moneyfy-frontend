@@ -29,10 +29,13 @@ export interface Insurer {
 
 export interface InsurancePlan {
   planId: string;
-  insuranceCompany: string;
   planName: string;
-  price: number;
-  priceUf: number;
+  grossPriceUF: number;
+  montlyPrice: number;
+  netPriceUF: number;
+  totalMonths: number;
+  totalPrice: number;
+  valueUF: number;
   deductible: number;
   discount: number;
   stolenVehicle: string;
@@ -45,7 +48,6 @@ export interface InsurancePlan {
   insurer: Insurer;
 }
 
-// Parámetros de solicitud
 export interface QuoteVehicleParams {
   quoterId?: string;
   ppu: string;
@@ -71,8 +73,11 @@ export interface SelectPlanParams {
   planId: string;
   insurer: string;
   planName: string;
-  price: number;
-  priceUf: number;
+  valueUF: number;
+  grossPriceUF: number;
+  totalPrice: number;
+  totalMonths: number;
+  montlyPrice: number;
   deductible: number;
   ownerName: string;
   ownerPaternalSur: string;

@@ -2,17 +2,17 @@ import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/core/types';
-import { useThemeColor } from '@/shared/hooks';
-import { 
+import { useMessageConfig, useThemeColor } from '@/shared/hooks';
+import {
   ThemedLayout,
-  ThemedText, 
-  ThemedInput, 
+  ThemedText,
+  ThemedInput,
   ThemedButton,
   NoAccountWarningScreen,
-  LoadingScreen, 
-  MessageModal 
+  LoadingScreen,
+  MessageModal
 } from '@/shared/components';
-import { validateRUT } from '@/shared/utils/validations';
+import { validatePPU, validateRUT } from '@/shared/utils/validations';
 import { useUser, useQuote } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -21,8 +21,6 @@ export default function QuoteScreen() {
   const themeColors = useThemeColor();
   const { user } = useUser();
   const { searchVehicle, isLoading } = useQuote();
-  const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
   const [searchValue, setSearchValue] = useState({
     ownerId: '',
     ppu: '',
@@ -31,6 +29,8 @@ export default function QuoteScreen() {
     ownerId: '',
     ppu: '',
   });
+
+  useMessageConfig(['/quoter/search/vehicle']);
 
   const hasAccounts = user?.accounts && user.accounts.length > 0;
 
@@ -50,12 +50,9 @@ export default function QuoteScreen() {
       isValid = false;
     }
 
-    if (searchValue.ppu) {
-      const ppuRegex = /^[a-zA-Z0-9]{6}$/;
-      if (!ppuRegex.test(searchValue.ppu)) {
-        newErrors.ppu = 'La patente debe tener exactamente 6 caracteres alfanuméricos';
-        isValid = false;
-      }
+    if (searchValue.ppu && !validatePPU(searchValue.ppu)) {
+      newErrors.ppu = 'Formato de patente inválido.';
+      isValid = false;
     }
 
     setErrors(newErrors);
@@ -76,8 +73,8 @@ export default function QuoteScreen() {
     }
 
     try {
-      const response = await searchVehicle(
-        searchValue.ownerId, 
+      await searchVehicle(
+        searchValue.ownerId,
         searchValue.ppu.toUpperCase()
       );
 
@@ -88,91 +85,77 @@ export default function QuoteScreen() {
         }
       });
     } catch (error) {
-      console.error('Error al buscar:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'No se pudo realizar la búsqueda. Intente nuevamente.');
-      setIsErrorModalVisible(true);
     }
   };
 
   return (
-    <ThemedLayout padding={[40, 24]}>
-      <View style={styles.header}>
-        <ThemedText variant="title" textAlign="center">
-          Cotiza un seguro
-        </ThemedText>
-        <ThemedText variant="paragraph" textAlign="center">
-          Ingresa los datos del vehículo para comenzar
-        </ThemedText>
-      </View>
+    <>
+      {isLoading ? <LoadingScreen /> : (
+        <ThemedLayout padding={[40, 24]}>
+          <View style={styles.header}>
+            <ThemedText variant="title" textAlign="center">
+              Cotiza un seguro
+            </ThemedText>
+            <ThemedText variant="paragraph" textAlign="center">
+              Ingresa los datos del vehículo para comenzar
+            </ThemedText>
+          </View>
 
-      <View style={styles.searchSection}>
-        <ThemedInput
-          label='RUT'
-          value={searchValue.ownerId}
-          onChangeText={(text) => {
-            setSearchValue({ ...searchValue, ownerId: text });
-            setErrors(prev => ({ ...prev, ownerId: '' }));
-          }}
-          placeholder='Ingresa el RUT del propietario'
-          error={errors.ownerId}
-          isRUT={true}
-          icon="person-outline"
-        />
-        <ThemedInput
-          label='Patente'
-          value={searchValue.ppu}
-          onChangeText={(text) => {
-            setSearchValue({ ...searchValue, ppu: text.toUpperCase() });
-            setErrors(prev => ({ ...prev, ppu: '' }));
-          }}
-          placeholder='Ingresa la patente del vehículo'
-          error={errors.ppu}
-          icon="car-outline"
-          isPlate={true}
-        />
-      </View>
+          <View style={styles.searchSection}>
+            <ThemedInput
+              label='RUT'
+              value={searchValue.ownerId}
+              onChangeText={(text) => {
+                setSearchValue({ ...searchValue, ownerId: text });
+                setErrors(prev => ({ ...prev, ownerId: '' }));
+              }}
+              placeholder='Ingresa el RUT del propietario'
+              error={errors.ownerId}
+              isRUT={true}
+              icon="person-outline"
+            />
+            <ThemedInput
+              label='Patente'
+              value={searchValue.ppu}
+              onChangeText={(text) => {
+                setSearchValue({ ...searchValue, ppu: text.toUpperCase() });
+                setErrors(prev => ({ ...prev, ppu: '' }));
+              }}
+              placeholder='Ingresa la patente del vehículo'
+              error={errors.ppu}
+              icon="car-outline"
+              isPlate={true}
+            />
+          </View>
 
-      <ThemedButton
-        style={styles.searchButton}
-        text="Buscar"
-        onPress={handleSearch}
-      />
+          <ThemedButton
+            style={styles.searchButton}
+            text="Buscar"
+            onPress={handleSearch}
+          />
 
-      <TouchableOpacity
-        style={styles.manualEntryButton}
-        onPress={() => router.push(ROUTES.QUOTE.MANUAL_SEARCH)}
-      >
-        <Ionicons
-          name="hand-left-outline"
-          size={20}
-          color={themeColors.textColorAccent}
-        />
-        <ThemedText
-          variant="paragraph"
-          color={themeColors.textColor}
-          style={styles.manualEntryText}
-        >
-          Ingreso manual
-        </ThemedText>
-      </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.manualEntryButton}
+            onPress={() => router.push(ROUTES.QUOTE.MANUAL_SEARCH)}
+          >
+            <Ionicons
+              name="hand-left-outline"
+              size={20}
+              color={themeColors.textColorAccent}
+            />
+            <ThemedText
+              variant="paragraph"
+              color={themeColors.textColor}
+              style={styles.manualEntryText}
+            >
+              Ingreso manual
+            </ThemedText>
+          </TouchableOpacity>
 
-      <MessageModal
-        isVisible={isErrorModalVisible}
-        onClose={() => setIsErrorModalVisible(false)}
-        title="Error"
-        message={errorMessage}
-        icon={{
-          name: "alert-circle-outline",
-          color: themeColors.status.error
-        }}
-        primaryButton={{
-          text: "Entendido",
-          onPress: () => setIsErrorModalVisible(false)
-        }}
-      />
-      
-      {isLoading && <LoadingScreen />}
-    </ThemedLayout>
+
+        </ThemedLayout>
+      )}
+    </>
   );
 }
 

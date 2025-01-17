@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import Colors from '@/constants/Colors';
 import { ThemedText } from '../ui/ThemedText';
 import { LinearGradient } from 'expo-linear-gradient';

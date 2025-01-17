@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { BankAccount } from '@/core/types';
 import Colors from '@/constants/Colors';
 import { StyleSheet, TouchableOpacity, View, FlatList, Modal, Alert } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import { ThemedText } from '../ui/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { useSettings } from '@/core/context';

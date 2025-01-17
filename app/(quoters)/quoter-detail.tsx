@@ -26,16 +26,19 @@ export default function QuoterDetailScreen() {
       try {
         if (params.idPlan) {
           const response = await searchPlanById(params.idPlan as string);
-          const planData = response.data;
-          setPlan(planData || null);
+          const plan = response.data.plans[0];
+          const insurer = response.data.insurer;
+          const insurancePlan: InsurancePlan = {
+            ...plan,
+            insurer: insurer
+          };
+          setPlan(insurancePlan || null);
         }
         if (user?.quoters) {
           const quoterData = user.quoters.find(r => r.quoterId === params.id);
           setQuoter(quoterData || null);
-          console.log('quoterData', quoterData);
         }
       } catch (error) {
-        console.error('Error loading quoter data:', error);
       }
     };
 

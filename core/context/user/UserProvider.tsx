@@ -5,8 +5,10 @@ import { STORAGE_KEYS } from '@/core/types/utils/storage';
 import { userService } from '@/core/services';
 import { differenceInMinutes } from 'date-fns';
 import type { User } from '@/core/types';
+import { useAuth } from '@/core/context';
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { logout } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastHydrationTime, setLastHydrationTime] = useState<Date | null>(null);
@@ -73,6 +75,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       console.error('❌ Error en hidratación:', error);
+      logout();
       throw error;
     } finally {
       setIsLoading(false);
@@ -87,10 +90,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       await storage.user.setData(newUser);
       setUser(newUser);
+
       await storage.user.updateLastHydration();
       setLastHydrationTime(new Date());
+      
     } catch (error) {
-      console.error('Error updating user data:', error);
       throw error;
     } finally {
       setIsLoading(false);

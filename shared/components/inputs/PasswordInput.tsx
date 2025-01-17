@@ -1,7 +1,7 @@
 import React, { forwardRef, useState } from 'react';
 import { ThemedInputCommonProps } from '@/core/types';
 import { TextInput, TouchableOpacity, StyleSheet, NativeSyntheticEvent, TextInputFocusEventData } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import { BaseInput } from '../inputs/BaseInput';
 import { Ionicons } from '@expo/vector-icons';
 

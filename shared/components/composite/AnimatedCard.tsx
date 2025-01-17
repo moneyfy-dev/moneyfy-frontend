@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Animated, PanResponder, Dimensions, ViewStyle, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import { ThemedView } from '../ui/ThemedView';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../hooks/useThemeColor';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const DRAG_THRESHOLD = 200; // Pixels necesarios para activar el cierre

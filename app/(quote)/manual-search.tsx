@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { Brand, Model, OWNER_OPTIONS_MAP, ROUTES } from '@/core/types';
 import { View, StyleSheet } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useMessageConfig, useThemeColor } from '@/shared/hooks';
 import {
     ThemedView,
     ThemedLayout,
@@ -13,7 +13,7 @@ import {
     MessageModal,
     LoadingScreen
 } from "@/shared/components";
-import { validateRUT } from '@/shared/utils/validations';
+import { validateEmail, validateName, validatePhoneNumber, validatePPU, validateRUT } from '@/shared/utils/validations';
 import { useQuote } from '@/core/context';
 
 export default function ManualSearchScreen() {
@@ -27,11 +27,9 @@ export default function ManualSearchScreen() {
     } = useQuote();
     const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
     const [selectedModel, setSelectedModel] = useState<Model | null>(null);
-    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
 
     const [formData, setFormData] = useState({
-        plate: '',
+        ppu: '',
         brand: '',
         model: '',
         year: '',
@@ -46,8 +44,77 @@ export default function ManualSearchScreen() {
     });
 
     const [errors, setErrors] = useState({
-        rut: ''
+        ppu: '',
+        brand: '',
+        model: '',
+        year: '',
+        version: '',
+        purchaserId: '',
+        purchaserName: '',
+        purchaserPaternalSur: '',
+        purchaserMaternalSur: '',
+        purchaserEmail: '',
+        purchaserPhone: '',
+        isOwner: ''
     });
+
+    useMessageConfig(['/quoter/vehicle/quote']);
+
+    const validateForm = () => {
+        let isValid = true;
+        const newErrors = {
+            ppu: '',
+            brand: '',
+            model: '',
+            year: '',
+            version: '',
+            purchaserId: '',
+            purchaserName: '',
+            purchaserPaternalSur: '',
+            purchaserMaternalSur: '',
+            purchaserEmail: '',
+            purchaserPhone: '',
+            isOwner: ''
+        };
+        
+        if (formData.ppu && !validatePPU(formData.ppu)) {
+            newErrors.ppu = 'Formato de patente inválido.';
+            isValid = false;
+        }
+
+        if (formData.purchaserId && !validateRUT(formData.purchaserId)) {
+            newErrors.purchaserId = 'RUT inválido';
+            isValid = false;
+        }
+
+        if (formData.purchaserName && !validateName(formData.purchaserName)) {
+            newErrors.purchaserName = 'Nombre inválido';
+            isValid = false;
+        }
+
+        if (formData.purchaserPaternalSur && !validateName(formData.purchaserPaternalSur)) {
+            newErrors.purchaserPaternalSur = 'Apellido paterno inválido';
+            isValid = false;
+        }
+
+        if (formData.purchaserMaternalSur && !validateName(formData.purchaserMaternalSur)) {
+            newErrors.purchaserMaternalSur = 'Apellido materno inválido';
+            isValid = false;
+        }
+
+        if (formData.purchaserEmail && !validateEmail(formData.purchaserEmail)) {
+            newErrors.purchaserEmail = 'Email inválido';
+            isValid = false;
+        }
+
+        if (formData.purchaserPhone && !validatePhoneNumber(formData.purchaserPhone)) {
+            newErrors.purchaserPhone = 'Teléfono inválido';
+            isValid = false;
+        }
+
+        setErrors(newErrors);
+        return isValid;
+      };
 
     const availableYears = useMemo(() => {
         const currentYear = new Date().getFullYear();
@@ -66,8 +133,6 @@ export default function ManualSearchScreen() {
         try {
             await getAvailableVehicles();
         } catch (error) {
-            setErrorMessage('No se pudieron cargar los vehículos disponibles');
-            setIsErrorModalVisible(true);
         }
     };
 
@@ -94,17 +159,32 @@ export default function ManualSearchScreen() {
     };
 
     const handleSubmit = async () => {
-        if (!validateRUT(formData.purchaserId)) {
-            setErrors({ ...errors, rut: 'RUT inválido' });
-            setErrorMessage('Por favor, corrija los errores en el formulario.');
-            setIsErrorModalVisible(true);
+        if (!validateForm()) {
             return;
-        }
+          }
+      
+          if (!formData.purchaserId.trim() && !formData.ppu.trim() && !formData.brand.trim() && !formData.model.trim() && !formData.year.trim() && !formData.version.trim()) {
+            setErrors({
+              purchaserId: 'Ingrese el RUT del propietario',
+              ppu: 'Ingrese la patente del vehículo',
+              brand: 'Ingrese la marca del vehículo',
+              model: 'Ingrese el modelo del vehículo',
+              year: 'Ingrese el año del vehículo',
+              version: 'Ingrese la versión del vehículo',
+              purchaserName: 'Ingrese el nombre del comprador',
+              purchaserPaternalSur: 'Ingrese el apellido paterno del comprador',
+              purchaserMaternalSur: 'Ingrese el apellido materno del comprador',
+              purchaserEmail: 'Ingrese el email del comprador',
+              purchaserPhone: 'Ingrese el teléfono del comprador',
+              isOwner: 'Ingrese si es el dueño del vehículo'
+            });
+            return;
+          }
 
         try {
             const response = await startQuotationFlow({
                 quoterId: '',
-                ppu: formData.plate.toUpperCase(),
+                ppu: formData.ppu.toUpperCase(),
                 brand: formData.brand,
                 model: formData.model,
                 year: formData.year,
@@ -126,22 +206,21 @@ export default function ManualSearchScreen() {
                 }
             });
         } catch (error) {
-            console.error('Error al iniciar cotización:', error);
-            setErrorMessage('No se pudo iniciar la cotización');
-            setIsErrorModalVisible(true);
         }
     };
 
     return (
-        <ThemedLayout padding={[0, 40]}>
+        <>
             {isLoading ? <LoadingScreen /> : (
-                <>
+
+                <ThemedLayout padding={[0, 40]}>
                     <View style={styles.content}>
 
                         <ThemedInput
                             label="Patente"
-                            value={formData.plate}
-                            onChangeText={(value) => setFormData({ ...formData, plate: value.toUpperCase() })}
+                            value={formData.ppu}
+                            onChangeText={(value) => setFormData({ ...formData, ppu: value.toUpperCase() })}
+                            error={errors.ppu}
                             placeholder="Patente"
                             isPlate={true}
                         />
@@ -150,6 +229,7 @@ export default function ManualSearchScreen() {
                             label="Marca"
                             value={formData.brand}
                             onChangeText={(value) => setFormData({ ...formData, brand: value })}
+                            error={errors.brand}
                             onSelect={handleBrandSelect}
                             options={availableVehicles.map(b => b.brand)}
                             placeholder="Selecciona una marca"
@@ -160,6 +240,7 @@ export default function ManualSearchScreen() {
                             label="Modelo"
                             value={formData.model}
                             onChangeText={(value) => setFormData({ ...formData, model: value })}
+                            error={errors.model}
                             onSelect={handleModelSelect}
                             options={selectedBrand?.models.map(m => m.model) || []}
                             placeholder="Selecciona un modelo"
@@ -171,6 +252,7 @@ export default function ManualSearchScreen() {
                             label="Año"
                             value={formData.year}
                             onChangeText={(value) => setFormData({ ...formData, year: value })}
+                            error={errors.year}
                             placeholder="Selecciona el año"
                             isSelect={true}
                             options={availableYears}
@@ -180,6 +262,7 @@ export default function ManualSearchScreen() {
                             label="Versión"
                             value={formData.version}
                             onChangeText={(value) => setFormData({ ...formData, version: value })}
+                            error={errors.version}
                             placeholder="Versión"
                         />
 
@@ -193,8 +276,8 @@ export default function ManualSearchScreen() {
                             label="RUT del comprador"
                             value={formData.purchaserId}
                             onChangeText={(value) => setFormData({ ...formData, purchaserId: value })}
+                            error={errors.purchaserId}
                             placeholder="RUT"
-                            error={errors.rut}
                             isRUT={true}
                         />
 
@@ -203,24 +286,28 @@ export default function ManualSearchScreen() {
                             placeholder="Nombre"
                             value={formData.purchaserName}
                             onChangeText={(value) => setFormData({ ...formData, purchaserName: value })}
+                            error={errors.purchaserName}
                         />
                         <ThemedInput
                             label='Apellido Paterno'
                             placeholder="Apellido Paterno"
                             value={formData.purchaserPaternalSur}
                             onChangeText={(value) => setFormData({ ...formData, purchaserPaternalSur: value })}
+                            error={errors.purchaserPaternalSur}
                         />
                         <ThemedInput
                             label='Apellido Materno'
                             placeholder="Apellido Materno"
                             value={formData.purchaserMaternalSur}
                             onChangeText={(value) => setFormData({ ...formData, purchaserMaternalSur: value })}
+                            error={errors.purchaserMaternalSur}
                         />
                         <ThemedInput
                             label="Email"
                             placeholder="Email"
                             value={formData.purchaserEmail}
                             onChangeText={(value) => setFormData({ ...formData, purchaserEmail: value })}
+                            error={errors.purchaserEmail}
                             keyboardType="email-address"
                         />
                         <ThemedInput
@@ -228,6 +315,7 @@ export default function ManualSearchScreen() {
                             placeholder="Teléfono"
                             value={formData.purchaserPhone}
                             onChangeText={(value) => setFormData({ ...formData, purchaserPhone: value })}
+                            error={errors.purchaserPhone}
                             keyboardType="phone-pad"
                         />
 
@@ -236,6 +324,7 @@ export default function ManualSearchScreen() {
                             label="¿Es el dueño del vehículo?"
                             value={formData.isOwner}
                             onChangeText={(value) => setFormData({ ...formData, isOwner: value })}
+                            error={errors.isOwner}
                             placeholder="Si, soy el dueño del vehículo"
                             isSelect={true}
                             options={Object.keys(OWNER_OPTIONS_MAP)}
@@ -245,26 +334,14 @@ export default function ManualSearchScreen() {
                     <ThemedButton
                         text="Siguiente"
                         onPress={handleSubmit}
-                        disabled={!formData.brand || !formData.model || !formData.plate || !formData.purchaserId || !formData.purchaserName || !formData.purchaserPaternalSur || !formData.purchaserMaternalSur || !formData.purchaserEmail || !formData.purchaserPhone || !formData.isOwner}
+                        disabled={!formData.brand || !formData.model || !formData.year || !formData.version || !formData.purchaserId || !formData.purchaserName || !formData.purchaserPaternalSur || !formData.purchaserMaternalSur || !formData.purchaserEmail || !formData.purchaserPhone || !formData.isOwner}
                         style={styles.button}
                     />
+                </ThemedLayout>
 
-                    <MessageModal
-                        isVisible={isErrorModalVisible}
-                        onClose={() => setIsErrorModalVisible(false)}
-                        title="Error"
-                        message={errorMessage}
-                        icon={{
-                            name: "alert-circle-outline",
-                            color: themeColors.status.error
-                        }}
-                        primaryButton={{
-                            text: "Entendido",
-                            onPress: () => setIsErrorModalVisible(false)
-                        }}
-                    />
-                </>)}
-        </ThemedLayout>
+            )
+            }
+        </>
     );
 }
 

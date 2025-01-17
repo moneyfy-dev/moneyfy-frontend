@@ -1,19 +1,19 @@
 import React from 'react';
-import { QuoterPersonalData, QuoterAddressData } from '@/core/types';
+import { QuoterOwnerData, QuoterAddressData } from '@/core/types';
 import { View, StyleSheet } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import { ThemedText } from '../ui/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 
 interface QuoterInfoCardProps {
-  personalData: QuoterPersonalData;
+  personalData: QuoterOwnerData;
   addressData: QuoterAddressData;
 }
 
 export const QuoterInfoCard = ({ personalData, addressData }: QuoterInfoCardProps) => {
   const themeColors = useThemeColor();
 
-  const hasPersonalData = personalData.name || personalData.email || personalData.phone;
+  const hasPersonalData = personalData.name;
   const hasAddressData = addressData.street || addressData.streetNumber;
 
   if (!hasPersonalData && !hasAddressData) return null;
@@ -26,34 +26,19 @@ export const QuoterInfoCard = ({ personalData, addressData }: QuoterInfoCardProp
             <Ionicons name="person-outline" size={20} color={themeColors.textColorAccent} />
             <ThemedText variant="subTitleBold">Información de Contacto</ThemedText>
           </View>
-          
+
           <View style={styles.infoContainer}>
-            {personalData.name && personalData.surname && (
+            {personalData.name && personalData.paternalSurname && personalData.maternalSurname && (
               <View style={styles.infoRow}>
                 <ThemedText variant="paragraph" color={themeColors.textParagraph}>
                   Nombre completo:
                 </ThemedText>
-                <ThemedText variant="paragraph">
-                  {personalData.name} {personalData.surname}
+                <ThemedText variant="paragraph" color={themeColors.textColor}>
+                  <ThemedText variant="paragraph" color={themeColors.textColorAccent}>
+                    {personalData.name}{' '}
+                  </ThemedText>
+                  {personalData.paternalSurname} {personalData.maternalSurname}
                 </ThemedText>
-              </View>
-            )}
-
-            {personalData.email && (
-              <View style={styles.infoRow}>
-                <ThemedText variant="paragraph" color={themeColors.textParagraph}>
-                  Email:
-                </ThemedText>
-                <ThemedText variant="paragraph">{personalData.email}</ThemedText>
-              </View>
-            )}
-
-            {personalData.phone && (
-              <View style={styles.infoRow}>
-                <ThemedText variant="paragraph" color={themeColors.textParagraph}>
-                  Teléfono:
-                </ThemedText>
-                <ThemedText variant="paragraph">{personalData.phone}</ThemedText>
               </View>
             )}
           </View>
@@ -66,32 +51,32 @@ export const QuoterInfoCard = ({ personalData, addressData }: QuoterInfoCardProp
             <Ionicons name="location-outline" size={20} color={themeColors.textColorAccent} />
             <ThemedText variant="subTitleBold">Dirección</ThemedText>
           </View>
-          
+
           <View style={styles.infoContainer}>
             <View style={styles.infoRow}>
               <ThemedText variant="paragraph" color={themeColors.textParagraph}>
-                Calle:
+                Dirección:
               </ThemedText>
-              <ThemedText variant="paragraph">
-                { addressData.street && addressData.streetNumber ? `${addressData.street} ${addressData.streetNumber}` : 'No hay dirección proporcionada'}
+              <ThemedText variant="paragraph" color={themeColors.textColorAccent}>
+                {addressData.street ? `${addressData.street}` : 'No hay dirección proporcionada'}
               </ThemedText>
             </View>
+
+            {addressData && (
+              <View style={styles.infoRow}>
+                <ThemedText variant="paragraph" color={themeColors.textParagraph}>
+                  Número:
+                </ThemedText>
+                <ThemedText variant="paragraph" color={themeColors.textColorAccent}>{addressData.streetNumber}</ThemedText>
+              </View>
+            )}
 
             {addressData.department && (
               <View style={styles.infoRow}>
                 <ThemedText variant="paragraph" color={themeColors.textParagraph}>
-                  Departamento:
+                  Departamento ?:
                 </ThemedText>
-                <ThemedText variant="paragraph">{addressData.department}</ThemedText>
-              </View>
-            )}
-
-            {addressData.inspection && (
-              <View style={styles.infoRow}>
-                <ThemedText variant="paragraph" color={themeColors.textParagraph}>
-                  Inspección:
-                </ThemedText>
-                <ThemedText variant="paragraph">{addressData.inspection}</ThemedText>
+                <ThemedText variant="paragraph" color={themeColors.textColorAccent}>{addressData.department}</ThemedText>
               </View>
             )}
           </View>

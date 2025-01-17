@@ -1,7 +1,7 @@
 import React, { forwardRef, useState } from 'react';
 import { SelectInputProps } from '@/core/types';
 import { View, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import { BaseInput } from '../inputs/BaseInput';
 import { ThemedText } from '../ui/ThemedText';
 import { ThemedButton } from '../ui/ThemedButton';

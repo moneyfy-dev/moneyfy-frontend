@@ -151,6 +151,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       switch (response.status) {
         case 200: // Login exitoso
+          await storage.user.setData(response.data.user);
+          await storage.user.updateLastHydration();
         case 202: // Usuario reactivado
           await storage.user.setData(response.data.user);
           await storage.user.updateLastHydration();

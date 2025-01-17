@@ -8,7 +8,7 @@ import { screens } from '@/core/types';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/shared/hooks';
 import { ThemeProvider, OnboardingProvider, AuthProvider, useAuth, UserProvider, QuoteProvider, SettingsProvider, useUser } from '@/core/context';
-import { MessageProvider } from '@/core/context/message';
+import { MessageProvider } from '@/core/context';
 
 const SPLASH_SCREEN_DURATION = 4000; // Duración fija para la animación de marca
 

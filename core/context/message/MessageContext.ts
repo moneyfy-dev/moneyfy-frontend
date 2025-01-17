@@ -1,10 +1,5 @@
 import { createContext } from 'react';
-
-export interface MessageConfig {
-  showSuccessMessage: boolean;
-  customSuccessMessage?: string;
-  customErrorMessage?: string;
-}
+import { MessageConfig } from '@/core/config/messages';
 
 export interface MessageContextType {
   showError: (message: string) => void;

@@ -1,4 +1,7 @@
 import { api } from './config';
-import { setupErrorInterceptor, setupTokenInterceptor } from './interceptors';
+import { setupInterceptors, setMessageHandler } from './interceptors/index';
 
-export { api, setupErrorInterceptor, setupTokenInterceptor };
+// Configurar interceptores inmediatamente
+setupInterceptors();
+
+export { api, setMessageHandler };

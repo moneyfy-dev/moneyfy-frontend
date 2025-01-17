@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { InsurancePlan } from '@/core/types';
 import { View, StyleSheet, Pressable } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import { ThemedText } from '../ui/ThemedText';
 import { ThemedButton } from '../ui/ThemedButton';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,9 +19,9 @@ export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) 
   const discountPercent = plan.discount ? Number(plan.discount) * 100 : 0; // Manejar caso donde discount puede ser string o number
   
   // Calcular valores mensuales
-  const monthlyPrice = Math.round(plan.price / 12);
+  const monthlyPrice = plan.montlyPrice;
   const monthlyFinalPrice = Math.round(monthlyPrice - (monthlyPrice * (discountPercent / 100)));
-  const monthlyPriceUf = Number((plan.priceUf / 12).toFixed(2));
+  const monthlyPriceUf = Number((plan.netPriceUF / 12).toFixed(2));
 
   // Verificar si hay coberturas disponibles
   const hasCoverages = plan.stolenVehicle || 

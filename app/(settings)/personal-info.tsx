@@ -10,7 +10,7 @@ import { useSettings } from '@/core/context';
 import { PersonalData, ROUTES } from '@/core/types';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useMessageConfig } from '@/core/hooks/useMessageConfig';
+import { useMessageConfig } from '@/shared/hooks';
 
 interface FormData extends Omit<PersonalData, 'dateOfBirth' | 'email'> {
     dateOfBirth: Date | null;
@@ -27,12 +27,7 @@ interface FormErrors {
 export default function PersonalInfoScreen() {
     const { personalInfo, updatePersonalInfo } = useSettings();
     const themeColors = useThemeColor();
-    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-    const [successModalVisible, setSuccessModalVisible] = useState(false);
     const [isModalVisible, setModalVisible] = useState(false);
-    
     const [formData, setFormData] = useState<FormData>({
         name: personalInfo.name || '',
         surname: personalInfo.surname || '',
@@ -41,13 +36,14 @@ export default function PersonalInfoScreen() {
         dateOfBirth: personalInfo.dateOfBirth ? new Date(personalInfo.dateOfBirth) : null,
         profilePicture: personalInfo.profilePicture ? `data:image/jpeg;base64,${personalInfo.profilePicture}` : '',
     });
-
     const [errors, setErrors] = useState<FormErrors>({
         name: '',
         surname: '',
         phone: '',
         address: '',
     });
+
+    useMessageConfig(['/users/update']);
 
     useEffect(() => {
         if (personalInfo) {
@@ -92,13 +88,25 @@ export default function PersonalInfoScreen() {
             }
         } catch (error) {
             console.error('Error al procesar la imagen:', error);
-            setErrorMessage('Error al procesar la imagen');
-            setIsErrorModalVisible(true);
         }
     };
 
     const handleSave = async () => {
         try {
+            let profilePictureToSend = formData.profilePicture;
+
+            // Si la imagen está en base64 (imagen existente del usuario)
+            if (formData.profilePicture && formData.profilePicture.startsWith('data:image')) {
+                const base64Data = formData.profilePicture.split(',')[1];
+                const filePath = `${FileSystem.documentDirectory}profilePicture.jpg`;
+                await FileSystem.writeAsStringAsync(filePath, base64Data, { encoding: FileSystem.EncodingType.Base64 });
+                profilePictureToSend = filePath;
+            } else if (!formData.profilePicture) {
+                // Si el usuario ha eliminado la imagen
+                profilePictureToSend = '';
+            }
+            // Si no, es una nueva imagen seleccionada (ya está en formato URI)
+
             const updateData: Partial<PersonalData> = {
                 name: formData.name,
                 surname: formData.surname,
@@ -107,12 +115,16 @@ export default function PersonalInfoScreen() {
                 dateOfBirth: formData.dateOfBirth?.toISOString().split('T')[0] || '',
             };
 
-            if (formData.profilePicture && !formData.profilePicture.startsWith('data:image')) {
-                updateData.profilePicture = formData.profilePicture;
+            if (profilePictureToSend !== '') {
+                updateData.profilePicture = profilePictureToSend;
             }
 
             await updatePersonalInfo(updateData);
-            router.replace(ROUTES.TABS.INDEX);
+            
+            // Esperar un momento para que el mensaje se muestre antes de navegar
+            setTimeout(() => {
+                router.replace(ROUTES.TABS.INDEX);
+            }, 1500);
             
         } catch (error) {
             console.error('Error al actualizar información:', error);
@@ -127,13 +139,6 @@ export default function PersonalInfoScreen() {
         setModalVisible(false);
     };
 
-    function successNavigate(): void {
-        setSuccessModalVisible(false)
-        router.replace(ROUTES.TABS.INDEX)
-    }
-
-    // Configurar mensajes para este endpoint
-    useMessageConfig(['/users/update']);
 
     return (
         <ThemedLayout padding={[0, 40]}>
@@ -196,11 +201,11 @@ export default function PersonalInfoScreen() {
                 />
 
             </View>
-                <ThemedButton
-                    text="Guardar cambios"
-                    onPress={handleSave}
-                    style={styles.button}
-                />
+            <ThemedButton
+                text="Guardar cambios"
+                onPress={handleSave}
+                style={styles.button}
+            />
 
             <ProfilePictureModal
                 isVisible={isModalVisible}

@@ -1,7 +1,7 @@
 import React from 'react';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { ViewStyle } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '../../../hooks/useThemeColor';
 
 interface SuvIconProps {
   width?: number;

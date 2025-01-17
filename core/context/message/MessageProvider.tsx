@@ -1,8 +1,9 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { MessageContext, MessageConfig } from './MessageContext';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { MessageContext } from './MessageContext';
 import { MessageModal } from '@/shared/components';
 import { useThemeColor } from '@/shared/hooks';
 import { setMessageHandler } from '@/core/services/api/interceptors';
+import { MessageConfig } from '@/core/config/messages';
 
 interface MessageState {
   isVisible: boolean;
@@ -17,7 +18,8 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
     message: '',
     type: null,
   });
-  const [endpointConfigs] = useState<Map<string, MessageConfig>>(new Map());
+  
+  const endpointConfigsRef = useRef<Map<string, MessageConfig>>(new Map());
 
   const showError = useCallback((message: string) => {
     console.log('🔴 Mostrando error:', message);
@@ -38,22 +40,24 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   const clearMessage = useCallback(() => {
+    console.log('🧹 Limpiando mensaje');
     setMessageState(prev => ({
       ...prev,
       isVisible: false,
+      message: '',
     }));
   }, []);
 
   const configureEndpoint = useCallback((endpoint: string, config: MessageConfig) => {
     console.log('⚙️ Configurando endpoint:', endpoint, config);
-    endpointConfigs.set(endpoint, config);
-  }, [endpointConfigs]);
+    endpointConfigsRef.current.set(endpoint, config);
+  }, []);
 
   const getEndpointConfig = useCallback((endpoint: string) => {
-    const config = endpointConfigs.get(endpoint);
+    const config = endpointConfigsRef.current.get(endpoint);
     console.log('🔍 Obteniendo configuración para:', endpoint, config);
     return config;
-  }, [endpointConfigs]);
+  }, []);
 
   useEffect(() => {
     console.log('🔄 Configurando message handler');
@@ -62,6 +66,10 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
       showSuccess,
       getEndpointConfig
     });
+
+    return () => {
+      setMessageHandler(null);
+    };
   }, [showError, showSuccess, getEndpointConfig]);
 
   return (
@@ -87,6 +95,10 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
         primaryButton={{
           text: 'Entendido',
           onPress: clearMessage,
+        }}
+        modalStyle={{
+          zIndex: 9999,
+          elevation: 9999,
         }}
       />
     </MessageContext.Provider>

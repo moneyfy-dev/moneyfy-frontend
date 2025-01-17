@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { useAuth } from '@/core/context/auth/useAuth';
-import { storage } from '@/shared/utils/storage';
+import { storage } from '../../../utils/storage';
 import { STORAGE_KEYS } from '@/core/types';
 import PersistentAuth from '@/app/(auth)/persistent-auth';
 import { useUser } from '@/core/context/user/useUser';
