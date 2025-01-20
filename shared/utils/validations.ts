@@ -98,3 +98,15 @@ export const validatePPU = (ppu: string): boolean => {
 
     return false;
 };
+
+export const validateBankAccount = (accountNumber: string): boolean => {
+    // Eliminar espacios en blanco
+    const cleanAccount = accountNumber.trim();
+    
+    // Validar que:
+    // - Solo contenga números
+    // - Tenga entre 7 y 16 dígitos
+    const bankAccountRegex = /^\d{7,16}$/;
+    
+    return bankAccountRegex.test(cleanAccount);
+};

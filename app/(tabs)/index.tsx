@@ -48,7 +48,17 @@ export default function HomeScreen() {
   }, [user]);
 
   useEffect(() => {
-    console.log(user?.wallet.records);
+    const initializeData = async () => {
+      try {
+        await hydrateUserData(true);
+        console.log('✅ Datos iniciales cargados exitosamente');
+      } catch (error) {
+        console.error('❌ Error al cargar datos iniciales:', error);
+      }
+    };
+
+    initializeData();
+
     if (FORCE_SHOW_ONBOARDING || fromConfirmation === 'true') {
       setShouldShowOnboarding(true);
     }

@@ -3,30 +3,19 @@ import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/core/types';
 import { useSettings } from '@/core/context';
-import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayoutFlatList, ThemedText, ThemedButton, AccountListScreen, CreditCardIcon, MessageModal } from '@/shared/components';
+import { useMessageConfig } from '@/shared/hooks';
 
 export default function PaymentConfigScreen() {
     const router = useRouter();
-    const { accounts, updateAccount, selectAccount } = useSettings();
-    const themeColors = useThemeColor();
-    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-    const [successModalVisible, setSuccessModalVisible] = useState(false);
+    const { accounts, selectAccount } = useSettings();
+    
+    useMessageConfig(['/accounts/select']);
 
     const handleSelectAccount = async (accountId: string) => {
         try {
-            const response = await selectAccount(accountId);
-
-            if (response.status === 200) {
-                setSuccessMessage('Cuenta seleccionada correctamente');
-                setSuccessModalVisible(true);
-            }
+            await selectAccount(accountId);
         } catch (error) {
-            console.error('❌ Error al seleccionar cuenta:', error);
-            setErrorMessage('No se pudo seleccionar la cuenta');
-            setIsErrorModalVisible(true);
         }
     };
 
@@ -55,37 +44,6 @@ export default function PaymentConfigScreen() {
                 text="Agregar cuenta"
                 onPress={() => router.push(ROUTES.SETTINGS.ADD_ACCOUNT)}
                 style={styles.button}
-            />
-
-
-            <MessageModal
-                isVisible={isErrorModalVisible}
-                onClose={() => setIsErrorModalVisible(false)}
-                title="Error"
-                message={errorMessage}
-                icon={{
-                    name: "alert-circle-outline",
-                    color: themeColors.status.error
-                }}
-                primaryButton={{
-                    text: "Entendido",
-                    onPress: () => setIsErrorModalVisible(false)
-                }}
-            />
-
-            <MessageModal
-                isVisible={successModalVisible}
-                onClose={() => setSuccessModalVisible(false)}
-                title="Éxito"
-                message={successMessage}
-                icon={{
-                    name: "checkmark-circle-outline",
-                    color: themeColors.status.success
-                }}
-                primaryButton={{
-                    text: "Entendido",
-                    onPress: () => setSuccessModalVisible(false)
-                }}
             />
         </ThemedLayoutFlatList>
     );

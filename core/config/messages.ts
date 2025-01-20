@@ -33,6 +33,10 @@ export const SUCCESS_MESSAGES: { [key: string]: MessageConfig } = {
     showSuccessMessage: true,
     customSuccessMessage: 'Cuenta bancaria actualizada exitosamente'
   },
+  '/accounts/select': {
+    showSuccessMessage: true,
+    customSuccessMessage: 'Cuenta bancaria seleccionada exitosamente'
+  },
   '/accounts/delete': {
     showSuccessMessage: true,
     customSuccessMessage: 'Cuenta bancaria eliminada exitosamente'

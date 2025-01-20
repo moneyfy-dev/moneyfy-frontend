@@ -1,212 +1,32 @@
-💾 Guardando planes en storage... {
+planData {
   "insurer": {
     "alias": "aseguradora1",
     "darkLogo": "",
-    "insurerId": "67891db8f121e2764077ea2a",
+    "insurerId":"67891db8f121e2764077ea2a",
     "lightLogo": "",
     "name": "Tractor Seguros Automotriz"
   },
   "plans": [
     {
-      "planId": "TRACTOR045678987",
-      "planName": "Plan protector de auto",
-      
+      "createdDate": "2025-01-16T11:57:29.829",
+      "damageThirdParty": "Hasta 800 UF entre daños emergentes, morales y lucro cesante",
+      "deductible": 3,
+      "details": [Array
+      ],
+      "discount": 0,
       "grossPriceUF": 26.86,
+      "insurer": "Tractor Seguros Automotriz",
       "montlyPrice": 85463.63636363637,
       "netPriceUF": 22.57,
+      "planId": "TRACTOR045678987",
+      "planName": "Plan protector de auto",
+      "stolenVehicle": "Valor comercial",
+      "totalLoss": "Valor comercial en caso de daños mayores al 70% del valor",
       "totalMonths": 11,
       "totalPrice": 940100,
-      "valueUF": 35000,
-      
-      "deductible": 3,
-      "discount": 0,
-      "stolenVehicle": "Valor comercial",
-      "workshopType": "Oficial de la marca",
-      "totalLoss": "Valor comercial en caso de daños mayores al 70% del valor",
-      "damageThirdParty": "Hasta 800 UF entre daños emergentes, morales y lucro cesante",
-      "details": [Array
-    ],
-    "createdDate": "2025-01-16T19:47:16.535034981",
-    "updatedDate": "2025-01-16T19:47:16.535034981",
-    "insurer": [Object
-    ],
-    },
-    {
-      "createdDate": "2025-01-16T19:47:16.535034981",
-      "damageThirdParty": "Hasta 1200 UF entre daños emergentes, morales y lucro cesante",
-      "deductible": 5,
-      "details": [Array
-      ],
-      "discount": 0,
-      "grossPriceUF": 24.72,
-      "insurer": [Object
-      ],
-      "montlyPrice": 78654.54545454546,
-      "netPriceUF": 20.77,
-      "planId": "TRACTOR123456789",
-      "planName": "Seguro auto completo",
-      "stolenVehicle": "Valor comercial",
-      "totalLoss": "Valor comercial en caso de daños mayores al 80% del valor",
-      "totalMonths": 11,
-      "totalPrice": 865200,
-      "updatedDate": "2025-01-16T19:47:16.535034981",
-      "valueUF": 35000,
-      "workshopType": "Oficial de la marca"
-    },
-    {
-      "createdDate": "2025-01-16T19:47:16.535034981",
-      "damageThirdParty": "Hasta 1500 UF entre daños emergentes, morales y lucro cesante",
-      "deductible": 0,
-      "details": [Array
-      ],
-      "discount": 0,
-      "grossPriceUF": 35.47,
-      "insurer": [Object
-      ],
-      "montlyPrice": 112859.09090909091,
-      "netPriceUF": 29.81,
-      "planId": "TRACTOR987654321",
-      "planName": "Plan seguro auto asegurado",
-      "stolenVehicle": "Valor comercial",
-      "totalLoss": "Valor comercial en caso de daños mayores al 60% del valor",
-      "totalMonths": 11,
-      "totalPrice": 1241450,
-      "updatedDate": "2025-01-16T19:47:16.535034981",
-      "valueUF": 35000,
-      "workshopType": "Oficial de la marca"
-    },
-    {
-      "createdDate": "2025-01-16T19:47:16.535034981",
-      "damageThirdParty": "Hasta 900 UF entre daños emergentes, morales y lucro cesante",
-      "deductible": 10,
-      "details": [Array
-      ],
-      "discount": 0,
-      "grossPriceUF": 22.12,
-      "insurer": [Object
-      ],
-      "montlyPrice": 70381.81818181818,
-      "netPriceUF": 18.59,
-      "planId": "TRACTOR12975678953",
-      "planName": "Seguro auto premium",
-      "stolenVehicle": "Valor comercial",
-      "totalLoss": "Valor comercial en caso de daños mayores al 75% del valor",
-      "totalMonths": 11,
-      "totalPrice": 774200,
-      "updatedDate": "2025-01-16T19:47:16.535034981",
-      "valueUF": 35000,
-      "workshopType": "Oficial de la marca"
-    },
-    {
-      "createdDate": "2025-01-16T19:47:23.592334207",
-      "damageThirdParty": "Hasta 1200 UF entre daños emergentes, morales y lucro cesante",
-      "deductible": 5,
-      "details": [Array
-      ],
-      "discount": 0,
-      "grossPriceUF": 25.55,
-      "insurer": [Object
-      ],
-      "montlyPrice": 81295.45454545454,
-      "netPriceUF": 21.47,
-      "planId": "SEGUROSALAMEDA045678987",
-      "planName": "Asistencia en viaje",
-      "stolenVehicle": "Valor comercial",
-      "totalLoss": "Valor comercial en caso de daños mayores al 70% del valor",
-      "totalMonths": 11,
-      "totalPrice": 894250,
-      "updatedDate": "2025-01-16T19:47:23.592334207",
-      "valueUF": 35000,
-      "workshopType": "Oficial de la marca"
-    },
-    {
-      "createdDate": "2025-01-16T19:47:23.592334207",
-      "damageThirdParty": "Hasta 800 UF entre daños emergentes, morales y lucro cesante",
-      "deductible": 3,
-      "details": [Array
-      ],
-      "discount": 0,
-      "grossPriceUF": 30.01,
-      "insurer": [Object
-      ],
-      "montlyPrice": 95486.36363636363,
-      "netPriceUF": 25.22,
-      "planId": "SEGUROSALAMEDA123456789",
-      "planName": "Tu trasporte asegurado",
-      "stolenVehicle": "Valor comercial",
-      "totalLoss": "Valor comercial en caso de daños mayores al 80% del valor",
-      "totalMonths": 11,
-      "totalPrice": 1050350,
-      "updatedDate": "2025-01-16T19:47:23.592334207",
-      "valueUF": 35000,
-      "workshopType": "Oficial de la marca"
-    },
-    {
-      "createdDate": "2025-01-16T19:47:20.57700554",
-      "damageThirdParty": "Hasta 1500 uf entre daños emergentes, morales y lucro cesante",
-      "deductible": 3,
-      "details": [Array
-      ],
-      "discount": 0,
-      "grossPriceUF": 24.03,
-      "insurer": [Object
-      ],
-      "montlyPrice": 76459.09090909091,
-      "netPriceUF": 20.19,
-      "planId": "LOSALAMOS045678987",
-      "planName": "Proteción ultra automóvil",
-      "stolenVehicle": "Valor comercial",
-      "totalLoss": "Valor comercial en caso de daños mayores al 65% del valor",
-      "totalMonths": 11,
-      "totalPrice": 841050,
-      "updatedDate": "2025-01-16T19:47:20.57700554",
-      "valueUF": 35000,
-      "workshopType": "Oficial de la marca"
-    },
-    {
-      "createdDate": "2025-01-16T19:47:20.57700554",
-      "damageThirdParty": "Hasta 1000 UF entre daños emergentes, morales y lucro cesante",
-      "deductible": 3,
-      "details": [Array
-      ],
-      "discount": 0,
-      "grossPriceUF": 23.41,
-      "insurer": [Object
-      ],
-      "montlyPrice": 74486.36363636363,
-      "netPriceUF": 19.67,
-      "planId": "LOSALAMOS123456789",
-      "planName": "Plan de automóvil asegurado",
-      "stolenVehicle": "Valor comercial",
-      "totalLoss": "Valor comercial en caso de daños mayores al 75% del valor",
-      "totalMonths": 11,
-      "totalPrice": 819350,
-      "updatedDate": "2025-01-16T19:47:20.57700554",
-      "valueUF": 35000,
-      "workshopType": "Oficial de la marca"
-    },
-    {
-      "createdDate": "2025-01-16T19:47:20.57700554",
-      "damageThirdParty": "Hasta 1200 UF entre daños emergentes, morales y lucro cesante",
-      "deductible": 5,
-      "details": [Array
-      ],
-      "discount": 0,
-      "grossPriceUF": 25.38,
-      "insurer": [Object
-      ],
-      "montlyPrice": 80754.54545454546,
-      "netPriceUF": 21.33,
-      "planId": "LOSALAMOS987654321",
-      "planName": "Seguro MAX automóvil",
-      "stolenVehicle": "Valor comercial",
-      "totalLoss": "Valor comercial en caso de daños mayores al 75% del valor",
-      "totalMonths": 11,
-      "totalPrice": 888300,
-      "updatedDate": "2025-01-16T19:47:20.57700554",
+      "updatedDate": "2025-01-16T11:57:29.829",
       "valueUF": 35000,
       "workshopType": "Oficial de la marca"
     }
-  ],
-  "quoterId": "67898112f121e2764077ea36"
+  ]
 }

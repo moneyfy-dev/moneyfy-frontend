@@ -91,7 +91,63 @@ export default function PersonalInfoScreen() {
         }
     };
 
+    const validateForm = () => {
+        let isValid = true;
+        const newErrors = {
+          name: '',
+          surname: '',
+          phone: '',
+          address: '',
+        };
+    
+        if (formData.name && !validateName(formData.name)) {
+          newErrors.name = 'Nombre inválido';
+          isValid = false;
+        }
+    
+        if (formData.surname && !validateName(formData.surname)) {
+          newErrors.surname = 'Apellido inválido';
+          isValid = false;
+        }
+    
+        if (formData.phone && !validatePhoneNumber(formData.phone)) {
+          newErrors.phone = 'Teléfono inválido';
+          isValid = false;
+        }
+    
+        if (formData.address && !validateAddress(formData.address)) {
+          newErrors.address = 'Dirección inválida';
+          isValid = false;
+        }
+    
+        setErrors(newErrors);
+        return isValid;
+      };
+
     const handleSave = async () => {
+
+        if (!validateForm()) {
+            return;
+          }
+      
+          if (!formData.name.trim() && !formData.surname.trim() && !formData.phone.trim() && !formData.address.trim()) {
+            setErrors({
+              name: 'Ingrese el nombre',
+              surname: 'Ingrese el apellido',
+              phone: 'Ingrese el teléfono',
+              address: 'Ingrese la dirección'
+            });
+            return;
+          }
+      
+          if (!formData.name ||
+            !formData.surname ||
+            !formData.phone ||
+            !formData.address ||
+            !formData.dateOfBirth) {
+            return;
+          }
+
         try {
             let profilePictureToSend = formData.profilePicture;
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StyleSheet } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useMessageConfig, useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, ThemedCheckGroup, MessageModal } from '@/shared/components';
-import { validateName, validateEmail, validateRUT } from '@/shared/utils/validations';
+import { validateName, validateEmail, validateRUT, validateBankAccount } from '@/shared/utils/validations';
 import { useSettings } from '@/core/context';
 import { BankAccount } from '@/core/types';
 
@@ -19,9 +19,7 @@ const BANKS = [
 export default function AddAccountScreen() {
     const { accountId } = useLocalSearchParams<{ accountId: string }>();
     const router = useRouter();
-    const themeColors = useThemeColor();
     const { accounts, addAccount, updateAccount } = useSettings();
-
     const [formData, setFormData] = useState<Omit<BankAccount, 'accountId' | 'selected'>>({
         personalId: '',
         holderName: '',
@@ -31,17 +29,14 @@ export default function AddAccountScreen() {
         accountType: '',
         accountNumber: '',
     });
-
     const [errors, setErrors] = useState({
         personalId: '',
         holderName: '',
         email: '',
+        accountNumber: '',
     });
 
-    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-    const [successModalVisible, setSuccessModalVisible] = useState(false);
+    useMessageConfig(['/accounts/create', '/accounts/update']);
 
     useEffect(() => {
         if (accountId) {
@@ -65,21 +60,27 @@ export default function AddAccountScreen() {
             personalId: '',
             holderName: '',
             email: '',
+            accountNumber: '',
         };
         let isValid = true;
 
-        if (!validateRUT(formData.personalId)) {
+        if (!formData.personalId || !validateRUT(formData.personalId)) {
             newErrors.personalId = 'RUT inválido';
             isValid = false;
         }
 
-        if (!validateName(formData.holderName)) {
+        if (!formData.holderName || !validateName(formData.holderName)) {
             newErrors.holderName = 'Nombre inválido';
             isValid = false;
         }
 
-        if (!validateEmail(formData.email)) {
+        if (!formData.email || !validateEmail(formData.email)) {
             newErrors.email = 'Correo electrónico inválido';
+            isValid = false;
+        }
+
+        if (!formData.accountNumber || !validateBankAccount(formData.accountNumber)) {
+            newErrors.accountNumber = 'Número de cuenta inválido';
             isValid = false;
         }
 
@@ -89,25 +90,34 @@ export default function AddAccountScreen() {
 
     const handleSave = async () => {
         if (!validateForm()) {
-            setErrorMessage('Por favor, corrija los errores en el formulario.');
-            setIsErrorModalVisible(true);
             return;
         }
+
+        if (!formData.personalId.trim() && !formData.holderName.trim() && !formData.email.trim() && !formData.accountNumber.trim()) {
+            setErrors({
+              personalId: 'Ingrese el RUT del propietario',
+              holderName: 'Ingrese el nombre del propietario',
+              email: 'Ingrese el email del propietario',
+              accountNumber: 'Ingrese el número de cuenta'
+            });
+            return;
+          }
+      
+          if (!formData.personalId ||
+            !formData.holderName ||
+            !formData.email ||
+            !formData.accountNumber) {
+            return;
+          }
 
         try {
             if (accountId) {
                 await updateAccount(accountId, formData);
-                setSuccessMessage('Cuenta actualizada correctamente');
             } else {
                 await addAccount({...formData, selected: false});
-                setSuccessMessage('Cuenta agregada correctamente');
             }
-            setSuccessModalVisible(true);
             router.back();
         } catch (error) {
-            console.error('Error al procesar la cuenta:', error);
-            setErrorMessage(accountId ? 'No se pudo actualizar la cuenta' : 'No se pudo agregar la cuenta');
-            setIsErrorModalVisible(true);
         }
     };
 
@@ -176,6 +186,7 @@ export default function AddAccountScreen() {
                 label="Número de cuenta"
                 value={formData.accountNumber}
                 onChangeText={(text) => setFormData(prev => ({ ...prev, accountNumber: text }))}
+                error={errors.accountNumber}
                 placeholder="Ingrese el número de cuenta"
                 keyboardType="numeric"
             />
@@ -184,36 +195,7 @@ export default function AddAccountScreen() {
                 text="Guardar"
                 onPress={handleSave}
                 style={styles.button}
-            />
-
-            <MessageModal
-                isVisible={successModalVisible}
-                onClose={() => setSuccessModalVisible(false)}
-                title="Éxito"
-                message={successMessage}
-                icon={{
-                    name: "checkmark-circle-outline",
-                    color: themeColors.status.success
-                }}
-                primaryButton={{
-                    text: "Entendido",
-                    onPress: () => setSuccessModalVisible(false)
-                }}
-            />
-
-            <MessageModal
-                isVisible={isErrorModalVisible}
-                onClose={() => setIsErrorModalVisible(false)}
-                title="Error"
-                message={errorMessage}
-                icon={{
-                    name: "alert-circle-outline",
-                    color: themeColors.status.error
-                }}
-                primaryButton={{
-                    text: "Entendido",
-                    onPress: () => setIsErrorModalVisible(false)
-                }}
+                disabled={!formData.personalId || !formData.holderName || !formData.email || !formData.accountNumber || !formData.bank || !formData.accountType}
             />
         </ThemedLayout>
     );

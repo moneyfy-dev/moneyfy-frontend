@@ -3,7 +3,7 @@ import { View, StyleSheet, Dimensions } from 'react-native';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { ThemedView } from '../ui/ThemedView';
 import { ThemedText } from '../ui/ThemedText';
-import { LottieAnimation } from '../animations/LottieAnimation';
+import { LottieAnimation } from './LottieAnimation';
 
 const { height: screenHeight } = Dimensions.get('window');
 

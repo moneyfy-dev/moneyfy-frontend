@@ -1,11 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import { UserContext } from './userContext';
-import { storage } from '@/shared/utils/storage';
-import { STORAGE_KEYS } from '@/core/types/utils/storage';
-import { userService } from '@/core/services';
+import { storage } from '../../../shared/utils/storage';
+import { STORAGE_KEYS } from '../../types/utils/storage';
+import { userService } from '../../services';
 import { differenceInMinutes } from 'date-fns';
-import type { User } from '@/core/types';
-import { useAuth } from '@/core/context';
+import type { User } from '../../types';
+import { useAuth } from '../auth/useAuth';
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { logout } = useAuth();
