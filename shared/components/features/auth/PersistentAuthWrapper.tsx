@@ -1,26 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
-import { View, Text, ActivityIndicator } from 'react-native';
-import { useAuth } from '@/core/context/auth/useAuth';
 import { storage } from '../../../utils/storage';
 import { STORAGE_KEYS } from '@/core/types';
 import PersistentAuth from '@/app/(auth)/persistent-auth';
-import { useUser } from '@/core/context/user/useUser';
-
-const PUBLIC_ROUTES = ['(legal)'];
-const PUBLIC_AUTH_ROUTES = [
-  'login', 
-  'registerScreen', 
-  'forgot-password', 
-  'confirmation-code', 
-  'persistent-auth'
-];
 
 export function PersistentAuthWrapper({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isPersistentAuthRequired, handlePersistentAuthSuccess, checkAuthStatus } = useAuth();
-  const { hydrateUserData } = useUser();
   const [isReady, setIsReady] = useState(false);
   const [authMethod, setAuthMethod] = useState<'pin' | 'biometric' | null>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const router = useRouter();
   const segments = useSegments();
   const rootNavigationState = useRootNavigationState();
@@ -28,18 +15,20 @@ export function PersistentAuthWrapper({ children }: { children: React.ReactNode 
   useEffect(() => {
     const prepare = async () => {
       try {
-        await checkAuthStatus();
-        if (isAuthenticated) {
-          const biometricEnabled = await storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED);
-          const hasPin = await storage.getSecure(STORAGE_KEYS.AUTH.PIN);
+        const biometricEnabled = await storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED);
+        const hasPin = await storage.getSecure(STORAGE_KEYS.AUTH.PIN);
 
-          if (biometricEnabled === 'true') {
-            setAuthMethod('biometric');
-          } else if (hasPin) {
-            setAuthMethod('pin');
-          }
+        console.log('Valores del storage:', {
+          biometricEnabled,
+          hasPin: hasPin ? 'existe' : 'no existe'
+        });
 
-          await hydrateUserData();
+        if (biometricEnabled === 'true') {
+          console.log('Configurando método biométrico');
+          setAuthMethod('biometric');
+        } else if (hasPin) {
+          console.log('Configurando método PIN');
+          setAuthMethod('pin');
         }
         setIsReady(true);
       } catch (error) {
@@ -50,40 +39,47 @@ export function PersistentAuthWrapper({ children }: { children: React.ReactNode 
     prepare();
   }, []);
 
+  // Efecto para manejar la autenticación
+  useEffect(() => {
+    if (authMethod && !isAuthenticating) {
+      setIsAuthenticating(true);
+    }
+  }, [authMethod, isAuthenticating]);
+
   useEffect(() => {
     if (!isReady || !rootNavigationState?.key) return;
 
     const inAuthGroup = segments[0] === '(auth)';
-    const inPersistentAuth = segments[1] === 'persistent-auth';
-    
-    try {
-      if (!isAuthenticated) {
-        if (!inAuthGroup || segments[1] !== 'login') {
-          router.replace('/(auth)/login');
-        }
-      } else if (isPersistentAuthRequired) {
-        if (!inPersistentAuth) {
-          router.replace('/(auth)/persistent-auth');
-        }
-      } else {
-        if (inAuthGroup || inPersistentAuth) {
-          router.replace('/(tabs)');
-        }
-      }
-    } catch (error) {
-      console.error('Navigation error:', error);
+    const currentRoute = segments[segments.length - 1];
+    const isPersistentAuthRoute = currentRoute === 'persistent-auth';
+
+    if (isPersistentAuthRoute) return;
+    if (inAuthGroup) return;
+
+    if (authMethod) {
+      router.replace('/(auth)/persistent-auth');
     }
-  }, [isReady, isAuthenticated, isPersistentAuthRequired, segments, rootNavigationState?.key]);
+  }, [isReady, segments, rootNavigationState?.key, authMethod]);
+
+  const handleAuthSuccess = () => {
+    setAuthMethod(null);
+    setIsAuthenticating(false);
+  };
 
   if (!isReady || !rootNavigationState?.key) {
     return <>{children}</>;
   }
 
-  if (isAuthenticated && isPersistentAuthRequired) {
-    return <PersistentAuth 
-      onAuthSuccess={handlePersistentAuthSuccess}
-      authMethod={authMethod}
-    />;
+  console.log('Estado actual:', { isReady, authMethod, isAuthenticating });
+
+  // Renderizado condicional basado en estados
+  if (authMethod && isAuthenticating) {
+    return (
+      <PersistentAuth 
+        authMethod={authMethod}
+        onAuthSuccess={handleAuthSuccess}
+      />
+    );
   }
 
   return <>{children}</>;

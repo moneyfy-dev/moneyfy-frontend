@@ -14,23 +14,11 @@ import type {
 export const quoteService = {
     // Búsqueda de compañías aseguradoras
     searchCompanies(): Promise<SearchResponse> {
-        console.log('📤 Request searchCompanies iniciando...');
         return api.get('/quoter/search/insurers')
             .then(response => {
-                console.log('📥 Response searchCompanies raw:', {
-                    status: response.status,
-                    data: response.data,
-                    hasInsurers: !!response.data?.data?.insurers,
-                    insurers: response.data?.data?.insurers
-                });
                 return response.data;
             })
             .catch(error => {
-                console.error('❌ Error en searchCompanies:', {
-                    status: error.response?.status,
-                    data: error.response?.data,
-                    message: error.message
-                });
                 throw error;
             });
     },
@@ -49,24 +37,11 @@ export const quoteService = {
 
     // Cotización de vehículo
     quoteVehicle(quoteData: QuoteVehicleParams): Promise<QuoteVehicleResponse> {
-        console.log('📤 Request quoteVehicle iniciando para:', quoteData.insurerAlias);
         return api.post('/quoter/search/plan', quoteData)
             .then(response => {
-                console.log('📥 Response quoteVehicle raw:', {
-                    status: response.status,
-                    data: response.data,
-                    hasPlans: !!response.data?.data?.plans,
-                    plans: response.data?.data?.plans
-                });
                 return response.data;
             })
             .catch(error => {
-                console.error('❌ Error en quoteVehicle:', {
-                    insurer: quoteData.insurerAlias,
-                    status: error.response?.status,
-                    data: error.response?.data,
-                    message: error.message
-                });
                 throw error;
             });
     },
@@ -84,7 +59,6 @@ export const quoteService = {
 
     // Flujo completo de cotización
     async startQuotationFlow(quoteData: Omit<QuoteVehicleParams, 'insurerAlias'>): Promise<QuoteVehicleResponse> {
-        console.log('📤 Request startQuotationFlow:', quoteData);
         try {
             // 1. Obtener compañías
             const companiesResponse = await this.searchCompanies();
@@ -126,7 +100,6 @@ export const quoteService = {
                         insurer: response.data.insurer
                     };
                 } catch (error) {
-                    console.log(`⚠️ Error al cotizar con ${company.name}:`, error);
                     return {
                         plans: [],
                         quoterId: null

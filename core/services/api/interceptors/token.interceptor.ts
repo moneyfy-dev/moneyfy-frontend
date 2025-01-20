@@ -6,7 +6,6 @@ export const setupTokenInterceptor = () => {
   // Request interceptor
   api.interceptors.request.use(
     async (config) => {
-      console.log('🔄 Hola');
       if (!config.headers) {
         config.headers = {} as AxiosRequestHeaders;
       }
@@ -30,14 +29,12 @@ export const setupTokenInterceptor = () => {
     async (response: AxiosResponse) => {
       try {
         if (response.data?.data?.tokens?.jwtRefresh && response.data?.data?.tokens?.jwtSession) {
-          console.log('🔄 Interceptor: Guardando tokens de respuesta');
           await storage.auth.setTokens(
             response.data.data.tokens.jwtRefresh,
             response.data.data.tokens.jwtSession
           );
         }
       } catch (error) {
-        console.error('❌ Error al guardar tokens en interceptor:', error);
       }
       return response;
     },

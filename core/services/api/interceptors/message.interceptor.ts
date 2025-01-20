@@ -16,7 +16,6 @@ let messageHandler: {
 } | null = null;
 
 export const setMessageHandler = (handler: typeof messageHandler) => {
-  console.log('🔄 Configurando message handler en interceptor');
   messageHandler = handler;
 };
 
@@ -71,11 +70,6 @@ export const setupMessageInterceptor = () => {
         
         // Usar el mensaje predefinido según el endpoint y status
         const errorMessage = getErrorMessage(endpoint, status, defaultMessage);
-        console.log('📢 Mostrando mensaje de error:', {
-          endpoint,
-          status,
-          message: errorMessage
-        });
         
         messageHandler.showError(errorMessage);
       }

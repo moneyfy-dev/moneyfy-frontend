@@ -6,18 +6,11 @@ export const useMessageConfig = (endpoints: string[]) => {
   const { configureEndpoint } = useMessage();
 
   useEffect(() => {
-    console.log('🔄 Configurando endpoints:', endpoints);
     
     endpoints.forEach(endpoint => {
       // Normalizar el endpoint
       const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
       const config = SUCCESS_MESSAGES[normalizedEndpoint];
-      
-      console.log('⚙️ Configurando endpoint:', {
-        original: endpoint,
-        normalized: normalizedEndpoint,
-        config
-      });
 
       if (config) {
         configureEndpoint(normalizedEndpoint, config);

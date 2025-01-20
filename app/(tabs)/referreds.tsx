@@ -27,7 +27,6 @@ export default function ReferredsScreen() {
             setIsLoading(true);
             try {
                 const response = await getReferreds();
-                console.log(response.data.referreds);
                 if (response?.data?.referreds) {
                     setReferreds(response.data.referreds);
                 }

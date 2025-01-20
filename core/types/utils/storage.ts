@@ -3,9 +3,8 @@ export const STORAGE_KEYS = {
     TOKEN: 'token',
     SESSION_TOKEN: 'sessionToken',
     PERSISTENT_AUTH: 'persistentAuthEnabled',
-    PERSISTENT_AUTH_CONFIGURED: 'persistentAuthConfigured',
-    PIN: 'userPin' as const,
     BIOMETRIC_ENABLED: 'biometricEnabled',
+    PIN: 'userPin' as const,
   },
   USER: {
     DATA: 'user',

@@ -11,7 +11,6 @@ export default function ReferralCodeScreen() {
     const [isCopied, setIsCopied] = useState(false);
 
     useEffect(() => {
-        console.log(user);
     }, [user]);
 
     const handleShareLink = async () => {

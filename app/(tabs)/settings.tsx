@@ -19,12 +19,9 @@ export default function SettingsScreen() {
 
   const confirmLogout = async () => {
     try {
-      console.log('Iniciando logout');
       await logout();
-      console.log('Logout completado en ConfigScreen');
       setIsLogoutModalVisible(false);
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
     }
   };
 

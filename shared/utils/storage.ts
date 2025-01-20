@@ -76,13 +76,6 @@ export const storage = {
           storage.getSecure(STORAGE_KEYS.AUTH.SESSION_TOKEN),
         ]);
 
-        console.log('🔐 Tokens recuperados del storage:', {
-          hasToken: !!token,
-          hasSessionToken: !!sessionToken,
-          tokenLength: token?.length,
-          sessionTokenLength: sessionToken?.length
-        });
-
         if (!token || !sessionToken) {
           console.warn('⚠️ Tokens incompletos en storage');
           return { token: null, sessionToken: null };
@@ -90,17 +83,12 @@ export const storage = {
 
         return { token, sessionToken };
       } catch (error) {
-        console.error('❌ Error recuperando tokens:', error);
         return { token: null, sessionToken: null };
       }
     },
     
     async setTokens(token: string, sessionToken: string) {
       try {
-        console.log('💾 Guardando tokens en storage:', {
-          tokenLength: token?.length,
-          sessionTokenLength: sessionToken?.length
-        });
 
         if (!token || !sessionToken) {
           throw new Error('Tokens inválidos');
@@ -111,18 +99,14 @@ export const storage = {
           storage.setSecure(STORAGE_KEYS.AUTH.SESSION_TOKEN, sessionToken),
         ]);
 
-        console.log('✅ Tokens guardados exitosamente');
       } catch (error) {
-        console.error('❌ Error guardando tokens:', error);
         throw error;
       }
     },
 
     async clearAuth() {
-      console.log('🧹 Limpiando tokens del storage');
       const authKeys = Object.values(STORAGE_KEYS.AUTH);
       await Promise.all(authKeys.map(key => storage.removeSecure(key)));
-      console.log('✅ Tokens limpiados exitosamente');
     }
   },
 

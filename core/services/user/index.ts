@@ -6,24 +6,10 @@ import type {
 
 export const userService = {
   getUserData: async (): Promise<ApiResponse> => {
-    console.log('📡 Iniciando solicitud getUserData');
     try {
       const response = await api.post('/users/hydration/data');
-      console.log('📥 Respuesta getUserData:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-        data: response.data
-      });
       return response.data;
     } catch (error: any) {
-      console.error('❌ Error en getUserData:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        headers: error.response?.headers,
-        requestHeaders: error.config?.headers
-      });
       throw error;
     }
   },

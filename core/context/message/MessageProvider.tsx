@@ -22,7 +22,6 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const endpointConfigsRef = useRef<Map<string, MessageConfig>>(new Map());
 
   const showError = useCallback((message: string) => {
-    console.log('🔴 Mostrando error:', message);
     setMessageState({
       isVisible: true,
       message,
@@ -31,7 +30,6 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   const showSuccess = useCallback((message: string) => {
-    console.log('✅ Mostrando éxito:', message);
     setMessageState({
       isVisible: true,
       message,
@@ -40,7 +38,6 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   const clearMessage = useCallback(() => {
-    console.log('🧹 Limpiando mensaje');
     setMessageState(prev => ({
       ...prev,
       isVisible: false,
@@ -49,18 +46,15 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   const configureEndpoint = useCallback((endpoint: string, config: MessageConfig) => {
-    console.log('⚙️ Configurando endpoint:', endpoint, config);
     endpointConfigsRef.current.set(endpoint, config);
   }, []);
 
   const getEndpointConfig = useCallback((endpoint: string) => {
     const config = endpointConfigsRef.current.get(endpoint);
-    console.log('🔍 Obteniendo configuración para:', endpoint, config);
     return config;
   }, []);
 
   useEffect(() => {
-    console.log('🔄 Configurando message handler');
     setMessageHandler({
       showError,
       showSuccess,

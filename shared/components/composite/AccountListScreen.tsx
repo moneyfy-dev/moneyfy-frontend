@@ -38,8 +38,6 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
         setShowDeleteConfirmation(false);
         if (selectedAccount) {
             try {
-                console.log('selectedAccount', selectedAccount);
-                console.log('selectedId', selectedAccount.accountId);
                 const response = await deleteAccount(selectedAccount.accountId);
                 
                 if (response.status === 200) {

@@ -51,9 +51,7 @@ export default function HomeScreen() {
     const initializeData = async () => {
       try {
         await hydrateUserData(true);
-        console.log('✅ Datos iniciales cargados exitosamente');
       } catch (error) {
-        console.error('❌ Error al cargar datos iniciales:', error);
       }
     };
 
@@ -65,13 +63,10 @@ export default function HomeScreen() {
   }, []);
 
   const onRefresh = async () => {
-    console.log('🔄 Iniciando refresh manual');
     setRefreshing(true);
     try {
       await hydrateUserData(true);
-      console.log('✅ Refresh completado exitosamente');
     } catch (error) {
-      console.error('❌ Error en refresh:', error);
     } finally {
       setRefreshing(false);
     }

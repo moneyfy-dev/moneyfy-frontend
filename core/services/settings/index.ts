@@ -26,7 +26,6 @@ export const settingsService = {
 
   // Personal Information
   updatePersonalInfo: async (info: Partial<PersonalData>): Promise<BaseAuthResponse> => {
-    console.log('🔄 Iniciando actualización de información personal:', info);
     try {
         const formData = new FormData();
         
@@ -44,11 +43,6 @@ export const settingsService = {
         if (info.profilePicture && !info.profilePicture.startsWith('data:image')) {
             const uriParts = info.profilePicture.split('.');
             const fileType = uriParts[uriParts.length - 1];
-            
-            console.log('🖼️ Preparando imagen para envío:', {
-                uri: info.profilePicture,
-                type: `image/${fileType}`
-            });
 
             formData.append('profilePicture', {
                 uri: info.profilePicture,
@@ -65,76 +59,43 @@ export const settingsService = {
 
         return response.data;
     } catch (error: any) {
-        console.error('❌ Error en updatePersonalInfo:', {
-            message: error.message,
-            status: error.response?.status,
-            data: error.response?.data
-        });
         throw error;
     }
   },
 
   // Bank Accounts
   addAccount: async (accountData: Omit<BankAccount, 'accountId'>): Promise<BaseAuthResponse> => {
-    console.log('🔄 Iniciando creación de cuenta bancaria:', accountData);
     try {
         const response = await api.post<BaseAuthResponse>('/accounts/create', accountData);
-        console.log('✅ Cuenta bancaria creada:', response.data);
         return response.data;
     } catch (error: any) {
-        console.error('❌ Error al crear cuenta bancaria:', {
-            message: error.message,
-            status: error.response?.status,
-            data: error.response?.data
-        });
         throw error;
     }
   },
 
   updateAccount: async (accountId: string, accountData: Partial<BankAccount>): Promise<BaseAuthResponse> => {
-    console.log('🔄 Actualizando cuenta bancaria:', { accountId, ...accountData });
     try {
         const response = await api.put<BaseAuthResponse>('/accounts/update', { accountId, ...accountData });
-        console.log('✅ Cuenta bancaria actualizada:', response.data);
         return response.data;
     } catch (error: any) {
-        console.error('❌ Error al actualizar cuenta bancaria:', {
-            message: error.message,
-            status: error.response?.status,
-            data: error.response?.data
-        });
         throw error;
     }
   },
 
   deleteAccount: async (accountId: string): Promise<BaseAuthResponse> => {
-    console.log('🔄 Iniciando eliminación de cuenta bancaria:', accountId);
     try {
         const response = await api.delete<BaseAuthResponse>(`/accounts/delete/${accountId}`);
-        console.log('✅ Cuenta bancaria eliminada:', response.data);
         return response.data;
     } catch (error: any) {
-        console.error('❌ Error al eliminar cuenta bancaria:', {
-            message: error.message,
-            status: error.response?.status,
-            data: error.response?.data
-        });
         throw error;
     }
   },
 
   selectAccount: async (accountId: string): Promise<BaseAuthResponse> => {
-    console.log('🔄 Iniciando selección de cuenta bancaria:', accountId);
     try {
         const response = await api.post<BaseAuthResponse>(`/accounts/select/${accountId}`, {});
-        console.log('✅ Cuenta bancaria seleccionada:', response.data);
         return response.data;
     } catch (error: any) {
-        console.error('❌ Error al seleccionar cuenta bancaria:', {
-            message: error.message,
-            status: error.response?.status,
-            data: error.response?.data
-        });
         throw error;
     }
   },
@@ -147,20 +108,13 @@ export const settingsService = {
 
   // Password
   changePassword: async (oldPwd: string, newPwd: string): Promise<BaseAuthResponse> => {
-    console.log('🔄 Iniciando cambio de contraseña');
     try {
         const response = await api.put<BaseAuthResponse>('/users/change/password', { 
             oldPwd, 
             newPwd 
         });
-        console.log('✅ Contraseña actualizada exitosamente');
         return response.data;
     } catch (error: any) {
-        console.error('❌ Error al cambiar contraseña:', {
-            message: error.message,
-            status: error.response?.status,
-            data: error.response?.data
-        });
         throw error;
     }
   }

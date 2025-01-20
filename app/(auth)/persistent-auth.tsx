@@ -1,65 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'expo-router';
-import { View, StyleSheet, AppState } from 'react-native';
+import { useRouter, useRootNavigationState } from 'expo-router';
+import { View, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout } from '../../shared/components/layouts/ThemedLayout';
 import { Logo } from '../../shared/components/ui/Logo';
 import { ThemedInput } from '../../shared/components/ui/ThemedInput';
 import { ThemedButton } from '../../shared/components/ui/ThemedButton';
 import { MessageModal } from '../../shared/components/modals/MessageModal';
-import { useAuth } from '@/core/context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { isBiometricAvailable, authenticateBiometric } from '@/core/services';
+import { authenticateBiometric } from '@/core/services';
 
 interface PersistentAuthProps {
-  onAuthSuccess: () => void;
   authMethod: 'pin' | 'biometric' | null;
+  onAuthSuccess: () => void;
 }
 
-export default function PersistentAuth({ onAuthSuccess, authMethod }: PersistentAuthProps) {
-  const { handlePersistentAuthSuccess } = useAuth();
+export default function PersistentAuth({ authMethod, onAuthSuccess }: PersistentAuthProps) {
+  const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
   const [pin, setPin] = useState('');
   const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const themeColors = useThemeColor();
 
   useEffect(() => {
-    const authenticate = async () => {
-      try {
-        const success = await authenticateBiometric();
-        if (success) {
-          await handlePersistentAuthSuccess();
-        }
-      } catch (error) {
-        setErrorMessage('No se pudo autenticar con biometría');
-        setIsErrorModalVisible(true);
-      }
-    };
-
-    authenticate();
-  }, []);
+    console.log('authMethod', authMethod);
+    if (authMethod === 'biometric') {
+      handleBiometricAuth();
+    }
+  }, [authMethod]);
 
   const showAlert = (message: string) => {
     setErrorMessage(message);
     setIsErrorModalVisible(true);
   };
 
-  const handleAuthSuccess = async () => {
-    try {
-      await handlePersistentAuthSuccess();
-      onAuthSuccess();
-    } catch (error) {
-      showAlert('Hubo un problema con la autenticación');
-    }
-  };
-
   const handleBiometricAuth = async () => {
     try {
+      console.log('Iniciando autenticación biométrica');
       const success = await authenticateBiometric();
+      console.log('Resultado biométrico:', success);
+      
       if (success) {
-        await handlePersistentAuthSuccess();
+        onAuthSuccess();
       }
     } catch (error) {
+      console.error('Error biométrico:', error);
       setErrorMessage('No se pudo autenticar con biometría');
       setIsErrorModalVisible(true);
     }
@@ -69,7 +55,7 @@ export default function PersistentAuth({ onAuthSuccess, authMethod }: Persistent
     try {
       const storedPin = await AsyncStorage.getItem('user_pin');
       if (pin === storedPin) {
-        await handleAuthSuccess();
+        onAuthSuccess();
       } else {
         showAlert('PIN incorrecto');
       }

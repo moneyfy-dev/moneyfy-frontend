@@ -5,15 +5,12 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   isPersistentAuthRequired: boolean;
-  isPersistentAuthConfigured: boolean;
 }
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<ApiResponse>;
   logout: () => Promise<void>;
   register: (data: RegisterRequest) => Promise<RegisterResponse>;
-  handlePersistentAuthSuccess: () => Promise<void>;
-  checkPersistentAuth: () => Promise<boolean>;
   checkAuthStatus: () => Promise<void>;
   confirmPasswordReset: (
     email: string, 

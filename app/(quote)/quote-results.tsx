@@ -32,7 +32,6 @@ export default function QuoteResults() {
         if (plans) {
             setFilteredPlans(plans);
         }
-        console.log('🔄 Filtered plans:', filteredPlans);
     }, [plans]);
 
     const handleSelectPlan = (plan: InsurancePlan) => {

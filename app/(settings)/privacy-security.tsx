@@ -4,7 +4,7 @@ import { ROUTES } from '@/core/types';
 import { StyleSheet, View, Switch, TouchableOpacity } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, MessageModal } from '@/shared/components';
-import { useSettings, useAuth } from '@/core/context';
+import { useSettings } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 import { storage } from '@/shared/utils/storage';
 import { STORAGE_KEYS } from '@/core/types';
@@ -21,7 +21,6 @@ export default function PrivacySecurityScreen() {
     const themeColors = useThemeColor();
     const router = useRouter();
     const { security, updateSecurity, isBiometricAvailable } = useSettings();
-    const { checkAuthStatus } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
@@ -51,8 +50,8 @@ export default function PrivacySecurityScreen() {
     useEffect(() => {
         console.log('security', security);
         setSecurityOptions(prevOptions =>
-            prevOptions.map(option => 
-                option.id === 'fingerprintEnabled' 
+            prevOptions.map(option =>
+                option.id === 'fingerprintEnabled'
                     ? { ...option, isEnabled: security.fingerprintEnabled }
                     : option
             )
@@ -62,12 +61,14 @@ export default function PrivacySecurityScreen() {
     const handleToggle = async (id: string) => {
         if (isLoading) return;
         let newValue: boolean;
-        
+
         try {
             if (id === 'fingerprintEnabled') {
                 setIsLoading(true);
                 newValue = !securityOptions.find(opt => opt.id === id)?.isEnabled;
 
+                console.log('newValue', newValue);
+                
                 if (newValue) {
                     const isAvailable = await isBiometricAvailable();
                     if (!isAvailable) {
@@ -83,18 +84,16 @@ export default function PrivacySecurityScreen() {
                     )
                 );
 
+                console.log('setting storage')
                 await Promise.all([
                     storage.set(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED, String(newValue)),
                     storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH, String(newValue)),
-                    storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH_CONFIGURED, String(newValue))
                 ]);
 
                 await updateSecurity({ fingerprintEnabled: newValue });
 
-                await checkAuthStatus();
-
-                setSuccessMessage(newValue ? 
-                    'Autenticación biométrica activada' : 
+                setSuccessMessage(newValue ?
+                    'Autenticación biométrica activada' :
                     'Autenticación biométrica desactivada'
                 );
                 setIsSuccessModalVisible(true);
@@ -123,7 +122,7 @@ export default function PrivacySecurityScreen() {
             styles.optionContainer,
             { borderBottomColor: themeColors.borderBackgroundColor }
         ]}
-        onPress={() => handleNavigation(option.route)}
+            onPress={() => handleNavigation(option.route)}
         >
             <View style={styles.optionContent}>
                 <Ionicons

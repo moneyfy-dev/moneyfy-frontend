@@ -22,79 +22,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const router = useRouter();
 
   // Inicialización
-  React.useEffect(() => {
-    let isMounted = true;
 
-    const initializeAuth = async () => {
-      try {
-        setAuthState(prev => ({
-          ...prev,
-          isLoading: true
-        }));
-        const { token, sessionToken } = await storage.auth.getTokens();
-        const userData = await storage.user.getData();
-
-        if (!token || !sessionToken || !userData) {
-          if (isMounted) {
-            setAuthState(prev => ({
-              ...prev,
-              isAuthenticated: false,
-              isPersistentAuthRequired: false
-            }));
-          }
-          return;
-        }
-
-        // Si tenemos tokens y userData, establecer autenticación
-        if (isMounted) {
-          const biometricEnabled = await storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED);
-          setAuthState(prev => ({
-            ...prev,
-            isAuthenticated: true,
-            isPersistentAuthRequired: biometricEnabled === 'true'
-          }));
-        }
-
-        // Verificar auth persistente
-        const persistentAuth = await storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH);
-        const persistentAuthConfigured = await storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH_CONFIGURED);
-        const biometricEnabled = await storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED);
-
-        if (isMounted) {
-          const shouldRequireAuth = (
-            persistentAuth === 'true' &&
-            persistentAuthConfigured === 'true' &&
-            biometricEnabled === 'true'
-          );
-          setAuthState(prev => ({
-            ...prev,
-            isPersistentAuthRequired: shouldRequireAuth
-          }));
-        }
-      } catch (error) {
-        if (isMounted) {
-          setAuthState(prev => ({
-            ...prev,
-            isAuthenticated: false,
-            isPersistentAuthRequired: false
-          }));
-        }
-      } finally {
-        if (isMounted) {
-          setAuthState(prev => ({
-            ...prev,
-            isLoading: false
-          }));
-        }
-      }
-    };
-
-    initializeAuth();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const checkAuthStatus = useCallback(async (): Promise<void> => {
     try {
@@ -111,17 +39,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Verificar todos los flags necesarios
-      const [biometricEnabled, persistentAuth, persistentAuthConfigured] =
+      const [biometricEnabled, persistentAuth] =
         await Promise.all([
           storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED),
           storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH),
-          storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH_CONFIGURED)
         ]);
 
       const shouldRequireAuth =
         biometricEnabled === 'true' &&
-        persistentAuth === 'true' &&
-        persistentAuthConfigured === 'true';
+        persistentAuth === 'true'
 
       setAuthState(prev => ({
         ...prev,
@@ -138,11 +64,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }));
     }
   }, []);
-
-  const checkPersistentAuth = async () => {
-    const persistentAuthConfigured = await storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH_CONFIGURED);
-    return persistentAuthConfigured === 'true';
-  };
 
   const login = async (email: string, password: string) => {
     try {
@@ -198,7 +119,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         storage.user.clearUser(),
         storage.session.clearAll(),
         storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH, 'false'),
-        storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH_CONFIGURED, 'false'),
         storage.set(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED, 'false')
       ]);
 
@@ -227,14 +147,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     }
   };
-
-  const handlePersistentAuthSuccess = useCallback(async () => {
-    setAuthState(prev => ({
-      ...prev,
-      isPersistentAuthRequired: false,
-      isAuthenticated: true
-    }));
-  }, []);
 
   const requestPasswordReset = async (email: string) => {
     try {
@@ -312,7 +224,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resendCode = async (email: string, type: ConfirmationFlowType) => {
     try {
-      console.log('resendCode', email, type);
       const response = await authService.resendCode(email, type);
       return response;
     } catch (error) {
@@ -326,13 +237,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: authState.isAuthenticated,
         isPersistentAuthRequired: authState.isPersistentAuthRequired,
         isLoading: authState.isLoading,
-        isPersistentAuthConfigured: false,
-        checkPersistentAuth,
         checkAuthStatus,
         login,
         logout,
         register,
-        handlePersistentAuthSuccess,
         requestPasswordReset,
         confirmPasswordReset,
         confirmCode,
