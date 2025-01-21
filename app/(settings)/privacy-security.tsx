@@ -48,7 +48,6 @@ export default function PrivacySecurityScreen() {
     const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
-        console.log('security', security);
         setSecurityOptions(prevOptions =>
             prevOptions.map(option =>
                 option.id === 'fingerprintEnabled'
@@ -66,8 +65,6 @@ export default function PrivacySecurityScreen() {
             if (id === 'fingerprintEnabled') {
                 setIsLoading(true);
                 newValue = !securityOptions.find(opt => opt.id === id)?.isEnabled;
-
-                console.log('newValue', newValue);
                 
                 if (newValue) {
                     const isAvailable = await isBiometricAvailable();
@@ -84,7 +81,6 @@ export default function PrivacySecurityScreen() {
                     )
                 );
 
-                console.log('setting storage')
                 await Promise.all([
                     storage.set(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED, String(newValue)),
                     storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH, String(newValue)),

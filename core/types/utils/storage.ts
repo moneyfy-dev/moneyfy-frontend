@@ -8,7 +8,6 @@ export const STORAGE_KEYS = {
   },
   USER: {
     DATA: 'user',
-    PIN: 'user_pin',
     LAST_HYDRATION: 'lastHydrationTime',
   },
   SESSION: {

@@ -108,7 +108,7 @@ export default function HomeScreen() {
         </View>
         <View style={styles.iconContainer}>
           {/*<Ionicons name="notifications-outline" size={24} color={themeColors.textColor} style={styles.icon} />*/}
-          <Ionicons name="help-circle-outline" size={24} color={themeColors.textColor} style={styles.icon} />
+          {/*<Ionicons name="help-circle-outline" size={24} color={themeColors.textColor} style={styles.icon} />*/}
         </View>
       </View>
 

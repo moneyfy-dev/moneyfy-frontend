@@ -50,83 +50,53 @@ export default function RootLayout() {
     let isMounted = true;
 
     const initializeAuth = async () => {
-
       try {
         setAuthState(prev => ({
           ...prev,
           isLoading: true
         }));
 
+        // Obtener todos los datos necesarios primero
         const { token, sessionToken } = await storage.auth.getTokens();
         const isPersistentAuthConfigured = await storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH);
         const userData = await storage.user.getData();
-        console.warn('Layout - isPersistentAuthConfigured', isPersistentAuthConfigured);
-        console.warn('Layout - token session', token, sessionToken);
-        console.warn('Layout - userData', 'esto ya lo comprobe, si hay data, siempre hay');
-
-        if (!token || !sessionToken || !userData) {
-          if (isMounted) {
-            setAuthState(prev => ({
-              ...prev,
-              isAuthenticated: false
-            }));
-          }
-          return;
-        }
-
-        if (!isPersistentAuthConfigured) {
-          if (isMounted) {
-            setAuthState(prev => ({
-              ...prev,
-              isPersistentAuthRequired: false
-            }));
-          }
-          return;
-        }
-
-        // Si tenemos tokens y userData, establecer autenticación
-        if (isMounted) {
-          setAuthState(prev => ({
-            ...prev,
-            isAuthenticated: true,
-          }));
-        }
-        // Si esta activada la autenticación persistente, establecer autenticación
-        if (isMounted) {
-          setAuthState(prev => ({
-            ...prev,
-            isPersistentAuthRequired: true,
-          }));
-        }
-
-        // Verificar tipo de auth persistente
         const pinEnabled = await storage.get(STORAGE_KEYS.AUTH.PIN);
         const biometricEnabled = await storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED);
 
+        if (!token || !sessionToken || !userData) {
+          if (isMounted) {
+            setAuthState({
+              isAuthenticated: false,
+              isPersistentAuthRequired: false,
+              isLoading: false
+            });
+          }
+          return;
+        }
+
+        // Determinar el estado final en una sola actualización
+        const shouldRequireAuth = isPersistentAuthConfigured === 'true' && 
+          (pinEnabled === 'true' || biometricEnabled === 'true');
+
         if (isMounted) {
-          const shouldRequireAuth = (
-            pinEnabled === 'true' ||
-            biometricEnabled === 'true'
-          );
-          const newAuthState = {
+          setAuthState({
             isAuthenticated: true,
             isPersistentAuthRequired: shouldRequireAuth,
             isLoading: false
-          };
-          setAuthState(newAuthState);
+          });
         }
 
-        if (authState.isAuthenticated && !authState.isPersistentAuthRequired) {
+        if (!shouldRequireAuth) {
           hydrateUserData();
         }
 
       } catch (error) {
         if (isMounted) {
-          setAuthState(prev => ({
-            ...prev,
+          setAuthState({
             isAuthenticated: false,
-            isPersistentAuthRequired: false
-          }));
+            isPersistentAuthRequired: false,
+            isLoading: false
+          });
         }
       }
     };
@@ -142,7 +112,7 @@ export default function RootLayout() {
   useEffect(() => {
   }, [authState]);
 
-  if (!isAppReady) {
+  if (!isAppReady || authState.isLoading) {
     return (
       <ThemeProvider>
         <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
