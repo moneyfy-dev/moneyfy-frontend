@@ -4,7 +4,7 @@ import { RegisterRequest, ROUTES } from '@/core/types';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, MessageModal } from '@/shared/components';
-import { validateEmail, validatePassword, validateName, sanitizeName } from '@/shared/utils/validations';
+import { validateEmail, validatePassword, validateName, sanitizeName, getPasswordErrors } from '@/shared/utils/validations';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/core/context';
 
@@ -92,7 +92,8 @@ export default function RegisterScreen() {
                 break;
             case 'password':
                 if (!validatePassword(password)) {
-                    setPasswordError('La contraseña debe tener al menos 8 caracteres');
+                    const errors = getPasswordErrors(password);
+                    setPasswordError(`La contraseña debe contener ${errors.join(', ')}`);
                 } else {
                     setPasswordError('');
                 }

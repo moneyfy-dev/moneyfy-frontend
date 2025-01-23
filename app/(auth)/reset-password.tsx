@@ -6,7 +6,7 @@ import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, ResendCode, MessageModal } from '@/shared/components';
 import { VerificationCode } from '@/shared/components';
 import { useAuth } from '@/core/context';
-import { validatePassword } from '@/shared/utils/validations';
+import { validatePassword, getPasswordErrors } from '@/shared/utils/validations';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ResetPasswordScreen() {
@@ -52,7 +52,8 @@ export default function ResetPasswordScreen() {
         let isValid = true;
 
         if (!validatePassword(newPassword)) {
-            setPasswordError('La contraseña debe tener al menos 8 caracteres');
+            const errors = getPasswordErrors(newPassword);
+            setPasswordError(`La contraseña debe contener ${errors.join(', ')}`);
             isValid = false;
         }
 

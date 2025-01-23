@@ -45,7 +45,6 @@ export interface Quoter {
   quoterStatus: QuoterStatus;
   createdDate: string;
   updatedDate: string;
-  approvalDate: string;
   quoterOwnerData: QuoterOwnerData;
   quoterCarData: QuoterCarData;
   quoterPlanData: QuoterPlanData;

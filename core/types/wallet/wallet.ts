@@ -3,7 +3,6 @@ export interface Wallet {
     outstandingBalance: number;
     availableBalance: number;
     paymentBalance: number;
-    records: any[];
   }
 
   export interface WalletRecord {

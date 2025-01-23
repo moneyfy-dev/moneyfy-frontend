@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { MessageContext } from './MessageContext';
-import { MessageModal } from '@/shared/components';
-import { useThemeColor } from '@/shared/hooks';
-import { setMessageHandler } from '@/core/services/api/interceptors';
-import { MessageConfig } from '@/core/config/messages';
+import { MessageModal } from '../../../shared/components';
+import { useThemeColor } from '../../../shared/hooks';
+import { setMessageHandler } from '../../services/api/interceptors';
+import { MessageConfig } from '../../config/messages';
 
 interface MessageState {
   isVisible: boolean;

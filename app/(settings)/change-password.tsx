@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { router, useRouter } from 'expo-router';
 import { useSettings } from '@/core/context';
 import { ThemedLayout, ThemedInput, ThemedButton } from '@/shared/components';
-import { validatePassword } from '@/shared/utils/validations';
+import { getPasswordErrors, validatePassword } from '@/shared/utils/validations';
 import { useMessageConfig } from '@/shared/hooks';
 import { ROUTES } from '@/core/types';
 
@@ -21,39 +21,59 @@ export default function ChangePasswordScreen() {
     });
 
     useMessageConfig(['/users/change/password']);
+    
 
-    const handleSubmit = async () => {
-        // Validar campos
-        const newErrors = {
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: '',
-        };
-        let hasErrors = false;
+    const validateFields = () => {
+        let isValid = true;
 
         if (!formData.currentPassword) {
-            newErrors.currentPassword = 'Ingresa tu contraseña actual';
-            hasErrors = true;
+            setErrors(prev => ({
+                ...prev,
+                currentPassword: 'Ingresa tu contraseña actual'
+            }));
+            isValid = false;
         }
 
         if (!validatePassword(formData.newPassword)) {
-            newErrors.newPassword = 'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número';
-            hasErrors = true;
+            const errors = getPasswordErrors(formData.newPassword);
+            setErrors(prev => ({
+                ...prev,
+                newPassword: `La contraseña debe contener ${errors.join(', ')}`
+            }));
+            isValid = false;
+        }
+
+        if (formData.currentPassword === formData.newPassword) {
+            setErrors(prev => ({
+                ...prev,
+                newPassword: 'La nueva contraseña debe ser diferente a la actual'
+            }));
+            isValid = false;
         }
 
         if (formData.newPassword !== formData.confirmPassword) {
-            newErrors.confirmPassword = 'Las contraseñas no coinciden';
-            hasErrors = true;
+            setErrors(prev => ({
+                ...prev,
+                confirmPassword: 'Las contraseñas no coinciden'
+            }));
+            isValid = false;
         }
 
-        setErrors(newErrors);
+        return isValid;
+    };
 
-        if (hasErrors) return;
+    const handleSubmit = async () => {
+        // Limpiar errores previos
+        setErrors({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+        });
+
+        if (!validateFields()) return;
 
         try {
             await changePassword(formData.currentPassword, formData.newPassword);
-
-            // Esperar un momento para que el mensaje se muestre antes de navegar
             setTimeout(() => {
                 router.replace(ROUTES.TABS.INDEX);
             }, 1500);

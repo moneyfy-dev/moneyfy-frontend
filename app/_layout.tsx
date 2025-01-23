@@ -8,7 +8,8 @@ import { Stack } from 'expo-router';
 import { screens } from '@/core/types';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/shared/hooks';
-import { ThemeProvider, OnboardingProvider, AuthProvider, useAuth, UserProvider, QuoteProvider, SettingsProvider, useUser } from '@/core/context';
+import { OnboardingProvider, AuthProvider, useAuth, UserProvider, QuoteProvider, SettingsProvider, useUser } from '@/core/context';
+import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { MessageProvider } from '@/core/context';
 import { STORAGE_KEYS } from '@/core/types';
 
@@ -22,7 +23,7 @@ interface AuthState {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const { isAuthenticated, isLoading: authLoading, isPersistentAuthRequired } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, isPersistentAuthRequired, logout } = useAuth();
   const { hydrateUserData } = useUser();
   const [splashScreenComplete, setSplashScreenComplete] = useState(false);
 
@@ -70,6 +71,7 @@ export default function RootLayout() {
               isPersistentAuthRequired: false,
               isLoading: false
             });
+            logout();
           }
           return;
         }

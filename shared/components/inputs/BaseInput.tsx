@@ -1,6 +1,6 @@
 import React from 'react';
 import { BaseInputProps } from '@/core/types';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, TouchableWithoutFeedback, StyleSheet } from 'react-native';
 import { ThemedText } from '../ui/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,6 +8,7 @@ interface Props extends BaseInputProps {
   isFocused: boolean;
   themeColors: any;
   children: React.ReactNode;
+  onInputPress?: () => void;
 }
 
 export const BaseInput: React.FC<Props> = ({
@@ -17,7 +18,8 @@ export const BaseInput: React.FC<Props> = ({
   onIconPress,
   isFocused,
   themeColors,
-  children
+  children,
+  onInputPress
 }) => {
   return (
     <View style={styles.container}>
@@ -26,26 +28,28 @@ export const BaseInput: React.FC<Props> = ({
           {label}
         </ThemedText>
       )}
-      <View
-        style={[
-          styles.inputContainer,
-          {
-            backgroundColor: themeColors.inputBackground,
-            borderColor: isFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor
-          }
-        ]}
-      >
-        {children}
-        {icon && (
-          <TouchableOpacity onPress={onIconPress}>
-            <Ionicons
-              name={icon as any}
-              size={18}
-              color={themeColors.textColorAccent}
-            />
-          </TouchableOpacity>
-        )}
-      </View>
+      <TouchableWithoutFeedback onPress={onInputPress}>
+        <View
+          style={[
+            styles.inputContainer,
+            {
+              backgroundColor: themeColors.inputBackground,
+              borderColor: isFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor
+            }
+          ]}
+        >
+          {children}
+          {icon && (
+            <TouchableOpacity onPress={onIconPress}>
+              <Ionicons
+                name={icon as any}
+                size={18}
+                color={themeColors.textColorAccent}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+      </TouchableWithoutFeedback>
       {error && (
         <ThemedText style={[styles.error, { color: themeColors.status.error }]}>
           {error}

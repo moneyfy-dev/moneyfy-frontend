@@ -6,12 +6,14 @@
     "development": {
       "android": {
         "buildType": "apk",
+        "node": "18.18.0",
         "environment": "development"
       }
     },
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "node": "18.18.0"
       }
     },
     "production": {}

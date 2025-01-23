@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
-import { ThemeProvider } from '@/core/context';
+import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { View, StyleSheet } from 'react-native';
 import { LottieAnimation } from '@/shared/components';
 import { useThemeColor, useColorScheme } from '@/shared/hooks';

@@ -3,7 +3,7 @@ import { StyleSheet, TouchableOpacity, Dimensions, ScrollView, Animated } from '
 import { useRouter, Link } from 'expo-router';
 import { ROUTES, User } from '@/core/types';
 import { ThemedView, ThemedText, ThemedInput, ThemedButton, MessageModal, Logo, BackgroundCircles, LoadingScreen } from '@/shared/components';
-import { validateEmail, validatePassword } from '@/shared/utils/validations';
+import { validateEmail, validatePassword, getPasswordErrors } from '@/shared/utils/validations';
 import { useThemeColor, useCardVisibility } from '@/shared/hooks';
 import { useAuth } from '@/core/context';
 import { AnimatedCard } from '@/shared/components/composite/AnimatedCard';
@@ -46,7 +46,12 @@ export default function LoginScreen() {
             setEmailError(validateEmail(email) ? '' : 'Email inválido');
         }
         if (field === 'password' && touchedFields.password) {
-            setPasswordError(validatePassword(password) ? '' : 'La contraseña debe tener al menos 8 caracteres');
+            if (!validatePassword(password)) {
+                const errors = getPasswordErrors(password);
+                setPasswordError(`La contraseña debe contener ${errors.join(', ')}`);
+            } else {
+                setPasswordError('');
+            }
         }
     };
 

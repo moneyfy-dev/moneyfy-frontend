@@ -1,7 +1,4 @@
 export * from './OnboardingContext';
-export * from './theme/ThemeContext';
-export * from './theme/ThemeProvider';
-export * from './theme/useTheme';
 //export * from './AuthContext';
 export * from './auth/AuthContext';
 export * from './auth/AuthProvider';

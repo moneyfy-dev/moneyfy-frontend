@@ -11,9 +11,32 @@ export const validatePassword = (password: string): boolean => {
     const hasNumber = /[0-9]/.test(password);         // un número
     const hasLower = /[a-z]/.test(password);         // una minúscula
     const hasUpper = /[A-Z]/.test(password);         // una mayúscula
-    const hasSpecial = /[$%&#\-_?]/.test(password);  // un carácter especial permitido
     
-    return hasNumber && hasLower && hasUpper && hasSpecial;
+    return hasNumber && hasLower && hasUpper;
+};
+
+export const getPasswordErrors = (password: string): string[] => {
+    // Solo obtenemos los errores si validatePassword falla
+    if (!validatePassword(password)) {
+        const errors = [];
+        if (password.length < 8) {
+            errors.push('mínimo 8 caracteres');
+        }
+        if (password.length > 40) {
+            errors.push('máximo 40 caracteres');
+        }
+        if (!/[0-9]/.test(password)) {
+            errors.push('un número');
+        }
+        if (!/[a-z]/.test(password)) {
+            errors.push('una letra minúscula');
+        }
+        if (!/[A-Z]/.test(password)) {
+            errors.push('una letra mayúscula');
+        }
+        return errors;
+    }
+    return [];
 };
 
 export const validateName = (name: string): boolean => {
@@ -32,8 +55,7 @@ export const validatePhoneNumber = (phone: string): boolean => {
 };
 
 export const validateAddress = (address: string): boolean => {
-    // Permite letras (mayúsculas y minúsculas), números, espacios, comas y puntos
-    const addressRegex = /^[a-zA-Z0-9\s,.]+$/;
+    const addressRegex = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ0-9\s,.]+$/;
     return addressRegex.test(address.trim());
 };
 
@@ -110,3 +132,5 @@ export const validateBankAccount = (accountNumber: string): boolean => {
     
     return bankAccountRegex.test(cleanAccount);
 };
+
+    
