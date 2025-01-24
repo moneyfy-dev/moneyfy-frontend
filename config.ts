@@ -1,3 +1,5 @@
+import Constants from 'expo-constants';
+
 interface EnvVars {
   apiUrl: string;
   environment: string;
@@ -5,18 +7,17 @@ interface EnvVars {
 
 const ENV: { [key: string]: EnvVars } = {
   development: {
-    apiUrl: process.env.API_URL || 'https://app-moneyfy-qa.connect360.cl/segurosref',
-    environment: process.env.NODE_ENV || 'development'
+    apiUrl: Constants.expoConfig?.extra?.apiUrl || 'https://app-moneyfy-qa.connect360.cl/segurosref',
+    environment: Constants.expoConfig?.extra?.nodeEnv || 'development'
   },
   production: {
-    apiUrl: process.env.API_URL || 'https://app-moneyfy-qa.connect360.cl/segurosref',
-    environment: process.env.NODE_ENV || 'production'
+    apiUrl: Constants.expoConfig?.extra?.apiUrl || 'https://app-moneyfy-qa.connect360.cl/segurosref',
+    environment: Constants.expoConfig?.extra?.nodeEnv || 'production'
   }
 };
 
 const getEnvVars = (): EnvVars => {
-  const env = process.env.NODE_ENV || 'development';
-  
+  const env = Constants.expoConfig?.extra?.nodeEnv || 'development';
   return ENV[env];
 };
 

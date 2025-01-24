@@ -16,6 +16,12 @@
         "node": "18.18.0"
       }
     },
-    "production": {}
+    "production": {
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle",
+        "enableProguardInReleaseBuilds": true
+      }
+    }
   }
 }

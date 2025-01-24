@@ -1,4 +1,4 @@
-{
+module.exports = {
   "expo": {
     "newArchEnabled": true,
     "name": "Moneyfy",
@@ -48,6 +48,8 @@
       "typedRoutes": true
     },
     "extra": {
+      "apiUrl": process.env.API_URL,
+      "nodeEnv": process.env.NODE_ENV,
       "router": {
         "origin": false
       },
