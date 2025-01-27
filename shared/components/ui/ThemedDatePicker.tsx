@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTheme } from '@/core/context';
+import { useTheme } from '@/core/theme/useTheme';
 import { View, StyleSheet, Platform } from 'react-native';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { ThemedInput } from '../ui/ThemedInput';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { SvgXml } from 'react-native-svg';
-import { useTheme } from '@/core/context';
+import { useTheme } from '@/core/theme/useTheme';
 import { View } from 'react-native';
 
 interface InsurerLogoProps {

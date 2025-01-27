@@ -41,11 +41,13 @@ export const getPasswordErrors = (password: string): string[] => {
 
 export const validateName = (name: string): boolean => {
     const trimmedName = name.trim();
-    const nameRegex = /^[a-zA-Z]{2,}$/;
+    // Permite letras, espacios y acentos. Mínimo 2 caracteres.
+    const nameRegex = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]{2,}$/;
     return nameRegex.test(trimmedName) && trimmedName.length >= 2;
 };
 
 export const sanitizeName = (name: string): string => {
+    // Elimina espacios múltiples y espacios al inicio/final
     return name.trim().replace(/\s+/g, ' ');
 };
 

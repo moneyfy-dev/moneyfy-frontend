@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { InsurancePlan, ROUTES } from '@/core/types';
 import { View, StyleSheet, Pressable, FlatList } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedText, ThemedInput, FiltersModal, QuoteCard, ThemedLayoutFlatList, CarIcon, ThemedCheckGroup, MessageModal, ThemedButton } from "@/shared/components";
+import { ThemedText, ThemedInput, FiltersModal, QuoteCard, ThemedLayoutFlatList, CarIcon, ThemedButton } from "@/shared/components";
 import { useQuote } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 

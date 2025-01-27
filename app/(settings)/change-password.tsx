@@ -87,6 +87,7 @@ export default function ChangePasswordScreen() {
                 <ThemedInput
                     label="Contraseña actual"
                     value={formData.currentPassword}
+                    placeholder="Ingresa tu contraseña actual"
                     onChangeText={(text) => setFormData(prev => ({ ...prev, currentPassword: text }))}
                     error={errors.currentPassword}
                     secureTextEntry
@@ -95,6 +96,7 @@ export default function ChangePasswordScreen() {
                 <ThemedInput
                     label="Nueva contraseña"
                     value={formData.newPassword}
+                    placeholder="Ingresa tu nueva contraseña"
                     onChangeText={(text) => setFormData(prev => ({ ...prev, newPassword: text }))}
                     error={errors.newPassword}
                     secureTextEntry
@@ -103,6 +105,7 @@ export default function ChangePasswordScreen() {
                 <ThemedInput
                     label="Confirmar nueva contraseña"
                     value={formData.confirmPassword}
+                    placeholder="Confirma tu nueva contraseña"
                     onChangeText={(text) => setFormData(prev => ({ ...prev, confirmPassword: text }))}
                     error={errors.confirmPassword}
                     secureTextEntry

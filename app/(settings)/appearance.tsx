@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { useTheme } from '@/core/context';
+import { useTheme } from '@/core/theme/useTheme';
 import { ThemedLayout, ThemedText } from '@/shared/components';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemeOption } from '@/core/types';
