@@ -274,7 +274,6 @@ const styles = StyleSheet.create({
     registerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 16,
         backgroundColor: 'transparent',
         alignSelf: 'center',
     },

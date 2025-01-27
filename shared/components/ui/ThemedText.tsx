@@ -92,7 +92,7 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
     },
     textLink: {
       fontSize: 12,
-      lineHeight: 16,
+      lineHeight: 48,
       color: themeColors.textColorAccent,
       fontWeight: '600', // semibold
     },
@@ -137,7 +137,7 @@ export const ThemedText: React.FC<ThemedTextProps> = ({
 
   if (variant === 'textLink' && linkConfig) {
     return (
-      <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
+      <TouchableOpacity onPress={handlePress} activeOpacity={0.7} style={{ height: 48 }}>
         <Text style={combinedStyle} numberOfLines={numberOfLines}>
           {children}
         </Text>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, Linking } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText } from '@/shared/components';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,6 +42,21 @@ export default function PrivacyPolicy() {
       )}
     </View>
   );
+
+  const handleEmailPress = async () => {
+    try {
+      const email = 'desarrollo@connect360.cl';
+      const subject = 'Consulta sobre Política de Privacidad';
+      const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}`;
+      
+      const canOpen = await Linking.canOpenURL(mailtoUrl);
+      if (canOpen) {
+        await Linking.openURL(mailtoUrl);
+      }
+    } catch (error) {
+      console.error('Error al abrir el cliente de correo:', error);
+    }
+  };
 
   return (
     <ThemedLayout padding={[20, 40]}>
@@ -187,11 +202,11 @@ export default function PrivacyPolicy() {
             <ThemedText 
               variant="textLink" 
               linkConfig={{ 
-                onPress: () => {/* Función para manejar el contacto */} 
+                onPress: handleEmailPress
               }}
-              style={styles.content}
+              style={[styles.content, { minHeight: 48 }]}
             >
-              soporte@referi2.com
+              desarrollo@connect360.cl
             </ThemedText>
           </View>
         }

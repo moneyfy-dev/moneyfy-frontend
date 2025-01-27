@@ -20,7 +20,7 @@ export function ThemedHeader({ title, subtitle, showBackButton = true }: ThemedH
         <SafeAreaView edges={['top']} style={{ backgroundColor: themeColors.backgroundColor }}>
             <View style={[styles.header, { backgroundColor: themeColors.backgroundColor }]}>
                 {showBackButton && (
-                    <TouchableOpacity onPress={() => router.back()}>
+                    <TouchableOpacity style={ styles.backButton } onPress={() => router.back()}>
                         <Ionicons name="chevron-back" size={24} color={themeColors.accentInDarkMode} />
                     </TouchableOpacity>
                 )}
@@ -40,6 +40,13 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 24,
         paddingVertical: 20,
+    },
+    backButton: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        height: 48,
+        width: 48,
     },
     titleContainer: {
         paddingRight: 24,

@@ -225,7 +225,7 @@ export default function RegisterScreen() {
                 </View>
 
                 <View style={styles.termsContainer}>
-                    <TouchableOpacity onPress={() => setTermsAccepted(!termsAccepted)}>
+                    <TouchableOpacity style={styles.termsCheckbox} onPress={() => setTermsAccepted(!termsAccepted)}>
                         <Ionicons
                             name={termsAccepted ? "checkbox-outline" : "square-outline"}
                             size={24}
@@ -233,12 +233,20 @@ export default function RegisterScreen() {
                         />
                     </TouchableOpacity>
                     <ThemedText variant='paragraph' style={styles.termsText}>
-                        He leído y estoy de acuerdo con los{'\n'}
-                        <ThemedText variant='textLink' style={{ lineHeight: 12, paddingTop: 28, height: 50 }} linkConfig={{ route: ROUTES.LEGAL.TERMS }}>
+                        He leído y estoy de acuerdo con los{' '}
+                        <ThemedText 
+                            variant='textLink' 
+                            style={styles.linkText} 
+                            linkConfig={{ route: ROUTES.LEGAL.TERMS }}
+                        >
                             Términos y condiciones
-                        </ThemedText>{' '}
-                        y la{' '}
-                        <ThemedText variant='textLink' style={{ lineHeight: 12, paddingTop: 28, height: 50 }} linkConfig={{ route: ROUTES.LEGAL.PRIVACY_POLICY }}>
+                        </ThemedText>
+                        {' '}y la{' '}
+                        <ThemedText 
+                            variant='textLink' 
+                            style={styles.linkText}
+                            linkConfig={{ route: ROUTES.LEGAL.PRIVACY_POLICY }}
+                        >
                             Política de privacidad
                         </ThemedText>
                         .
@@ -294,16 +302,26 @@ const styles = StyleSheet.create({
     termsContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 20,
+        marginBottom: 20,
+    },
+    termsCheckbox: {
+        height: 48,
+        width: 48,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     termsText: {
-        lineHeight: 18,
-        marginLeft: 12,
+        flex: 1,
+        flexWrap: 'wrap',
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     loginContainer: {
         flexDirection: 'row',
-        justifyContent: 'center',
-        marginTop: 16,
+        alignItems: 'center',
+        backgroundColor: 'transparent',
+        alignSelf: 'center',
     },
     referralContainer: {
         marginTop: 16,
@@ -311,5 +329,10 @@ const styles = StyleSheet.create({
     },
     referralText: {
         marginBottom: 8,
+    },
+    linkText: {
+        minHeight: 48,
+        paddingTop: 4,
+        textAlignVertical: 'center',
     },
 });
