@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, Link } from 'expo-router';
 import { RegisterRequest, ROUTES } from '@/core/types';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
-import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, MessageModal } from '@/shared/components';
+import { useMessageConfig, useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, LoadingScreen } from '@/shared/components';
 import { validateEmail, validatePassword, validateName, sanitizeName, getPasswordErrors } from '@/shared/utils/validations';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/core/context';
 
 export default function RegisterScreen() {
-    const { register } = useAuth();
+    const { register, isLoading } = useAuth();
     const [nombre, setNombre] = useState('');
     const [apellido, setApellido] = useState('');
     const [email, setEmail] = useState('');
@@ -32,8 +32,8 @@ export default function RegisterScreen() {
         confirmPassword: false
     });
     const [referralCode, setReferralCode] = useState('');
-    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+
+    useMessageConfig(['/auth/register']);
 
     useEffect(() => {
         const isValid = validateName(nombre) && validateName(apellido) &&
@@ -123,8 +123,6 @@ export default function RegisterScreen() {
         const sanitizedApellido = sanitizeName(apellido);
 
         if (!validateName(sanitizedNombre) || !validateName(sanitizedApellido) || !validateEmail(email) || !validatePassword(password) || password !== confirmPassword || !termsAccepted) {
-            setErrorMessage('Por favor, corrija los errores en el formulario.');
-            setIsErrorModalVisible(true);
             return;
         }
 
@@ -138,157 +136,145 @@ export default function RegisterScreen() {
             };
 
             const response = await register(formData);
-            
+
             if (response.status === 200) {
                 router.push({
                     pathname: ROUTES.AUTH.CONFIRMATION,
-                    params: { 
+                    params: {
                         email: email,
                         flow: 'registerUser'
                     }
                 });
             }
         } catch (error: any) {
-            console.error('Error en el registro:', error);
-            setErrorMessage(error.message || 'Error en el registro');
-            setIsErrorModalVisible(true);
         }
     };
 
+    const handleNavigateToLogin = () => {
+        router.push('/login');
+    };
+
     return (
-        <ThemedLayout>
-            <View style={styles.content}>
-                <ThemedText variant='title' marginBottom={4}>Registrarse</ThemedText>
-                <ThemedText variant='paragraph' marginBottom={24}>Crea una cuenta y comienza a vender ahora</ThemedText>
+        <>
+            {isLoading ? <LoadingScreen /> : (
+                <ThemedLayout>
+                    <View style={styles.content}>
+                        <ThemedText variant='title' marginBottom={4}>Registrarse</ThemedText>
+                        <ThemedText variant='paragraph' marginBottom={24}>Crea una cuenta y comienza a vender ahora</ThemedText>
 
-                <ThemedInput
-                    placeholder="Nombre"
-                    value={nombre}
-                    onChangeText={handleNombreChange}
-                    onBlur={() => {
-                        setTouchedFields(prev => ({ ...prev, nombre: true }));
-                        validateField('nombre');
-                    }}
-                    error={nombreError}
-                />
-                <ThemedInput
-                    placeholder="Apellido"
-                    value={apellido}
-                    onChangeText={handleApellidoChange}
-                    onBlur={() => {
-                        setTouchedFields(prev => ({ ...prev, apellido: true }));
-                        validateField('apellido');
-                    }}
-                    error={apellidoError}
-                />
-                <ThemedInput
-                    placeholder="Email"
-                    value={email}
-                    onChangeText={handleEmailChange}
-                    keyboardType="email-address"
-                    onBlur={() => {
-                        setTouchedFields(prev => ({ ...prev, email: true }));
-                        validateField('email');
-                    }}
-                    error={emailError}
-                />
-                <ThemedInput
-                    placeholder="Crear contraseña"
-                    value={password}
-                    onChangeText={handlePasswordChange}
-                    secureTextEntry
-                    onBlur={() => {
-                        setTouchedFields(prev => ({ ...prev, password: true }));
-                        validateField('password');
-                    }}
-                    error={passwordError}
-                />
-                <ThemedInput
-                    placeholder="Confirmar contraseña"
-                    value={confirmPassword}
-                    onChangeText={handleConfirmPasswordChange}
-                    secureTextEntry
-                    onBlur={() => {
-                        setTouchedFields(prev => ({ ...prev, confirmPassword: true }));
-                        validateField('confirmPassword');
-                    }}
-                    error={confirmPasswordError}
-                />
-
-                <View style={styles.referralContainer}>
-                    <ThemedInput
-                        label="¿Tienes un código de referido?"
-                        placeholder="Ingresa el código aquí"
-                        value={referralCode}
-                        onChangeText={setReferralCode}
-                    />
-                </View>
-
-                <View style={styles.termsContainer}>
-                    <TouchableOpacity style={styles.termsCheckbox} onPress={() => setTermsAccepted(!termsAccepted)}>
-                        <Ionicons
-                            name={termsAccepted ? "checkbox-outline" : "square-outline"}
-                            size={24}
-                            color={themeColors.textColorAccent}
+                        <ThemedInput
+                            placeholder="Nombre"
+                            value={nombre}
+                            onChangeText={handleNombreChange}
+                            onBlur={() => {
+                                setTouchedFields(prev => ({ ...prev, nombre: true }));
+                                validateField('nombre');
+                            }}
+                            error={nombreError}
                         />
-                    </TouchableOpacity>
-                    <ThemedText variant='paragraph' style={styles.termsText}>
-                        He leído y estoy de acuerdo con los{' '}
-                        <ThemedText 
-                            variant='textLink' 
-                            style={styles.linkText} 
-                            linkConfig={{ route: ROUTES.LEGAL.TERMS }}
-                        >
-                            Términos y condiciones
-                        </ThemedText>
-                        {' '}y la{' '}
-                        <ThemedText 
-                            variant='textLink' 
-                            style={styles.linkText}
-                            linkConfig={{ route: ROUTES.LEGAL.PRIVACY_POLICY }}
-                        >
-                            Política de privacidad
-                        </ThemedText>
-                        .
-                    </ThemedText>
-                </View>
-            </View>
+                        <ThemedInput
+                            placeholder="Apellido"
+                            value={apellido}
+                            onChangeText={handleApellidoChange}
+                            onBlur={() => {
+                                setTouchedFields(prev => ({ ...prev, apellido: true }));
+                                validateField('apellido');
+                            }}
+                            error={apellidoError}
+                        />
+                        <ThemedInput
+                            placeholder="Email"
+                            value={email}
+                            onChangeText={handleEmailChange}
+                            keyboardType="email-address"
+                            onBlur={() => {
+                                setTouchedFields(prev => ({ ...prev, email: true }));
+                                validateField('email');
+                            }}
+                            error={emailError}
+                        />
+                        <ThemedInput
+                            placeholder="Crear contraseña"
+                            value={password}
+                            onChangeText={handlePasswordChange}
+                            secureTextEntry
+                            onBlur={() => {
+                                setTouchedFields(prev => ({ ...prev, password: true }));
+                                validateField('password');
+                            }}
+                            error={passwordError}
+                        />
+                        <ThemedInput
+                            placeholder="Confirmar contraseña"
+                            value={confirmPassword}
+                            onChangeText={handleConfirmPasswordChange}
+                            secureTextEntry
+                            onBlur={() => {
+                                setTouchedFields(prev => ({ ...prev, confirmPassword: true }));
+                                validateField('confirmPassword');
+                            }}
+                            error={confirmPasswordError}
+                        />
 
-            <View style={styles.buttonContainer}>
-                <ThemedButton
-                    text="Crear cuenta"
-                    onPress={handleRegister}
-                    disabled={!nombre || !apellido || !email || !password || !confirmPassword || !termsAccepted}
-                />
+                        <View style={styles.referralContainer}>
+                            <ThemedInput
+                                label="¿Tienes un código de referido?"
+                                placeholder="Ingresa el código aquí"
+                                value={referralCode}
+                                onChangeText={setReferralCode}
+                            />
+                        </View>
 
-                <View style={styles.loginContainer}>
-                    <ThemedText variant='paragraph'>¿Ya tienes cuenta? </ThemedText>
-                    <Link href="/login" asChild>
-                        <TouchableOpacity>
-                            <ThemedText variant='textLink'>
-                                Inicia sesión ahora
+                        <View style={styles.termsContainer}>
+                            <TouchableOpacity style={styles.termsCheckbox} onPress={() => setTermsAccepted(!termsAccepted)}>
+                                <Ionicons
+                                    name={termsAccepted ? "checkbox-outline" : "square-outline"}
+                                    size={24}
+                                    color={themeColors.textColorAccent}
+                                />
+                            </TouchableOpacity>
+                            <ThemedText variant='paragraph' style={styles.termsText}>
+                                He leído y estoy de acuerdo con los{' '}
+                                <ThemedText
+                                    variant='textLink'
+                                    style={styles.linkText}
+                                    linkConfig={{ route: ROUTES.LEGAL.TERMS }}
+                                >
+                                    Términos y condiciones
+                                </ThemedText>
+                                {' '}y la{' '}
+                                <ThemedText
+                                    variant='textLink'
+                                    style={styles.linkText}
+                                    linkConfig={{ route: ROUTES.LEGAL.PRIVACY_POLICY }}
+                                >
+                                    Política de privacidad
+                                </ThemedText>
+                                .
                             </ThemedText>
-                        </TouchableOpacity>
-                    </Link>
-                </View>
-            </View>
+                        </View>
+                    </View>
 
-            <MessageModal
-                isVisible={isErrorModalVisible}
-                onClose={() => setIsErrorModalVisible(false)}
-                title="Error"
-                message={errorMessage}
-                icon={{
-                    name: "alert-circle-outline",
-                    color: themeColors.status.error
-                }}
-                primaryButton={{
-                    text: "Entendido",
-                    onPress: () => setIsErrorModalVisible(false)
-                }}
-            />
+                    <View style={styles.buttonContainer}>
+                        <ThemedButton
+                            text="Crear cuenta"
+                            onPress={handleRegister}
+                            disabled={!isFormValid}
+                        />
 
-        </ThemedLayout>
+                        <View style={styles.loginContainer}>
+                            <ThemedText variant='paragraph'>¿Ya tienes cuenta? </ThemedText>
+                            <TouchableOpacity onPress={handleNavigateToLogin}>
+                                <ThemedText variant='textLink'>
+                                    Inicia sesión ahora
+                                </ThemedText>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                </ThemedLayout>
+            )}
+        </>
     );
 }
 

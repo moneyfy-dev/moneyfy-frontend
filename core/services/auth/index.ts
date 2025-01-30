@@ -58,6 +58,7 @@ export const authService = {
 
   resendCode: async (email: string, type: ConfirmationFlowType): Promise<ApiResponse> => {
     const response = await api.put('/auth/resend/code', { email, type });
+    console.log('response', response);
     return response.data;
   }
 };

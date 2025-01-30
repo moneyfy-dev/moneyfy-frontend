@@ -25,6 +25,10 @@ export const SUCCESS_MESSAGES: { [key: string]: MessageConfig } = {
     showSuccessMessage: true,
     customSuccessMessage: 'Contraseña actualizada correctamente'
   },
+  '/auth/resend/code': {
+    showSuccessMessage: true,
+    customSuccessMessage: 'Se ha enviado un nuevo código de confirmación.'
+  },
   '/accounts/create': {
     showSuccessMessage: true,
     customSuccessMessage: 'Cuenta bancaria creada exitosamente'

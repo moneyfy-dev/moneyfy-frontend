@@ -45,7 +45,7 @@ export const PasswordInput = forwardRef<TextInput, ThemedInputCommonProps>(
           onBlur={handleBlur}
           {...props}
         />
-        <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+        <TouchableOpacity style={styles.iconContainer} onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
           <Ionicons
             name={isPasswordVisible ? "eye-outline" : "eye-off-outline"}
             size={18}
@@ -62,5 +62,12 @@ const styles = StyleSheet.create({
       flex: 1,
       height: 48,
       paddingVertical: 0,
+    },
+    iconContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: 48,
+      height: 48,
     }
   });

@@ -40,7 +40,7 @@ export const BaseInput: React.FC<Props> = ({
         >
           {children}
           {icon && (
-            <TouchableOpacity onPress={onIconPress}>
+            <TouchableOpacity style={styles.iconContainer} onPress={onIconPress}>
               <Ionicons
                 name={icon as any}
                 size={18}
@@ -72,7 +72,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 16,
+    paddingLeft: 16,
+    height: 48,
+  },
+  iconContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 48,
     height: 48,
   },
   error: {

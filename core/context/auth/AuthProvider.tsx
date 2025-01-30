@@ -56,7 +56,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }));
 
     } catch (error) {
-      console.error('Error in checkAuthStatus:', error);
       setAuthState(prev => ({
         ...prev,
         isAuthenticated: false,
@@ -66,9 +65,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
       const response = await authService.login(email, password);
-      // Validar que la respuesta tenga la estructura correcta
 
       switch (response.status) {
         case 200: // Login exitoso
@@ -79,12 +78,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await storage.user.updateLastHydration();
           setAuthState(prev => ({
             ...prev,
-            isAuthenticated: true
+            isAuthenticated: true,
+            isLoading: false
           }));
           router.replace(ROUTES.TABS.INDEX);
           break;
 
         case 226: // Cambio de dispositivo requerido
+          setAuthState(prev => ({ ...prev, isLoading: false }));
           router.replace({
             pathname: ROUTES.AUTH.CONFIRMATION,
             params: { email, flow: 'changeDevice' }
@@ -95,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return response;
 
     } catch (error: any) {
-      console.error('❌ Error en login:', error);
+      setAuthState(prev => ({ ...prev, isLoading: false }));
       throw error;
     }
   };
@@ -126,7 +127,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       router.replace(ROUTES.AUTH.LOGIN);
 
     } catch (error) {
-      console.error('Error during logout:', error);
     } finally {
       setAuthState(prev => ({
         ...prev,
@@ -136,6 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (data: RegisterRequest) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
       const response = await authService.register(data);
       if (!response.data) {
@@ -143,17 +144,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return response;
     } catch (error: any) {
-      console.error('❌ Error en el registro:', error);
       throw error;
+    } finally {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
   const requestPasswordReset = async (email: string) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
       const response = await authService.requestPasswordReset(email);
       return response;
     } catch (error) {
       throw error;
+    } finally {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -163,6 +168,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     newPwd: string,
     repeatedPwd: string
   ) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
       const response = await authService.confirmPasswordReset({
         email,
@@ -176,18 +182,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           throw new Error('Respuesta de registro inválida');
         }
 
-        // Guardar datos de usuario
         await storage.user.setData(response.data.user);
         await storage.user.updateLastHydration();
 
-        // Actualizar estado
         setAuthState(prev => ({
           ...prev,
-          isAuthenticated: true
+          isAuthenticated: true,
+          isLoading: false
         }));
       }
       return response;
     } catch (error) {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
       throw error;
     }
   };
@@ -197,37 +203,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     code: string,
     flow: ConfirmationFlowType,
   ) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
       const response = await authService.confirmCode({ email, code, flow });
 
-      // Si es registro exitoso, guardar datos inmediatamente
       if (response.status === 201 || response.status === 200) {
         if (!response.data?.tokens || !response.data?.user) {
           throw new Error('Respuesta de registro inválida');
         }
 
-        // Guardar datos de usuario
         await storage.user.setData(response.data.user);
         await storage.user.updateLastHydration();
 
-        // Actualizar estado
         setAuthState(prev => ({
           ...prev,
-          isAuthenticated: true
+          isAuthenticated: true,
+          isLoading: false
         }));
       }
       return response;
     } catch (error) {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
       throw error;
     }
   };
 
   const resendCode = async (email: string, type: ConfirmationFlowType) => {
+    setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
       const response = await authService.resendCode(email, type);
       return response;
     } catch (error) {
       throw error;
+    } finally {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
