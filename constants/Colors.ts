@@ -35,10 +35,12 @@ export default {
     gray4: '#BBBBBB',
     gray5: '#E0E0E0',
     gray6: '#F1F1F1',
+    gray7: '#F9F9F9',
     green1: '#0EF205',
     green2: '#09A503',
     green3: '#077303',
     green4: '#055903',
+
     green5: '#022602',
   },
   special: {

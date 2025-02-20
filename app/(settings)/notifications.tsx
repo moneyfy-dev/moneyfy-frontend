@@ -21,11 +21,11 @@ export default function NotificationsScreen() {
   ]);
 
   useEffect(() => {
-    if (user && user.notifs) {
+    if (user && user.notifPreference) {
       setNotificationSettings(prevSettings =>
         prevSettings.map(setting => ({
           ...setting,
-          isEnabled: user.notifs[setting.id] ?? setting.isEnabled
+          isEnabled: user.notifPreference[setting.id] ?? setting.isEnabled
         }))
       );
     }

@@ -10,7 +10,6 @@ import { useUser } from '@/core/context';
 import { useQuote } from '@/core/context';
 
 export default function QuoterDetailScreen() {
-  const router = useRouter();
   const params = useLocalSearchParams();
   const themeColors = useThemeColor();
   const [quoter, setQuoter] = useState<Quoter | null>(null);
@@ -20,30 +19,40 @@ export default function QuoterDetailScreen() {
   const { searchPlanById } = useQuote();
 
   useEffect(() => {
-
     const loadQuoterData = async () => {
       setIsLoading(true);
       try {
-        if (params.idPlan) {
+        let currentQuoter = null;
+
+        if (user?.quoters) {
+          currentQuoter = user.quoters.find(r => r.quoterId === params.id) || null;
+          setQuoter(currentQuoter);
+        }
+
+        if (params.idPlan && currentQuoter) {
           const response = await searchPlanById(params.idPlan as string);
           const plan = response.data.plans[0];
           const insurer = response.data.insurer;
           const insurancePlan: InsurancePlan = {
             ...plan,
-            insurer: insurer
+            insurer: insurer,
+            discount: currentQuoter.quoterPlanData.discount || 0,
+            grossPriceUF: currentQuoter.quoterPlanData.grossPriceUF || 0,
+            monthlyPrice: currentQuoter.quoterPlanData.monthlyPrice || 0,
+            monthlyPriceUF: currentQuoter.quoterPlanData.monthlyPriceUF || 0,
+            totalMonths: currentQuoter.quoterPlanData.totalMonths || 0,
+            valueUF: currentQuoter.quoterPlanData.valueUF || 0,
           };
-          setPlan(insurancePlan || null);
-        }
-        if (user?.quoters) {
-          const quoterData = user.quoters.find(r => r.quoterId === params.id);
-          setQuoter(quoterData || null);
+          setPlan(insurancePlan);
         }
       } catch (error) {
+        console.error('Error loading quoter data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     loadQuoterData();
-    setIsLoading(false);
   }, [params.id]);
 
   if (!quoter) {
@@ -57,6 +66,7 @@ export default function QuoterDetailScreen() {
       Iniciando: themeColors.extremeContrastGray,
       Cotizando: themeColors.extremeContrastGray,
       Recopilando: themeColors.status.info,
+      Pendiente: themeColors.status.info,
       Aprobado: themeColors.status.success,
       Rechazado: themeColors.status.error,
       Caducado: themeColors.status.warning,
@@ -71,6 +81,7 @@ export default function QuoterDetailScreen() {
   return (
     <ThemedLayout padding={[0, 24]}>
       <View style={styles.content}>
+
         {/* Header con avatar y estado */}
         <View style={styles.quoterHeader}>
           <IconContainer
@@ -80,10 +91,21 @@ export default function QuoterDetailScreen() {
           />
           <View style={styles.quoterInfo}>
             <View style={styles.nameContainer}>
-              <ThemedText variant="subTitleBold">
-                {quoter.quoterCarData.brand || 'Sin marca'} {' '}
-                {quoter.quoterCarData.model || 'registrado'}
-              </ThemedText>
+              {quoter.quoterOwnerData.name ? (
+                <ThemedText variant="subTitleBold">
+                  <ThemedText variant="subTitleBold" color={themeColors.textColorAccent}>
+                    {quoter.quoterOwnerData.name}
+                  </ThemedText>
+                  {' '} {quoter.quoterOwnerData.paternalSurname}
+                </ThemedText>
+              ) : (
+                <ThemedText variant="subTitleBold">
+                  <ThemedText variant="subTitleBold" color={themeColors.textColorAccent}>
+                    {quoter.quoterCarData.brand}
+                  </ThemedText>
+                  {' '} {quoter.quoterCarData.model}
+                </ThemedText>
+              )}
 
               <ThemedText variant="notes">
                 Actualización: {format(new Date(quoter.updatedDate), 'dd/MM/yyyy')}
@@ -102,11 +124,26 @@ export default function QuoterDetailScreen() {
                   {quoter.quoterStatus}
                 </ThemedText>
               </View>
+
+              {quoter.quoterOwnerData.personalId && (
+                <>
+                  <ThemedText variant='paragraph'>|</ThemedText>
+
+                  <View style={styles.carInfo}>
+                    <ThemedText variant="paragraphBold">
+                      RUT:
+                    </ThemedText>
+                    <ThemedText variant="paragraph">
+                      {quoter.quoterOwnerData.personalId}
+                    </ThemedText>
+                  </View>
+                </>
+              )}
             </View>
 
-              <ThemedText variant="notes">
-                Cotizado el: {format(new Date(quoter.createdDate), 'dd/MM/yyyy')}
-              </ThemedText>
+            <ThemedText variant="notes">
+              Cotizado el: {format(new Date(quoter.createdDate), 'dd/MM/yyyy')}
+            </ThemedText>
 
           </View>
         </View>
@@ -124,12 +161,10 @@ export default function QuoterDetailScreen() {
         {quoter.quoterPlanData &&
           quoter.quoterPlanData.planName &&
           plan && (
-            <View style={styles.section}>
-              <QuoteCard
-                plan={plan}
-                showButton={false}
-              />
-            </View>
+            <QuoteCard
+              plan={plan}
+              showButton={false}
+            />
           )}
 
         {/* Información adicional */}
@@ -145,7 +180,7 @@ export default function QuoterDetailScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    gap: 24,
+    gap: 12,
   },
   quoterHeader: {
     flexDirection: 'row',
@@ -163,11 +198,10 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   statusContainer: {
+    display: 'flex',
+    flexDirection: 'row',
     gap: 10,
     marginBottom: 5,
-  },
-  section: {
-    gap: 16,
   },
   statusBadge: {
     paddingHorizontal: 5,

@@ -29,23 +29,20 @@ export interface Insurer {
 
 export interface InsurancePlan {
   planId: string;
+  insurer: Insurer;
   planName: string;
-  grossPriceUF: number;
-  montlyPrice: number;
-  netPriceUF: number;
-  totalMonths: number;
-  totalPrice: number;
   valueUF: number;
+  grossPriceUF: number;
+  totalMonths: number;
+  monthlyPrice: number;
+  monthlyPriceUF: number;
   deductible: number;
   discount: number;
   stolenVehicle: string;
-  workshopType: string;
   totalLoss: string;
   damageThirdParty: string;
+  workshopType: string;
   details: string[];
-  createdDate: string;
-  updatedDate: string;
-  insurer: Insurer;
 }
 
 export interface QuoteVehicleParams {
@@ -75,10 +72,11 @@ export interface SelectPlanParams {
   planName: string;
   valueUF: number;
   grossPriceUF: number;
-  totalPrice: number;
   totalMonths: number;
-  montlyPrice: number;
+  monthlyPriceUF: number;
+  monthlyPrice: number;
   deductible: number;
+  discount: number;
   ownerName: string;
   ownerPaternalSur: string;
   ownerMaternalSur: string;

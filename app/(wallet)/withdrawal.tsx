@@ -207,7 +207,7 @@ export default function WithdrawalScreen() {
 
                 <TouchableOpacity onPress={hideDetails} activeOpacity={1} style={styles.headerSection}>
                     <ThemedView style={styles.header}>
-                        <ThemedText variant="title" color={themeColors.white}>Próximo Pago</ThemedText>
+                        <ThemedText variant="title" textAlign="center" color={themeColors.textColor}>Disponible para el {'\n'}próximo pago</ThemedText>
                         <ThemedView style={styles.amountContainer}>
                             <ThemedView style={styles.inputContainer}>
                                 <ThemedText

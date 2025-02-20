@@ -47,6 +47,7 @@ export default function QuoteResults() {
     }, [plans]);
 
     useEffect(() => {
+        console.log(plans);
         if (plans) {
             filterPlans();
         }
@@ -87,7 +88,7 @@ export default function QuoteResults() {
         // Filtrar por rango de precios
         if (filters.priceRange.min || filters.priceRange.max) {
             filtered = filtered.filter(plan => {
-                const price = plan.montlyPrice;
+                const price = plan.monthlyPrice;
                 const min = filters.priceRange.min ? parseInt(cleanNumber(filters.priceRange.min)) : 0;
                 const max = filters.priceRange.max ? parseInt(cleanNumber(filters.priceRange.max)) : Infinity;
                 return price >= min && price <= max;

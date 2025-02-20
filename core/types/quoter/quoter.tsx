@@ -1,4 +1,4 @@
-export type QuoterStatus = 'Iniciando' | 'Cotizando' | 'Recopilando' | 'Aprobado' | 'Rechazado' | 'Caducado';
+export type QuoterStatus = 'Iniciando' | 'Cotizando' | 'Recopilando' | 'Aprobado' | 'Rechazado' | 'Caducado' | 'Pendiente';
 
 export interface QuoterOwnerData {
   personalId: string;
@@ -22,9 +22,13 @@ export interface QuoterPlanData {
   quoterPlanId: string;
   insurer: string;
   planName: string;
-  price: number;
-  priceUf: number;
   deductible: number;
+  discount: number;
+  grossPriceUF: number;
+  monthlyPrice: number;
+  monthlyPriceUF: number;
+  totalMonths: number;
+  valueUF: number;
 }
 
 export interface QuoterAddressData {

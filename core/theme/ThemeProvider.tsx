@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { ThemeContext } from './ThemeContext';
-import { ThemeMode } from '@/core/types';
+import { STORAGE_KEYS, ThemeMode } from '@/core/types';
 import { storage } from '@/shared/utils/storage';
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -9,7 +9,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [themeMode, setThemeMode] = useState<ThemeMode>('system');
 
   useEffect(() => {
-    storage.get('theme').then((savedTheme) => {
+    storage.get(STORAGE_KEYS.SETTINGS.THEME).then((savedTheme) => {
       if (savedTheme) {
         setThemeMode(savedTheme as ThemeMode);
       }
@@ -18,7 +18,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const setThemeModeAndSave = (mode: ThemeMode) => {
     setThemeMode(mode);
-    storage.set('theme', mode).catch(error => 
+    storage.set(STORAGE_KEYS.SETTINGS.THEME, mode).catch(error => 
       console.error('Error saving theme mode:', error)
     );
   };

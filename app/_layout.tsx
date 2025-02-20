@@ -40,9 +40,9 @@ export default function RootLayout() {
   const isAppReady = fontsLoaded && splashScreenComplete && !authLoading;
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setSplashScreenComplete(true);
-    }, SPLASH_SCREEN_DURATION);
+      const timer = setTimeout(() => {
+        setSplashScreenComplete(true);
+      }, SPLASH_SCREEN_DURATION);
 
     return () => clearTimeout(timer);
   }, []);

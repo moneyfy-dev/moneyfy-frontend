@@ -19,9 +19,9 @@ export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) 
   const discountPercent = plan.discount ? Number(plan.discount) * 100 : 0; // Manejar caso donde discount puede ser string o number
   
   // Calcular valores mensuales
-  const monthlyPrice = plan.montlyPrice;
+  const monthlyPrice = plan.monthlyPrice;
   const monthlyFinalPrice = Math.round(monthlyPrice - (monthlyPrice * (discountPercent / 100)));
-  const monthlyPriceUf = Number((plan.netPriceUF / 12).toFixed(2));
+  const monthlyPriceUf = Number(plan.monthlyPriceUF);
 
   // Verificar si hay coberturas disponibles
   const hasCoverages = plan.stolenVehicle || 
@@ -45,6 +45,7 @@ export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) 
   return (
     <View style={[styles.card, { borderColor: themeColors.borderBackgroundColor }]}>
       <View style={styles.cardHeader}>
+        
         <View style={styles.logoContainer}>
           {plan.insurer && typeof plan.insurer === 'object' && (
             <InsurerLogo
@@ -53,9 +54,11 @@ export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) 
               />
           )}
         </View>
+
         <ThemedText variant='paragraph' style={styles.planName}>
           {plan.planName}
         </ThemedText>
+
         <ThemedText variant="title" style={styles.deductible}>
           Deducible {plan.deductible} UF
         </ThemedText>
@@ -108,11 +111,13 @@ export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) 
             </>
           )}
         </View>
+
         <ThemedText style={[styles.finalPrice, { color: themeColors.status.success }]}>
           ${monthlyFinalPrice.toLocaleString('es-CL')}
         </ThemedText>
+
         <ThemedText variant="paragraph">
-          Cuota mensual {monthlyPriceUf} UF
+          Cuota mensual {monthlyPriceUf.toFixed(2)} UF
         </ThemedText>
       </View>
 
@@ -131,7 +136,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
-    marginBottom: 20,
   },
   cardHeader: {
     alignItems: 'center',

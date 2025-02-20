@@ -161,6 +161,7 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsLoading(true);
         try {
             const response = await quoteService.searchPlanById(planId);
+            console.log(response.data.data.plans);
             return response.data;
         } catch (error) {
             throw error;

@@ -28,7 +28,11 @@ export default function QuotersScreen() {
 
   useEffect(() => {
     if (user?.quoters) {
-      setQuoters(user.quoters);
+      // Ordenar por fecha de creación, los más nuevos primero
+      const sortedQuoters = [...user.quoters].sort((a, b) => 
+        new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+      );
+      setQuoters(sortedQuoters);
     }
   }, [user?.quoters]);
 
@@ -37,6 +41,7 @@ export default function QuotersScreen() {
       Iniciando: themeColors.extremeContrastGray,
       Cotizando: themeColors.extremeContrastGray,
       Recopilando: themeColors.status.info,
+      Pendiente: themeColors.status.info,
       Aprobado: themeColors.status.success,
       Rechazado: themeColors.status.error,
       Caducado: themeColors.status.warning,
@@ -52,6 +57,10 @@ export default function QuotersScreen() {
     if (!user?.quoters) return;
 
     let filteredResults = [...user.quoters];
+
+    filteredResults.sort((a, b) => 
+      new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+    );
 
     // Filtrar por búsqueda
     if (searchQuery) {
@@ -129,6 +138,7 @@ export default function QuotersScreen() {
       'Iniciando': 'Iniciando',
       'Cotizando': 'Cotizando',
       'Recopilando': 'Recopilando',
+      'Pendiente': 'Pendiente',
       'Aprobado': 'Aprobado',
       'Rechazado': 'Rechazado',
       'Caducado': 'Caducado'

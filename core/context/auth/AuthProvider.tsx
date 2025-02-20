@@ -23,7 +23,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Inicialización
 
-
   const checkAuthStatus = useCallback(async (): Promise<void> => {
     try {
       const { token, sessionToken } = await storage.auth.getTokens();

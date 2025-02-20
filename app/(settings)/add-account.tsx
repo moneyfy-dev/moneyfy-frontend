@@ -122,9 +122,9 @@ export default function AddAccountScreen() {
     };
 
     const accountTypeOptions = [
-        { key: 'CORRIENTE', label: 'CORRIENTE' },
-        { key: 'AHORRO', label: 'AHORRO' },
-        { key: 'VISTA', label: 'VISTA' }
+        { key: 'Corriente', label: 'CORRIENTE' },
+        { key: 'Ahorro', label: 'AHORRO' },
+        { key: 'Vista', label: 'VISTA' }
     ];
 
     return (

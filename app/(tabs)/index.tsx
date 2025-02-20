@@ -188,7 +188,7 @@ export default function HomeScreen() {
           <Ionicons style={{ width: 24, height: 24 }} name="cash-outline" size={24} color={themeColors.white} />
           <View>
             <ThemedText variant="paragraph" color={themeColors.white}>Saldo Disponible</ThemedText>
-            <ThemedText variant="title" color={themeColors.textColorAccent}>${' '}{showBalance ? `${typedUser.wallet.availableBalance.toLocaleString('es-CL')}` : '******'}</ThemedText>
+            <ThemedText variant="title" color={Colors.common.green1}>${' '}{showBalance ? `${typedUser.wallet.availableBalance.toLocaleString('es-CL')}` : '******'}</ThemedText>
           </View>
         </LinearGradient>
         <View style={[styles.card, { backgroundColor: themeColors.backgroundCardColor, flex: 1 }]}>

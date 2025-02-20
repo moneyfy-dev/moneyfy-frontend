@@ -26,6 +26,7 @@ export default function PaymentQRScreen() {
     const { vehicle, plans, quoterId, isLoading, generateTransaction, finalizeQuote } = useQuote();
     const [isCopied, setIsCopied] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [isTransaction, setIsTransaction] = useState(false);
     const themeColors = useThemeColor();
     const link = `https://bci.cl/id=${quoterId}`;
 
@@ -59,12 +60,24 @@ export default function PaymentQRScreen() {
         router.replace(ROUTES.TABS.INDEX);
     };
 
-    const handleTransactionFlow = async (status: QuoterStatus) => {
+    const handleTransactionFlow = async () => {
         try {
             await generateTransaction({ quoterId });
+
+            setIsTransaction(true);
+        } catch (error) {
+            setIsTransaction(false);
+            console.error('Error al generar la transacción:', error);
+        }
+    };
+
+
+    const handleResolveQuote = async (status: QuoterStatus) => {
+        try {
             await finalizeQuote({ quoterId, transactionStatus: status });
             // Si llegamos aquí, significa que todo fue exitoso
             setIsSuccess(true);
+
         } catch (error) {
             console.error('Error en la transacción:', error);
         }
@@ -216,23 +229,35 @@ export default function PaymentQRScreen() {
                         </View>
                     </View>
 
-                    <View style={styles.buttonContainer}>
-                        <ThemedButton
-                            text="Aprobar"
-                            onPress={() => handleTransactionFlow('Aprobado')}
-                        />
-                        <ThemedButton
-                            text="Rechazar"
-                            onPress={() => handleTransactionFlow('Rechazado')}
-                            backgroundColor={themeColors.status.error}
-                        />
-                        <ThemedButton
-                            text="Caducar"
-                            onPress={() => handleTransactionFlow('Caducado')}
-                            backgroundColor={themeColors.status.info}
-                        />
-                    </View>
+                    {!isTransaction ? (
+                        <View style={styles.buttonContainer}>
+                            <ThemedButton
+                                text="Generar transacción"
+                                onPress={() => handleTransactionFlow()}
+                            />
+                        </View>
+
+                    ) : (
+                        <View style={styles.buttonContainer}>
+                            <ThemedButton
+                                text="Aprobar"
+
+                                onPress={() => handleResolveQuote('Aprobado')}
+                            />
+                            <ThemedButton
+                                text="Rechazar"
+                                onPress={() => handleResolveQuote('Rechazado')}
+                                backgroundColor={themeColors.status.error}
+                            />
+                            <ThemedButton
+                                text="Caducar"
+                                onPress={() => handleResolveQuote('Caducado')}
+                                backgroundColor={themeColors.status.info}
+                            />
+                        </View>
+                    )}
                 </ThemedLayout>
+
             )}
         </>
     );
@@ -278,7 +303,7 @@ const styles = StyleSheet.create({
         marginBottom: 2,
     },
     section: {
-        marginTop: 20,
+        marginVertical: 20,
     },
     urlContainer: {
         flexDirection: 'row',

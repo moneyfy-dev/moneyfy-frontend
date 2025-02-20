@@ -3,7 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/core/theme/useTheme';
 import { ThemedLayout, ThemedText } from '@/shared/components';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemeOption } from '@/core/types';
+import { STORAGE_KEYS, ThemeOption } from '@/core/types';
 import { storage } from '@/shared/utils/storage';
 
 export default function AppearanceScreen() {
@@ -30,7 +30,7 @@ export default function AppearanceScreen() {
 
   const selectTheme = async (id: 'light' | 'dark' | 'system') => {
     setThemeMode(id);
-    await storage.set('theme', id);
+    await storage.set(STORAGE_KEYS.SETTINGS.THEME, id);
   };
 
   const renderThemeOption = (option: ThemeOption, index: number) => (

@@ -10,6 +10,9 @@ export const STORAGE_KEYS = {
     DATA: 'user',
     LAST_HYDRATION: 'lastHydrationTime',
   },
+  SETTINGS: {
+    THEME: 'theme',
+  },
   SESSION: {
     VEHICLES: 'session_vehicles',
     QUOTES: 'session_quotes',

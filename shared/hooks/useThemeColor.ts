@@ -7,7 +7,7 @@ export function useThemeColor() {
   const getThemeColors = () => {
     return {
       backgroundColor: currentTheme === 'dark' ? Colors.common.black : Colors.common.white,
-      backgroundCardColor: currentTheme === 'dark' ? Colors.common.black2 : Colors.common.gray6,
+      backgroundCardColor: currentTheme === 'dark' ? Colors.common.black2 : Colors.common.gray7,
       buttonBackgroundColor: currentTheme === 'dark' ? Colors.common.green2 : Colors.common.green2,
       buttonTextColor: Colors.common.white,
       inputBackground: Colors.common.transparent,

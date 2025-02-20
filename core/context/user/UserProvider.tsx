@@ -46,7 +46,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const response = await userService.getUserData();
-
+      console.log(response.data.user.quoters);
       if (response?.data?.user) {
         await storage.user.setData(response.data.user);
         setUser(response.data.user);
@@ -127,4 +127,5 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </UserContext.Provider>
   );
+  
 };
