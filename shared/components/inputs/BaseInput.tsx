@@ -34,7 +34,8 @@ export const BaseInput: React.FC<Props> = ({
             styles.inputContainer,
             {
               backgroundColor: themeColors.inputBackground,
-              borderColor: isFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor
+              borderColor: isFocused ? themeColors.focusedBorderColor : themeColors.unfocusedBorderColor,
+              paddingRight: icon ? 0 : 16 
             }
           ]}
         >
@@ -72,7 +73,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 16,
+    paddingLeft: 16,
     height: 48,
   },
   iconContainer: {

@@ -56,6 +56,7 @@ export default function NotificationsScreen() {
       ) : (
         <TouchableOpacity
           onPress={() => toggleSetting(setting.id)}
+          style={styles.checkbox}
         >
           <Ionicons
             name={setting.isEnabled ? "checkbox-outline" : "square-outline"}
@@ -85,5 +86,8 @@ const styles = StyleSheet.create({
   settingTextContainer: {
     flex: 1,
     marginRight: 16,
+  },
+  checkbox: {
+    padding: 12
   }
 });

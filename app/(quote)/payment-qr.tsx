@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     },
     qrContainer: {
         alignItems: 'center',
-        marginBottom: 24,
+        marginBottom: 12,
     },
     quoterHeader: {
         flexDirection: 'row',
@@ -309,7 +309,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 24,
+        height: 48,
+        marginBottom: 16
     },
     copyContainer: {
         flexDirection: 'row',

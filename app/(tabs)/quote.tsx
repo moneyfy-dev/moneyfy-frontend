@@ -129,7 +129,6 @@ export default function QuoteScreen() {
           </View>
 
           <ThemedButton
-            style={styles.searchButton}
             text="Buscar"
             onPress={handleSearch}
           />
@@ -166,14 +165,13 @@ const styles = StyleSheet.create({
   searchSection: {
     marginBottom: 16,
   },
-  searchButton: {
-    marginBottom: 16,
-  },
   manualEntryButton: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'center',
     gap: 8,
+    height: 48
+
   },
   manualEntryText: {
     marginLeft: 10,

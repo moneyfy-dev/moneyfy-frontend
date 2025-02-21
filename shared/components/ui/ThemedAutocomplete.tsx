@@ -97,6 +97,7 @@ export const ThemedAutocomplete = ({
           <TouchableOpacity 
             onPress={() => !disabled && setShowOptions(!showOptions)}
             disabled={disabled}
+            style={styles.iconButton}
           >
             <Ionicons
               name={showOptions ? "chevron-up-outline" : "chevron-down-outline"}
@@ -163,12 +164,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 16,
+    paddingLeft: 16,
     height: 48,
   },
   input: {
     flex: 1,
     height: '100%',
+  },
+  iconButton: {
+    padding: 12
   },
   inputContainerDisabled: {
     opacity: 0.5,

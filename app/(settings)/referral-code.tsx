@@ -110,7 +110,6 @@ const styles = StyleSheet.create({
         padding: 24,
         borderRadius: 16,
         borderWidth: 2,
-        marginBottom: 24,
         width: '100%',
     },
     codeText: {
@@ -122,6 +121,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 48,
+        height: 48,
     },
 });

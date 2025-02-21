@@ -23,6 +23,8 @@ export const SelectInput = forwardRef<any, SelectInputProps>(
         <BaseInput
           isFocused={isFocused}
           themeColors={themeColors}
+          icon='chevron-down-outline'
+          onIconPress={() => setIsModalVisible(true)}
           {...props}
         >
           <TouchableOpacity
@@ -32,13 +34,6 @@ export const SelectInput = forwardRef<any, SelectInputProps>(
             <ThemedText style={{ color: themeColors.inputColor }}>
               {value || placeholder}
             </ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-            <Ionicons
-              name="chevron-down-outline"
-              size={18}
-              color={themeColors.textColorAccent}
-            />
           </TouchableOpacity>
         </BaseInput>
 
@@ -78,6 +73,9 @@ const styles = StyleSheet.create({
       flex: 1,
       height: 48,
       paddingVertical: 0,
+    },
+    inputIcon:{
+      padding: 12,
     },
     modalContainer: {
       width: '100%',

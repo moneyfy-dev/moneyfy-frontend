@@ -26,6 +26,8 @@ export const PasswordInput = forwardRef<TextInput, ThemedInputCommonProps>(
         isFocused={isFocused}
         themeColors={themeColors}
         onInputPress={handleInputPress}
+        icon={isPasswordVisible ? "eye-outline" : "eye-off-outline"}
+        onIconPress={() => setIsPasswordVisible(!isPasswordVisible)}
         {...props}
       >
         <TextInput
@@ -45,13 +47,6 @@ export const PasswordInput = forwardRef<TextInput, ThemedInputCommonProps>(
           onBlur={handleBlur}
           {...props}
         />
-        <TouchableOpacity style={styles.iconContainer} onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-          <Ionicons
-            name={isPasswordVisible ? "eye-outline" : "eye-off-outline"}
-            size={18}
-            color={themeColors.textColorAccent}
-          />
-        </TouchableOpacity>
       </BaseInput>
     );
   }

@@ -113,6 +113,7 @@ export default function ReferredsScreen() {
 
                 <Pressable
                     onPress={() => setShowFilters(true)}
+                    style={styles.filterIcon}
                 >
                     <Ionicons name="menu-outline" size={24} color={themeColors.textColorAccent} />
                 </Pressable>
@@ -277,7 +278,6 @@ const styles = StyleSheet.create({
         padding: 24,
         borderRadius: 16,
         borderWidth: 2,
-        marginBottom: 24,
         width: '100%',
     },
     codeText: {
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 48,
+        height: 48,
     },
     headerContainer: {
         paddingHorizontal: 24,
@@ -309,7 +309,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 16,
+    },
+    filterIcon: {
+        padding: 12,
     },
     list: {
         flex: 1,

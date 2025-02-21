@@ -108,6 +108,7 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const selectPlan = useCallback(async (
         planData: SelectPlanParams
     ): Promise<void> => {
+        console.log(planData)
         setIsLoading(true);
         try {
             await quoteService.selectPlan(planData);

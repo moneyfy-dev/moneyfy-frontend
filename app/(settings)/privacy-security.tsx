@@ -9,14 +9,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { storage } from '@/shared/utils/storage';
 import { STORAGE_KEYS } from '@/core/types';
 
-interface SecurityOption {
-    id: string;
-    title: string;
-    type: 'switch' | 'navigate';
-    route?: string;
-    isEnabled?: boolean;
-}
-
 export default function PrivacySecurityScreen() {
     const themeColors = useThemeColor();
     const router = useRouter();
@@ -24,82 +16,44 @@ export default function PrivacySecurityScreen() {
     const [isLoading, setIsLoading] = useState(false);
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const [securityOptions, setSecurityOptions] = useState<SecurityOption[]>([
-        {
-            id: 'fingerprintEnabled',
-            title: 'Autenticación biométrica',
-            type: 'switch',
-            isEnabled: security.fingerprintEnabled
-        },
-        {
-            id: 'password',
-            title: 'Cambiar contraseña',
-            type: 'navigate',
-            route: ROUTES.SETTINGS.CHANGE_PASSWORD
-        },
-        {
-            id: 'pin',
-            title: 'Configurar PIN',
-            type: 'navigate',
-            route: ROUTES.SETTINGS.PIN_CONFIG
-        }
-    ]);
     const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [isBiometricEnabled, setIsBiometricEnabled] = useState(security.fingerprintEnabled);
 
     useEffect(() => {
-        setSecurityOptions(prevOptions =>
-            prevOptions.map(option =>
-                option.id === 'fingerprintEnabled'
-                    ? { ...option, isEnabled: security.fingerprintEnabled }
-                    : option
-            )
-        );
-    }, [security]);
+        setIsBiometricEnabled(security.fingerprintEnabled);
+    }, [security.fingerprintEnabled]);
 
-    const handleToggle = async (id: string) => {
+    const handleToggle = async () => {
         if (isLoading) return;
-        let newValue: boolean;
+        const newValue = !isBiometricEnabled;
 
         try {
-            if (id === 'fingerprintEnabled') {
-                setIsLoading(true);
-                newValue = !securityOptions.find(opt => opt.id === id)?.isEnabled;
-                
-                if (newValue) {
-                    const isAvailable = await isBiometricAvailable();
-                    if (!isAvailable) {
-                        setErrorMessage('La autenticación biométrica no está disponible');
-                        setIsErrorModalVisible(true);
-                        return;
-                    }
+            setIsLoading(true);
+
+            if (newValue) {
+                const isAvailable = await isBiometricAvailable();
+                if (!isAvailable) {
+                    setErrorMessage('La autenticación biométrica no está disponible');
+                    setIsErrorModalVisible(true);
+                    return;
                 }
-
-                setSecurityOptions(prevOptions =>
-                    prevOptions.map(option =>
-                        option.id === id ? { ...option, isEnabled: newValue } : option
-                    )
-                );
-
-                await Promise.all([
-                    storage.set(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED, String(newValue)),
-                    storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH, String(newValue)),
-                ]);
-
-                await updateSecurity({ fingerprintEnabled: newValue });
-
-                setSuccessMessage(newValue ?
-                    'Autenticación biométrica activada' :
-                    'Autenticación biométrica desactivada'
-                );
-                setIsSuccessModalVisible(true);
             }
-        } catch (error) {
-            setSecurityOptions(prevOptions =>
-                prevOptions.map(option =>
-                    option.id === id ? { ...option, isEnabled: !newValue } : option
-                )
+
+            await Promise.all([
+                storage.set(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED, String(newValue)),
+                storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH, String(newValue)),
+            ]);
+
+            await updateSecurity({ fingerprintEnabled: newValue });
+            setIsBiometricEnabled(newValue);
+
+            setSuccessMessage(newValue ?
+                'Autenticación biométrica activada' :
+                'Autenticación biométrica desactivada'
             );
+            setIsSuccessModalVisible(true);
+        } catch (error) {
             setErrorMessage('Error al actualizar la configuración');
             setIsErrorModalVisible(true);
         } finally {
@@ -107,51 +61,85 @@ export default function PrivacySecurityScreen() {
         }
     };
 
-    const handleNavigation = (route?: string) => {
-        if (route) {
-            router.push(route as any);
-        }
+    const handleNavigation = (route: string) => {
+        router.push(route as any);
     };
 
-    const renderOption = (option: SecurityOption) => (
-        <TouchableOpacity key={option.id} style={[
-            styles.optionContainer,
-            { borderBottomColor: themeColors.borderBackgroundColor }
-        ]}
-            onPress={() => handleNavigation(option.route)}
-        >
-            <View style={styles.optionContent}>
-                <Ionicons
-                    name={getIconName(option.id)}
-                    size={24}
-                    color={themeColors.textColorAccent}
-                    style={styles.icon}
-                />
-                <ThemedText variant="subTitle">{option.title}</ThemedText>
-            </View>
-            {option.type === 'switch' ? (
+    return (
+        <ThemedLayout padding={[0, 40]}>
+            {/* Opción de autenticación biométrica */}
+            <View style={[
+                styles.optionContainer,
+                { borderBottomColor: themeColors.borderBackgroundColor }
+            ]}>
+                <View style={styles.optionContent}>
+                    <Ionicons
+                        name="finger-print-outline"
+                        size={24}
+                        color={themeColors.textColorAccent}
+                        style={styles.icon}
+                    />
+                    <ThemedText variant="subTitle">Autenticación biométrica</ThemedText>
+                </View>
                 <Switch
                     trackColor={{ false: themeColors.extremeContrastGray, true: themeColors.textColorAccent }}
-                    thumbColor={option.isEnabled ? themeColors.extremeContrastGray : themeColors.textColorAccent}
+                    thumbColor={isBiometricEnabled ? themeColors.extremeContrastGray : themeColors.textColorAccent}
                     ios_backgroundColor={themeColors.extremeContrastGray}
-                    onValueChange={() => handleToggle(option.id)}
-                    value={option.isEnabled}
+                    onValueChange={handleToggle}
+                    value={isBiometricEnabled}
                     disabled={isLoading}
                 />
-            ) : (
+            </View>
+
+            {/* Opción de cambiar contraseña */}
+            <TouchableOpacity
+                style={[
+                    styles.optionContainer,
+                    { borderBottomColor: themeColors.borderBackgroundColor }
+                ]}
+                onPress={() => handleNavigation(ROUTES.SETTINGS.CHANGE_PASSWORD)}
+            >
+                <View style={styles.optionContent}>
+                    <Ionicons
+                        name="key-outline"
+                        size={24}
+                        color={themeColors.textColorAccent}
+                        style={styles.icon}
+                    />
+                    <ThemedText variant="subTitle">Cambiar contraseña</ThemedText>
+                </View>
                 <Ionicons
                     name="chevron-forward"
                     size={16}
                     color={themeColors.textParagraph}
                 />
-            )}
-        </TouchableOpacity>
-    );
+            </TouchableOpacity>
 
-    return (
-        <ThemedLayout padding={[0, 40]}>
-            {securityOptions.map(renderOption)}
+            {/* Opción de configurar PIN */}
+            <TouchableOpacity
+                style={[
+                    styles.optionContainer,
+                    { borderBottomColor: themeColors.borderBackgroundColor }
+                ]}
+                onPress={() => handleNavigation(ROUTES.SETTINGS.PIN_CONFIG)}
+            >
+                <View style={styles.optionContent}>
+                    <Ionicons
+                        name="keypad-outline"
+                        size={24}
+                        color={themeColors.textColorAccent}
+                        style={styles.icon}
+                    />
+                    <ThemedText variant="subTitle">Configurar PIN</ThemedText>
+                </View>
+                <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color={themeColors.textParagraph}
+                />
+            </TouchableOpacity>
 
+            {/* Modales de error y éxito */}
             <MessageModal
                 isVisible={isErrorModalVisible}
                 onClose={() => setIsErrorModalVisible(false)}
@@ -201,16 +189,3 @@ const styles = StyleSheet.create({
         marginRight: 16,
     }
 });
-
-function getIconName(id: string): keyof typeof Ionicons.glyphMap {
-    switch (id) {
-        case 'password':
-            return 'key-outline';
-        case 'pin':
-            return 'keypad-outline';
-        case 'fingerprintEnabled':
-            return 'finger-print-outline';
-        default:
-            return 'help-outline';
-    }
-}

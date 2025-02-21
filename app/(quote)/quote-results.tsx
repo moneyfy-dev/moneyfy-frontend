@@ -151,7 +151,7 @@ export default function QuoteResults() {
                     </View>
                 )}
 
-                <View style={styles.searchContainer}>
+                <View>
                     <ThemedInput
                         type="search"
                         value={searchQuery}
@@ -162,7 +162,7 @@ export default function QuoteResults() {
 
                 <View style={styles.resultsHeader}>
                     <ThemedText>{filteredPlans.length} resultados</ThemedText>
-                    <Pressable onPress={() => setShowFilters(true)}>
+                    <Pressable onPress={() => setShowFilters(true)} style={styles.filterIcon}>
                         <Ionicons name="menu-outline" size={24} color={themeColors.textColorAccent} />
                     </Pressable>
                 </View>
@@ -289,7 +289,10 @@ const styles = StyleSheet.create({
     resultsHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 16,
+        alignItems: 'center'
+    },
+    filterIcon: {
+        padding: 12
     },
     card: {
         padding: 16,
@@ -340,7 +343,4 @@ const styles = StyleSheet.create({
     applyButton: {
         flex: 1,
     },
-    searchContainer: {
-        marginBottom: 16,
-    }
 });

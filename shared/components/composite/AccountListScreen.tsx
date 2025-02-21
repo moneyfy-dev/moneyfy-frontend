@@ -97,7 +97,7 @@ export function AccountListScreen({ accounts, onSelectAccount, onAccountUpdated 
                     <ThemedText variant="paragraph">{item.bank} - {item.accountNumber}</ThemedText>
                 </View>
             </View>
-            <TouchableOpacity onPress={() => handleMenuPress(item)}>
+            <TouchableOpacity onPress={() => handleMenuPress(item)} style={styles.menuIcon}>
                 <Ionicons name="ellipsis-vertical" size={20} color={themeColors.gray1Gray04} />
             </TouchableOpacity>
         </View>
@@ -193,8 +193,8 @@ const styles = StyleSheet.create({
     accountItem: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        gap: 16,
-        padding: 16,
+        paddingVertical: 12,
+        paddingLeft: 8,
         marginBottom: 16,
         alignItems: 'center',
         borderWidth: 1,
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     accountInfo: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 16,
+        gap: 8,
     },
     accountIcon: {
         width: 40,
@@ -225,7 +225,6 @@ const styles = StyleSheet.create({
         height: 24,
         borderRadius: 12,
         borderWidth: 2,
-        marginRight: 10,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -233,6 +232,9 @@ const styles = StyleSheet.create({
         width: 12,
         height: 12,
         borderRadius: 6,
+    },
+    menuIcon: {
+        padding: 14
     },
     modalOverlay: {
         flex: 1,
@@ -255,6 +257,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     radioButtonContainer: {
-        padding: 8,
+        padding: 12,
     },
 });

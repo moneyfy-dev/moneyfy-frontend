@@ -196,7 +196,7 @@ export default function WithdrawalScreen() {
         >
             <ThemedView style={styles.container}>
                 <ThemedView style={styles.headerContainer}>
-                    <TouchableOpacity onPress={() => router.back()}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                         <Ionicons
                             name="chevron-back"
                             size={24}
@@ -304,6 +304,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    backButton: {
+        paddingVertical: 12,
+        paddingRight: 24
+    },
     formContainer: {
         position: 'absolute',
         left: 0,
@@ -344,7 +348,7 @@ const styles = StyleSheet.create({
         marginRight: 4,
     },
     buttonContainer: {
-        paddingVertical: 40,
+        paddingVertical: 28,
         paddingHorizontal: 24,
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
@@ -355,11 +359,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         width: '100%',
+        paddingVertical: 12,
     },
     card: {
         flex: 1,
         paddingBottom: 40,
-        paddingTop: 20,
         paddingHorizontal: 24,
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
@@ -396,7 +400,8 @@ const styles = StyleSheet.create({
         width: 60,
         height: 8,
         borderRadius: 4,
-        marginBottom: 20,
+        marginBottom: 30,
+        marginTop: 10,
         alignSelf: 'center',
     },
 });
