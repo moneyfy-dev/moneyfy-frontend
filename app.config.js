@@ -23,7 +23,7 @@ module.exports = {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.connect360.Moneyfy"
+      "package": "com.moneyfy.app"
     },
     "web": {
       "bundler": "metro",

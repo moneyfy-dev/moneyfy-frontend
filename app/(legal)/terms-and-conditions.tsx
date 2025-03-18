@@ -80,7 +80,7 @@ export default function TermsAndConditions() {
           style={styles.intro}
           textAlign="justify"
         >
-          Bienvenido/a a nuestra aplicación de referidos de seguros. Al utilizar nuestros servicios, 
+          Bienvenido/a Moneyfy, al utilizar nuestros servicios, 
           aceptas los siguientes términos y condiciones. Por favor, léelos detenidamente antes de continuar:
         </ThemedText>
 

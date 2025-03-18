@@ -79,7 +79,7 @@ export default function PrivacyPolicy() {
         style={styles.intro}
         textAlign="justify"
       >
-        En Referi2, tu privacidad es nuestra prioridad. Esta política describe cómo recopilamos, 
+        En Moneyfy, tu privacidad es nuestra prioridad. Esta política describe cómo recopilamos, 
         usamos y protegemos tu información personal. Al utilizar nuestra aplicación, aceptas los 
         términos descritos a continuación.
       </ThemedText>
