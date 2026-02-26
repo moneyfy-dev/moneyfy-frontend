@@ -4,7 +4,7 @@ import { useThemeColor } from '../../../hooks/useThemeColor';
 import { ThemedText } from '../../ui/ThemedText';
 import { ThemedButton } from '../../ui/ThemedButton';
 import { LottieAnimation } from '../../animations/LottieAnimation';
-import { useOnboarding } from '@/core/context';
+import { useOnboarding } from '@/core/context/OnboardingContext';
 import { animations } from '@/assets/animations';
 
 const { width } = Dimensions.get('window');

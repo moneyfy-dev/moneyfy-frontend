@@ -6,7 +6,7 @@ import { StyleSheet, TouchableOpacity, View, FlatList, Modal, Alert } from 'reac
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { ThemedText } from '../ui/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
-import { useSettings } from '@/core/context';
+import { useSettings } from '@/core/context/settings/useSettings';
 import { ConfirmationModal } from '../modals/ConfirmationModal';
 import { MessageModal } from '../modals/MessageModal';
 

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ROUTES, ConfirmationFlowType } from '@/core/types';
-import { View, StyleSheet } from 'react-native';
+import { Alert, View, StyleSheet } from 'react-native';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedButton, VerificationCode, ResendCode, LoadingScreen } from '@/shared/components';
 import { useAuth } from '@/core/context';
@@ -18,6 +18,10 @@ export default function ConfirmationCodeScreen() {
 
     const handleConfirmCode = async (code: string) => {
         try {
+            if (!code || code.length !== 6) {
+                Alert.alert('Error', 'Ingresa el código de 6 dígitos.');
+                return;
+            }
             const response = await confirmCode(
                 email as string,
                 code,
@@ -32,6 +36,15 @@ export default function ConfirmationCodeScreen() {
                 }, 3000);
             }
         } catch (error: any) {
+            console.warn('[ConfirmationCode] error', {
+                message: error?.message,
+                httpStatus: error?.response?.status,
+                apiData: error?.response?.data,
+            });
+            const apiMessage =
+                error?.response?.data?.message ||
+                (typeof error?.response?.data === 'string' ? error.response.data : null);
+            Alert.alert('Error', apiMessage || error?.message || 'Error de conexión');
         }
     };
 

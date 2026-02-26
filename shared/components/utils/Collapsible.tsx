@@ -4,7 +4,7 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 
 import { ThemedView } from '../ui/ThemedView';
 import { ThemedText } from '../ui/ThemedText';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
 
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);

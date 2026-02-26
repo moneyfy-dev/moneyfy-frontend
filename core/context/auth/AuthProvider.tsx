@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+﻿import React, { useState, useCallback } from 'react';
 import { AuthContext } from './AuthContext';
 import { STORAGE_KEYS } from '@/core/types';
 import { storage } from '@/shared/utils/storage';
@@ -17,11 +17,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     isPersistentAuthRequired: false,
-    isLoading: true
+    isLoading: false
   });
   const router = useRouter();
 
-  // Inicialización
+  // InicializaciÃ³n
 
   const checkAuthStatus = useCallback(async (): Promise<void> => {
     try {
@@ -136,13 +136,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (data: RegisterRequest) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
+    console.warn('[AuthProvider.register] start', { email: data.email });
     try {
-      const response = await authService.register(data);
+      const timeoutMs = 15000;
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Tiempo de espera agotado')), timeoutMs)
+      );
+
+      const response = await Promise.race([
+        authService.register(data),
+        timeoutPromise,
+      ]);
+
       if (!response.data) {
         throw new Error('Respuesta de registro inválida');
       }
+      console.warn('[AuthProvider.register] response', { status: response.status });
       return response;
     } catch (error: any) {
+      console.warn('[AuthProvider.register] error', {
+        message: error?.message,
+        httpStatus: error?.response?.status,
+      });
       throw error;
     } finally {
       setAuthState(prev => ({ ...prev, isLoading: false }));
@@ -178,7 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (response.status === 200) {
         if (!response.data?.tokens || !response.data?.user) {
-          throw new Error('Respuesta de registro inválida');
+          throw new Error('Respuesta de registro invÃ¡lida');
         }
 
         await storage.user.setData(response.data.user);
@@ -208,7 +223,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (response.status === 201 || response.status === 200) {
         if (!response.data?.tokens || !response.data?.user) {
-          throw new Error('Respuesta de registro inválida');
+          throw new Error('Respuesta de registro invÃ¡lida');
         }
 
         await storage.user.setData(response.data.user);
@@ -222,6 +237,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return response;
     } catch (error) {
+      console.warn('[AuthProvider.confirmCode] error', {
+        message: (error as any)?.message,
+        httpStatus: (error as any)?.response?.status,
+        apiData: (error as any)?.response?.data,
+      });
       setAuthState(prev => ({ ...prev, isLoading: false }));
       throw error;
     }
@@ -259,3 +279,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
+
+
+

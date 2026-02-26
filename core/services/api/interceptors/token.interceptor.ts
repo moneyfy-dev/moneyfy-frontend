@@ -10,6 +10,11 @@ export const setupTokenInterceptor = () => {
         config.headers = {} as AxiosRequestHeaders;
       }
 
+      console.warn('[API] request', {
+        method: config.method,
+        url: config.baseURL ? `${config.baseURL}${config.url || ''}` : config.url,
+      });
+
       // Solo agregar tokens si no es ruta de auth
       if (!config.url?.includes('/auth/')) {
         const { token, sessionToken } = await storage.auth.getTokens();

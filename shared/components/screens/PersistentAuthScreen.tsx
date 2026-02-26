@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
+import { useThemeColor } from '@/shared/hooks/useThemeColor';
 import { ThemedLayout } from '../../components/layouts/ThemedLayout';
 import { Logo } from '../../components/ui/Logo';
 import { ThemedButton } from '../../components/ui/ThemedButton';
 import { MessageModal } from '../../components/modals/MessageModal';
 import { authenticateBiometric } from '@/core/services';
-import { PinInput } from '@/shared/components';
+import { PinInput } from '@/shared/components/ui/PinInput';
 import { STORAGE_KEYS } from '@/core/types';
 import { storage } from '@/shared/utils/storage';
-import { useAuth } from '@/core/context';
+import { useAuth } from '@/core/context/auth/useAuth';
 
 interface PersistentAuthProps {
   authMethods: {

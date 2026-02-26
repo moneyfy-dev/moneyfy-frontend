@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useMessage } from '@/core/context';
+import { useMessage } from '@/core/context/message/useMessage';
 import { SUCCESS_MESSAGES } from '@/core/config/messages';
 
 export const useMessageConfig = (endpoints: string[]) => {

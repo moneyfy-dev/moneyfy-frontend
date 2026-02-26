@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, Link } from 'expo-router';
 import { RegisterRequest, ROUTES } from '@/core/types';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, LoadingScreen } from '@/shared/components';
 import { validateEmail, validatePassword, validateName, sanitizeName, getPasswordErrors } from '@/shared/utils/validations';
@@ -108,6 +108,14 @@ export default function RegisterScreen() {
         }
     };
 
+    useEffect(() => {
+        if (!isLoading) return;
+        const timeoutId = setTimeout(() => {
+            Alert.alert('Registro', 'La solicitud está tardando demasiado. Revisa tu conexión y prueba nuevamente.');
+        }, 16000);
+        return () => clearTimeout(timeoutId);
+    }, [isLoading]);
+
     const handleRegister = async () => {
         setTouchedFields({
             nombre: true,
@@ -127,6 +135,7 @@ export default function RegisterScreen() {
         }
 
         try {
+            console.log('[RegisterScreen] submit', { email: email.trim() });
             const formData: RegisterRequest = {
                 name: sanitizedNombre,
                 surname: sanitizedApellido,
@@ -137,7 +146,7 @@ export default function RegisterScreen() {
 
             const response = await register(formData);
 
-            if (response.status === 200) {
+            if (response.status === 200 || response.status === 201) {
                 router.push({
                     pathname: ROUTES.AUTH.CONFIRMATION,
                     params: {
@@ -147,6 +156,12 @@ export default function RegisterScreen() {
                 });
             }
         } catch (error: any) {
+            console.error('Register error:', error);
+            const message =
+                error?.response?.data?.message ||
+                error?.message ||
+                'Error de conexión. Intenta nuevamente.';
+            Alert.alert('Error', message);
         }
     };
 

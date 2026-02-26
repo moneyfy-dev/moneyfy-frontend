@@ -28,8 +28,35 @@ export const authService = {
   },
 
   register: async (data: RegisterRequest): Promise<ApiResponse> => {
-    const response = await api.post('/auth/register', data);
-    return response.data;
+    console.warn('[auth.register] start', {
+      baseURL: api.defaults.baseURL,
+      email: data.email,
+    });
+    const timeoutMs = 15000;
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Tiempo de espera agotado')), timeoutMs)
+    );
+
+    try {
+      const response = await Promise.race([
+        api.post('/auth/register', data),
+        timeoutPromise,
+      ]);
+
+      console.warn('[auth.register] response', {
+        httpStatus: (response as any)?.status,
+        apiStatus: (response as any)?.data?.status,
+      });
+
+      return (response as any).data;
+    } catch (error: any) {
+      console.warn('[auth.register] error', {
+        message: error?.message,
+        httpStatus: error?.response?.status,
+        apiMessage: error?.response?.data?.message,
+      });
+      throw error;
+    }
   },
 
   requestPasswordReset: async (email: string): Promise<ApiResponse> => {
@@ -43,13 +70,27 @@ export const authService = {
   },
 
   confirmCode: async (data: ConfirmCodeRequest): Promise<ApiResponse | RegisterResponse> => {
+    console.warn('[auth.confirmCode] start', {
+      baseURL: api.defaults.baseURL,
+      flow: data.flow,
+      email: data.email,
+      codeLength: data.code?.length,
+    });
     let response: ApiResponse | RegisterResponse;
     switch (data.flow) {
       case 'registerUser':
         response = await api.post('/auth/confirm/registration', { email: data.email, code: data.code });
+        console.warn('[auth.confirmCode] response', {
+          httpStatus: (response as any)?.status,
+          apiStatus: (response as any)?.data?.status,
+        });
         return response.data;
       case 'changeDevice':
         response = await api.put('/auth/confirm/device/change', { email: data.email, code: data.code });
+        console.warn('[auth.confirmCode] response', {
+          httpStatus: (response as any)?.status,
+          apiStatus: (response as any)?.data?.status,
+        });
         return response.data;
       default:
         throw new Error('Invalid flow type');
