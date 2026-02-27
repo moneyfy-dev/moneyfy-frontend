@@ -66,6 +66,14 @@ export const setupMessageInterceptor = () => {
       if (messageHandler) {
         const endpoint = getEndpointFromUrl(error.config?.url);
         const status = error.response?.status || 500;
+        console.warn('[API] error', {
+          method: error.config?.method,
+          url: error.config?.url,
+          baseURL: error.config?.baseURL,
+          status,
+          code: (error as any)?.code,
+          message: error.message,
+        });
         const defaultMessage = (error.response?.data as ApiErrorResponse)?.message || error.message || 'Error de conexión';
         
         // Usar el mensaje predefinido según el endpoint y status

@@ -40,32 +40,32 @@ export const storage = {
   },
 
   // Métodos seguros para datos sensibles
-  async getSecure(key: string): Promise<string | null> {
-    try {
-      return await SecureStore.getItemAsync(key);
-    } catch (error) {
-      console.error(`Error getting secure ${key}:`, error);
-      return null;
-    }
-  },
+    async getSecure(key: string): Promise<string | null> {
+      try {
+        return await SecureStore.getItemAsync(key);
+      } catch (error) {
+        console.error(`[storage.getSecure] key=${key}`, error);
+        return null;
+      }
+    },
 
-  async setSecure(key: string, value: string): Promise<void> {
-    try {
-      await SecureStore.setItemAsync(key, value);
-    } catch (error) {
-      console.error(`Error setting secure ${key}:`, error);
-      throw error;
-    }
-  },
+    async setSecure(key: string, value: string): Promise<void> {
+      try {
+        await SecureStore.setItemAsync(key, value);
+      } catch (error) {
+        console.error(`[storage.setSecure] key=${key}`, error);
+        throw error;
+      }
+    },
 
-  async removeSecure(key: string): Promise<void> {
-    try {
-      await SecureStore.deleteItemAsync(key);
-    } catch (error) {
-      console.error(`Error removing secure ${key}:`, error);
-      throw error;
-    }
-  },
+    async removeSecure(key: string): Promise<void> {
+      try {
+        await SecureStore.deleteItemAsync(key);
+      } catch (error) {
+        console.error(`[storage.removeSecure] key=${key}`, error);
+        throw error;
+      }
+    },
 
   // Métodos específicos para Auth usando SecureStore
   auth: {
@@ -77,7 +77,10 @@ export const storage = {
         ]);
 
         if (!token || !sessionToken) {
-          console.warn('⚠️ Tokens incompletos en storage');
+          console.warn('[storage.getTokens] incomplete', {
+            hasToken: !!token,
+            hasSessionToken: !!sessionToken,
+          });
           return { token: null, sessionToken: null };
         }
 
@@ -94,10 +97,17 @@ export const storage = {
           throw new Error('Tokens inválidos');
         }
 
+        console.warn('[storage.setTokens] start', {
+          tokenLen: token.length,
+          sessionTokenLen: sessionToken.length,
+        });
+
         await Promise.all([
           storage.setSecure(STORAGE_KEYS.AUTH.TOKEN, token),
           storage.setSecure(STORAGE_KEYS.AUTH.SESSION_TOKEN, sessionToken),
         ]);
+
+        console.warn('[storage.setTokens] done');
 
       } catch (error) {
         throw error;

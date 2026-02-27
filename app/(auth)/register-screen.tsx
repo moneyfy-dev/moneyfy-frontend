@@ -108,14 +108,6 @@ export default function RegisterScreen() {
         }
     };
 
-    useEffect(() => {
-        if (!isLoading) return;
-        const timeoutId = setTimeout(() => {
-            Alert.alert('Registro', 'La solicitud está tardando demasiado. Revisa tu conexión y prueba nuevamente.');
-        }, 16000);
-        return () => clearTimeout(timeoutId);
-    }, [isLoading]);
-
     const handleRegister = async () => {
         setTouchedFields({
             nombre: true,

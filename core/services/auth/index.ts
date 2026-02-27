@@ -1,5 +1,5 @@
 import { ApiResponse, LoginResponse, RegisterResponse, RegisterRequest, ConfirmPasswordResetRequest, ConfirmationFlowType, ConfirmCodeRequest } from '../../types';
-import { api } from '../api/config';
+import { api } from '../api';
 
 export const authService = {
 
@@ -32,16 +32,8 @@ export const authService = {
       baseURL: api.defaults.baseURL,
       email: data.email,
     });
-    const timeoutMs = 15000;
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Tiempo de espera agotado')), timeoutMs)
-    );
-
     try {
-      const response = await Promise.race([
-        api.post('/auth/register', data),
-        timeoutPromise,
-      ]);
+      const response = await api.post('/auth/register', data);
 
       console.warn('[auth.register] response', {
         httpStatus: (response as any)?.status,

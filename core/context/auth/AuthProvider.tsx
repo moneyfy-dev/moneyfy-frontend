@@ -68,6 +68,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authService.login(email, password);
 
+      console.warn('[AuthProvider.login] response', {
+        status: response.status,
+        hasTokens: !!response.data?.tokens?.jwtRefresh && !!response.data?.tokens?.jwtSession,
+      });
+
+      if ((response.status === 200 || response.status === 202) &&
+        response.data?.tokens?.jwtRefresh &&
+        response.data?.tokens?.jwtSession) {
+        await storage.auth.setTokens(
+          response.data.tokens.jwtRefresh,
+          response.data.tokens.jwtSession
+        );
+      }
+
       switch (response.status) {
         case 200: // Login exitoso
           await storage.user.setData(response.data.user);
@@ -95,6 +109,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return response;
 
     } catch (error: any) {
+      console.warn('[AuthProvider.login] error', {
+        message: error?.message,
+        code: error?.code,
+        httpStatus: error?.response?.status,
+      });
       setAuthState(prev => ({ ...prev, isLoading: false }));
       throw error;
     }
@@ -138,15 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthState(prev => ({ ...prev, isLoading: true }));
     console.warn('[AuthProvider.register] start', { email: data.email });
     try {
-      const timeoutMs = 15000;
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Tiempo de espera agotado')), timeoutMs)
-      );
-
-      const response = await Promise.race([
-        authService.register(data),
-        timeoutPromise,
-      ]);
+      const response = await authService.register(data);
 
       if (!response.data) {
         throw new Error('Respuesta de registro inválida');
@@ -196,6 +207,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           throw new Error('Respuesta de registro invÃ¡lida');
         }
 
+        console.warn('[AuthProvider.confirmPasswordReset] tokens', {
+          hasTokens: !!response.data.tokens?.jwtRefresh && !!response.data.tokens?.jwtSession,
+        });
+        await storage.auth.setTokens(
+          response.data.tokens.jwtRefresh,
+          response.data.tokens.jwtSession
+        );
         await storage.user.setData(response.data.user);
         await storage.user.updateLastHydration();
 
@@ -226,6 +244,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           throw new Error('Respuesta de registro invÃ¡lida');
         }
 
+        console.warn('[AuthProvider.confirmCode] tokens', {
+          status: response.status,
+          hasTokens: !!response.data.tokens?.jwtRefresh && !!response.data.tokens?.jwtSession,
+        });
+        await storage.auth.setTokens(
+          response.data.tokens.jwtRefresh,
+          response.data.tokens.jwtSession
+        );
         await storage.user.setData(response.data.user);
         await storage.user.updateLastHydration();
 
