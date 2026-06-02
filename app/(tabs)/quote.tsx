@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { ScrollView, TextInput, View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/core/types';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
@@ -12,15 +12,18 @@ import {
   LoadingScreen,
   MessageModal
 } from '@/shared/components';
-import { validatePPU, validateRUT } from '@/shared/utils/validations';
+import { formatRUT, validatePPU, validateRUT } from '@/shared/utils/validations';
 import { useUser, useQuote } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function QuoteScreen() {
   const router = useRouter();
   const themeColors = useThemeColor();
+  const scrollRef = useRef<ScrollView>(null);
+  const rutInputRef = useRef<TextInput>(null);
   const { user } = useUser();
   const { searchVehicle, isLoading } = useQuote();
+  const [rutErrorVisible, setRutErrorVisible] = useState(false);
   const [searchValue, setSearchValue] = useState({
     ownerId: '',
     ppu: '',
@@ -33,6 +36,18 @@ export default function QuoteScreen() {
   useMessageConfig(['/quoter/search/vehicle']);
 
   const hasAccounts = user?.accounts && user.accounts.length > 0;
+
+  const focusRutInput = () => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+    setTimeout(() => {
+      rutInputRef.current?.focus();
+    }, 250);
+  };
+
+  const closeRutError = () => {
+    setRutErrorVisible(false);
+    focusRutInput();
+  };
 
   if (!hasAccounts) {
     return <NoAccountWarningScreen />;
@@ -61,6 +76,10 @@ export default function QuoteScreen() {
 
   const handleSearch = async () => {
     if (!validateForm()) {
+      if (searchValue.ownerId && !validateRUT(searchValue.ownerId)) {
+        focusRutInput();
+        setRutErrorVisible(true);
+      }
       return;
     }
 
@@ -72,26 +91,40 @@ export default function QuoteScreen() {
       return;
     }
 
+    const formattedOwnerId = formatRUT(searchValue.ownerId);
+    const formattedSearchValue = {
+      ownerId: formattedOwnerId,
+      ppu: searchValue.ppu.toUpperCase(),
+    };
+
     try {
+      setSearchValue(formattedSearchValue);
       await searchVehicle(
-        searchValue.ownerId,
-        searchValue.ppu.toUpperCase()
+        formattedOwnerId,
+        formattedSearchValue.ppu
       );
 
       router.push({
         pathname: ROUTES.QUOTE.SEARCH_RESULTS,
         params: {
-          value: JSON.stringify(searchValue)
+          value: JSON.stringify(formattedSearchValue)
         }
       });
     } catch (error) {
+      const ownerIdError = (error as any)?.response?.data?.data?.ownerId;
+
+      if (ownerIdError) {
+        setErrors(prev => ({ ...prev, ownerId: 'RUT inválido' }));
+        focusRutInput();
+        setRutErrorVisible(true);
+      }
     }
   };
 
   return (
     <>
       {isLoading ? <LoadingScreen /> : (
-        <ThemedLayout padding={[40, 24]}>
+        <ThemedLayout padding={[40, 24]} scrollRef={scrollRef}>
           <View style={styles.header}>
             <ThemedText variant="title" textAlign="center">
               Cotiza un seguro
@@ -103,6 +136,7 @@ export default function QuoteScreen() {
 
           <View style={styles.searchSection}>
             <ThemedInput
+              ref={rutInputRef}
               label='RUT'
               value={searchValue.ownerId}
               onChangeText={(text) => {
@@ -154,6 +188,20 @@ export default function QuoteScreen() {
 
         </ThemedLayout>
       )}
+      <MessageModal
+        isVisible={rutErrorVisible}
+        onClose={closeRutError}
+        title="RUT invalido"
+        message="Revisa el RUT ingresado. Debe tener un formato valido y digito verificador correcto."
+        icon={{
+          name: 'alert-circle-outline',
+          color: themeColors.status.warning,
+        }}
+        primaryButton={{
+          text: 'Entendido',
+          onPress: closeRutError,
+        }}
+      />
     </>
   );
 }

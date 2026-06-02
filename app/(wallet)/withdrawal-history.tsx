@@ -114,7 +114,7 @@ export default function WithdrawalHistory() {
                     value={searchQuery}
                     onChangeText={handleSearch}
                     placeholder="Buscar por banco"
-                    onIconPress={() => console.log('Buscar:', searchQuery)}
+                    onIconPress={() => {}}
                     style={styles.searchInput}
                 />
             </View>

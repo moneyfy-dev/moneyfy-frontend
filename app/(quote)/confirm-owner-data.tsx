@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ROUTES } from '@/core/types';
 import { View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
     ThemedLayout,
     ThemedText,
@@ -10,12 +11,49 @@ import {
     LoadingScreen,
 } from '@/shared/components';
 import { useQuote } from '@/core/context';
-import { validateAddress, validateName } from '@/shared/utils/validations';
+import { validateAddress } from '@/shared/utils/validations';
 import { useMessageConfig } from '@/shared/hooks';
 
+const FIELD_LABELS: Record<string, string> = {
+    quoterId: 'cotizacion',
+    planId: 'plan',
+    insurer: 'aseguradora',
+    planName: 'nombre del plan',
+    valueUF: 'valor UF',
+    grossPriceUF: 'prima anual',
+    totalMonths: 'cuotas',
+    monthlyPriceUF: 'cuota UF',
+    monthlyPrice: 'cuota mensual',
+    deductibleDesc: 'deducible',
+    discount: 'descuento',
+    ownerName: 'nombre',
+    ownerPaternalSur: 'apellido paterno',
+    ownerMaternalSur: 'apellido materno',
+    street: 'calle',
+    streetNumber: 'numero',
+    department: 'departamento',
+};
+
+const getBackendValidationErrors = (error: unknown): Record<string, string> => {
+    const data = (error as any)?.response?.data?.data;
+    return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+};
+
+const formatBackendError = (field: string, message: string) =>
+    `${FIELD_LABELS[field] || field}: ${message}`;
+
+const validateBackendName = (value: string) => {
+    const trimmedValue = value.trim();
+    return /^[a-zA-ZáéíóúñçýÁÉÍÓÚÑÇÝ]{2,40}$/.test(trimmedValue);
+};
+
+const getPlanId = (plan: any) =>
+    plan?.planId || plan?.quoterPlanId || plan?.idPlan || plan?.id || '';
+
 export default function ConfirmOwnerDataScreen() {
-    const { planId } = useLocalSearchParams();
+    const { planId, planIndex } = useLocalSearchParams();
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const { selectPlan, isLoading, vehicle, plans, quoterId } = useQuote();
     const [formData, setFormData] = useState({
         ownerName: '',
@@ -32,11 +70,24 @@ export default function ConfirmOwnerDataScreen() {
         ownerMaternalSur: '',
         street: '',
         streetNumber: '',
+        department: '',
     });
+    const [formError, setFormError] = useState('');
 
     useMessageConfig(['/quoter/select/plan']);
 
-    const selectedPlan = plans.find(plan => plan.planId === planId);
+    const planIdValue = Array.isArray(planId) ? planId[0] : planId;
+    const planIndexValue = Array.isArray(planIndex) ? planIndex[0] : planIndex;
+    const parsedPlanIndex = Number(planIndexValue);
+    const selectedPlan = Number.isInteger(parsedPlanIndex) && plans[parsedPlanIndex]
+        ? plans[parsedPlanIndex]
+        : plans.find(plan => getPlanId(plan) === planIdValue);
+    const selectedPlanId = getPlanId(selectedPlan);
+    const selectedInsurerName = typeof selectedPlan?.insurer === 'string'
+        ? selectedPlan.insurer
+        : selectedPlan?.insurer?.name ?? '';
+    const selectedDeductibleDesc = selectedPlan?.deductibleDesc?.trim()
+        || `Deducible ${selectedPlan?.deductible ?? 0} UF`;
 
     const validateForm = () => {
         let isValid = true;
@@ -45,20 +96,21 @@ export default function ConfirmOwnerDataScreen() {
             ownerPaternalSur: '',
             ownerMaternalSur: '',
             street: '',
-            streetNumber: ''
+            streetNumber: '',
+            department: '',
         };
 
-        if (formData.ownerName && !validateName(formData.ownerName)) {
+        if (formData.ownerName && !validateBackendName(formData.ownerName)) {
             newErrors.ownerName = 'Nombre inválido';
             isValid = false;
         }
 
-        if (formData.ownerPaternalSur && !validateName(formData.ownerPaternalSur)) {
+        if (formData.ownerPaternalSur && !validateBackendName(formData.ownerPaternalSur)) {
             newErrors.ownerPaternalSur = 'Apellido paterno inválido';
             isValid = false;
         }
 
-        if (formData.ownerMaternalSur && !validateName(formData.ownerMaternalSur)) {
+        if (formData.ownerMaternalSur && !validateBackendName(formData.ownerMaternalSur)) {
             newErrors.ownerMaternalSur = 'Apellido materno inválido';
             isValid = false;
         }
@@ -69,6 +121,7 @@ export default function ConfirmOwnerDataScreen() {
         }
 
         setErrors(newErrors);
+        setFormError('');
         return isValid;
     };
 
@@ -84,6 +137,7 @@ export default function ConfirmOwnerDataScreen() {
                 ownerPaternalSur: 'Ingrese el apellido paterno del propietario',
                 ownerMaternalSur: 'Ingrese el apellido materno del propietario',
                 street: 'Ingrese la calle del propietario',
+                department: '',
                 streetNumber: 'Ingrese el número de la calle del propietario'
             });
             return;
@@ -97,11 +151,16 @@ export default function ConfirmOwnerDataScreen() {
             return;
         }
 
+        if (!selectedPlanId || selectedPlanId.length < 4) {
+            setFormError('El plan seleccionado no trae un identificador valido. Vuelve a seleccionar el plan desde los resultados.');
+            return;
+        }
+
         try {
             await selectPlan({
                 quoterId: quoterId,
-                planId: selectedPlan.planId,
-                insurer: selectedPlan.insurer.name,
+                planId: selectedPlanId,
+                insurer: selectedInsurerName,
                 planName: selectedPlan.planName,
                 valueUF: selectedPlan.valueUF,
                 grossPriceUF: selectedPlan.grossPriceUF,
@@ -109,20 +168,44 @@ export default function ConfirmOwnerDataScreen() {
                 monthlyPriceUF: selectedPlan.monthlyPriceUF,
                 monthlyPrice: selectedPlan.monthlyPrice,
                 deductible: selectedPlan.deductible,
+                deductibleDesc: selectedDeductibleDesc,
                 discount: selectedPlan.discount,
-                ownerName: formData.ownerName,
-                ownerPaternalSur: formData.ownerPaternalSur,
-                ownerMaternalSur: formData.ownerMaternalSur,
-                street: formData.street,
-                streetNumber: formData.streetNumber,
-                department: formData.department
+                ownerName: formData.ownerName.trim(),
+                ownerPaternalSur: formData.ownerPaternalSur.trim(),
+                ownerMaternalSur: formData.ownerMaternalSur.trim(),
+                street: formData.street.trim(),
+                streetNumber: formData.streetNumber.trim(),
+                department: formData.department.trim()
             });
 
             router.push({
                 pathname: ROUTES.QUOTE.PAYMENT_QR,
-                params: { quoterId: quoterId, planId: planId }
+                params: {
+                    quoterId: quoterId,
+                    planId: selectedPlanId,
+                    planIndex: Number.isInteger(parsedPlanIndex) ? String(parsedPlanIndex) : undefined,
+                }
             });
         } catch (error) {
+            const backendErrors = getBackendValidationErrors(error);
+            const visibleErrors = {
+                ownerName: backendErrors.ownerName || '',
+                ownerPaternalSur: backendErrors.ownerPaternalSur || '',
+                ownerMaternalSur: backendErrors.ownerMaternalSur || '',
+                street: backendErrors.street || '',
+                streetNumber: backendErrors.streetNumber || '',
+                department: backendErrors.department || '',
+            };
+            const hiddenErrors = Object.entries(backendErrors)
+                .filter(([field]) => !(field in visibleErrors))
+                .map(([field, message]) => formatBackendError(field, String(message)));
+
+            setErrors(visibleErrors);
+            setFormError(
+                hiddenErrors.length > 0
+                    ? `El backend rechazo datos del plan: ${hiddenErrors.join(', ')}`
+                    : 'Revisa los campos marcados antes de continuar.'
+            );
         }
     };
 
@@ -135,7 +218,10 @@ export default function ConfirmOwnerDataScreen() {
             {isLoading ?
                 <LoadingScreen /> : (
 
-                    <ThemedLayout padding={[0, 40]}>
+                    <ThemedLayout
+                        padding={[0, Math.max(120, insets.bottom + 96)]}
+                        safeAreaEdges={['left', 'right', 'bottom']}
+                    >
                         <View style={styles.content}>
                             <ThemedText variant="title" textAlign="center" marginBottom={5}>
                                 {vehicle.ppu}
@@ -149,6 +235,12 @@ export default function ConfirmOwnerDataScreen() {
                             <ThemedText variant="paragraph" textAlign="center" marginBottom={16}>
                                 Los datos del propietario se utilizan para comunicaciones importantes como la carta de cancelación y para ajustar la cobertura y condiciones del seguro según la ubicación del vehículo.
                             </ThemedText>
+
+                            {!!formError && (
+                                <ThemedText variant="paragraph" color="red" textAlign="center" marginBottom={12}>
+                                    {formError}
+                                </ThemedText>
+                            )}
 
                             <ThemedInput
                                 label="Nombre"
@@ -192,6 +284,7 @@ export default function ConfirmOwnerDataScreen() {
                                 placeholder="Departamento"
                                 value={formData.department}
                                 onChangeText={(value) => setFormData({ ...formData, department: value })}
+                                error={errors.department}
                             />
                         </View>
 
@@ -211,7 +304,7 @@ export default function ConfirmOwnerDataScreen() {
 
 const styles = StyleSheet.create({
     content: {
-        flex: 1,
+        flexGrow: 0,
     },
     button: {
         marginTop: 24,

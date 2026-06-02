@@ -22,7 +22,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function PaymentQRScreen() {
     const router = useRouter();
-    const { planId } = useLocalSearchParams();
+    const { planId, planIndex } = useLocalSearchParams();
     const { vehicle, plans, quoterId, isLoading, generateTransaction, finalizeQuote } = useQuote();
     const [isCopied, setIsCopied] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -30,7 +30,12 @@ export default function PaymentQRScreen() {
     const themeColors = useThemeColor();
     const link = `https://bci.cl/id=${quoterId}`;
 
-    const selectedPlan = plans.find(plan => plan.planId === planId);
+    const planIdValue = Array.isArray(planId) ? planId[0] : planId;
+    const planIndexValue = Array.isArray(planIndex) ? planIndex[0] : planIndex;
+    const parsedPlanIndex = Number(planIndexValue);
+    const selectedPlan = Number.isInteger(parsedPlanIndex) && plans[parsedPlanIndex]
+        ? plans[parsedPlanIndex]
+        : plans.find(plan => plan.planId === planIdValue);
 
     useMessageConfig(['/quoter/finalize/quote']);
 

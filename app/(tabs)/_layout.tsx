@@ -1,6 +1,7 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/shared/hooks';
 import { useOnboarding } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +9,9 @@ import { Ionicons } from '@expo/vector-icons';
 export default function TabLayout() {
   const themeColors = useThemeColor();
   const { shouldShowOnboarding } = useOnboarding();
+  const insets = useSafeAreaInsets();
+  const tabBarBottomPadding = Math.max(insets.bottom, 12);
+  const tabBarHeight = 56 + tabBarBottomPadding + 8;
 
   return (
     <Tabs
@@ -16,8 +20,9 @@ export default function TabLayout() {
         tabBarInactiveTintColor: themeColors.placeholderColor,
         tabBarStyle: {
           backgroundColor: themeColors.backgroundColor,
-          height: 88,
-          paddingBottom: 20,
+          height: tabBarHeight,
+          paddingTop: 8,
+          paddingBottom: tabBarBottomPadding,
           borderTopWidth: 0,
           borderTopColor: themeColors.unfocusedBorderColor,
           display: shouldShowOnboarding ? 'none' : 'flex',
@@ -27,7 +32,7 @@ export default function TabLayout() {
           fontWeight: '600',
         },
         tabBarIconStyle: {
-          marginTop: 12,
+          marginTop: 4,
         },
         headerShown: false,
       }}>

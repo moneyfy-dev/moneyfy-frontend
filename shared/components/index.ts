@@ -20,6 +20,7 @@ export { BackgroundCircles } from './images/BackgroundCircles';
 export { NoAccountWarningIcon } from './images/NoAccountWarning';
 export { BgSection } from './images/BgSection';
 export { LogoBci } from './images/LogoBci';
+export { LogoFDI } from './images/LogoFDI';
 
 // Vehicle Images
 export { MotorcycleIcon } from './images/vehicles/MotorcycleIcon';

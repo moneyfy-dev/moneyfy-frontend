@@ -1,7 +1,8 @@
 import { api } from '../api';
 import type { 
   User,
-  ApiResponse 
+  ApiResponse,
+  MonthlyEarnings
 } from '@/core/types';
 
 export const userService = {
@@ -58,6 +59,13 @@ export const userService = {
 
   getReferreds: async (): Promise<ApiResponse> => {
     const response = await api.post('/users/list/referreds');
+    return response.data;
+  },
+
+  getMonthlyEarnings: async (): Promise<ApiResponse<{ monthlyEarnings: MonthlyEarnings; user?: User }>> => {
+    const response = await api.post('/users/monthly/earnings', {}, {
+      skipGlobalErrorMessage: true,
+    } as any);
     return response.data;
   }
 };

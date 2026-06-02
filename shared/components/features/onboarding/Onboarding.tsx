@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, StyleSheet, Dimensions, FlatList } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColor } from '../../../hooks/useThemeColor';
 import { ThemedText } from '../../ui/ThemedText';
 import { ThemedButton } from '../../ui/ThemedButton';
@@ -35,6 +36,7 @@ export const Onboarding = () => {
   const flatListRef = useRef<FlatList>(null);
   const { setHasSeenOnboarding, setShouldShowOnboarding } = useOnboarding();
   const themeColors = useThemeColor();
+  const insets = useSafeAreaInsets();
 
   const handleNext = () => {
     if (activeSlide === slides.length - 1) {
@@ -124,7 +126,12 @@ export const Onboarding = () => {
           index,
         })}
       />
-      <View style={styles.buttonContainer}>
+      <View
+        style={[
+          styles.buttonContainer,
+          { paddingBottom: Math.max(insets.bottom, 24) }
+        ]}
+      >
         <ThemedButton
           text={activeSlide === slides.length - 1 ? "Comenzar" : "Siguiente"}
           onPress={handleNext}
@@ -171,6 +178,6 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     paddingHorizontal: 40,
-    marginVertical: 24,
+    paddingTop: 24,
   },
 }); 

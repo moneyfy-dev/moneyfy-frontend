@@ -28,25 +28,10 @@ export const authService = {
   },
 
   register: async (data: RegisterRequest): Promise<ApiResponse> => {
-    console.warn('[auth.register] start', {
-      baseURL: api.defaults.baseURL,
-      email: data.email,
-    });
     try {
       const response = await api.post('/auth/register', data);
-
-      console.warn('[auth.register] response', {
-        httpStatus: (response as any)?.status,
-        apiStatus: (response as any)?.data?.status,
-      });
-
       return (response as any).data;
     } catch (error: any) {
-      console.warn('[auth.register] error', {
-        message: error?.message,
-        httpStatus: error?.response?.status,
-        apiMessage: error?.response?.data?.message,
-      });
       throw error;
     }
   },
@@ -62,27 +47,13 @@ export const authService = {
   },
 
   confirmCode: async (data: ConfirmCodeRequest): Promise<ApiResponse | RegisterResponse> => {
-    console.warn('[auth.confirmCode] start', {
-      baseURL: api.defaults.baseURL,
-      flow: data.flow,
-      email: data.email,
-      codeLength: data.code?.length,
-    });
     let response: ApiResponse | RegisterResponse;
     switch (data.flow) {
       case 'registerUser':
         response = await api.post('/auth/confirm/registration', { email: data.email, code: data.code });
-        console.warn('[auth.confirmCode] response', {
-          httpStatus: (response as any)?.status,
-          apiStatus: (response as any)?.data?.status,
-        });
         return response.data;
       case 'changeDevice':
         response = await api.put('/auth/confirm/device/change', { email: data.email, code: data.code });
-        console.warn('[auth.confirmCode] response', {
-          httpStatus: (response as any)?.status,
-          apiStatus: (response as any)?.data?.status,
-        });
         return response.data;
       default:
         throw new Error('Invalid flow type');
@@ -91,7 +62,6 @@ export const authService = {
 
   resendCode: async (email: string, type: ConfirmationFlowType): Promise<ApiResponse> => {
     const response = await api.put('/auth/resend/code', { email, type });
-    console.log('response', response);
     return response.data;
   }
 };

@@ -3,28 +3,16 @@ import { ThemedInputCommonProps } from '@/core/types';
 import { TextInput, StyleSheet, NativeSyntheticEvent, TextInputFocusEventData } from 'react-native';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { BaseInput } from '../inputs/BaseInput';
+import { cleanRUT, formatRUT } from '@/shared/utils/validations';
 
 export const RutInput = forwardRef<TextInput, ThemedInputCommonProps>(
   ({ value, onChangeText, ...props }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
     const themeColors = useThemeColor();
 
-    const formatRUT = (rut: string) => {
-      const cleaned = rut.replace(/[^\dkK]/g, '');
-      let formatted = '';
-      if (cleaned.length > 1) {
-        const lastChar = cleaned.slice(-1).toLowerCase();
-        const rutWithoutLastChar = cleaned.slice(0, -1).replace(/[^\d]/g, '');
-        formatted = rutWithoutLastChar.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '-' + lastChar;
-      } else {
-        formatted = cleaned;
-      }
-      return formatted;
-    };
-
     const handleRUTChange = (text: string) => {
-      const validValue = text.replace(/[^\dkK]/g, '');
-      onChangeText(validValue);
+      const cleaned = cleanRUT(text);
+      onChangeText(cleaned.length >= 8 ? formatRUT(cleaned) : cleaned);
     };
 
     const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {

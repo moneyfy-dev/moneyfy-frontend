@@ -250,7 +250,6 @@ export default function QuotersScreen() {
           value={searchQuery}
           onChangeText={handleSearch}
           placeholder="Buscar por nombre"
-          onIconPress={() => console.log('Buscar:', searchQuery)}
         />
       </View>
 
@@ -363,6 +362,7 @@ export default function QuotersScreen() {
 const styles = StyleSheet.create({
   headerContainer: {
     paddingHorizontal: 24,
+    paddingTop: 24,
   },
   header: {
     paddingVertical: 24,

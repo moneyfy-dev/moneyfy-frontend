@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { User, ROUTES } from '@/core/types';
-import { View, StyleSheet, TouchableOpacity, Image, Dimensions, RefreshControl } from 'react-native';
+import { User, ROUTES, MonthlyEarnings } from '@/core/types';
+import { View, StyleSheet, TouchableOpacity, Image, RefreshControl, useWindowDimensions } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, AvatarIcon, LoadingScreen, Onboarding } from '@/shared/components';
@@ -9,14 +9,35 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { LineChart } from 'react-native-chart-kit';
 import { useUser, useOnboarding } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
+import { userService } from '@/core/services';
+import { format, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
 
-const FORCE_SHOW_ONBOARDING = true; // Mantenemos esto para desarrollo
+const FORCE_SHOW_ONBOARDING = false;
+
+const formatChartAxisAmount = (value: string) => {
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount)) {
+    return value;
+  }
+
+  if (amount >= 1000000) {
+    return `${Math.round(amount / 1000000)}M`;
+  }
+
+  if (amount >= 1000) {
+    return `${Math.round(amount / 1000)}k`;
+  }
+
+  return Math.round(amount).toString();
+};
 
 export default function HomeScreen() {
   const themeColors = useThemeColor();
   const router = useRouter();
+  const { width: windowWidth } = useWindowDimensions();
   const { user, hydrateUserData } = useUser();
-  const [isLoading, setIsLoading] = useState(false);
   const typedUser = user as User;
   const [showBalance, setShowBalance] = useState(false);
   const [personalInfo, setPersonalInfo] = useState({
@@ -27,12 +48,18 @@ export default function HomeScreen() {
     fechaNacimiento: new Date(),
     profilePicture: '',
   });
-  const screenWidth = Dimensions.get("window").width;
+  const screenWidth = windowWidth;
   const toggleBalance = () => setShowBalance(!showBalance);
-  const { shouldShowOnboarding, setShouldShowOnboarding } = useOnboarding();
+  const { hasSeenOnboarding, shouldShowOnboarding, setShouldShowOnboarding } = useOnboarding();
   const route = useLocalSearchParams();
   const { fromConfirmation } = route;
   const [refreshing, setRefreshing] = useState(false);
+  const [monthlyEarnings, setMonthlyEarnings] = useState<MonthlyEarnings | null>(null);
+
+  const loadMonthlyEarnings = async () => {
+    const response = await userService.getMonthlyEarnings();
+    setMonthlyEarnings(response.data?.monthlyEarnings ?? null);
+  };
 
   useEffect(() => {
     if (user) {
@@ -51,7 +78,8 @@ export default function HomeScreen() {
     const initializeData = async () => {
       try {
         await hydrateUserData(true);
-      } catch (error) {
+        await loadMonthlyEarnings().catch(() => setMonthlyEarnings(null));
+      } catch {
       }
     };
 
@@ -66,13 +94,29 @@ export default function HomeScreen() {
     setRefreshing(true);
     try {
       await hydrateUserData(true);
-    } catch (error) {
+      await loadMonthlyEarnings().catch(() => setMonthlyEarnings(null));
+    } catch {
     } finally {
       setRefreshing(false);
     }
   };
 
-  if (shouldShowOnboarding) {
+  const chartMonths = monthlyEarnings?.months ?? [];
+  const chartLabels = chartMonths.length > 0
+    ? chartMonths.map((item) => {
+      try {
+        return format(parseISO(item.month), 'MMM', { locale: es }).replace('.', '');
+      } catch {
+        return item.month.slice(5, 7);
+      }
+    })
+    : [''];
+  const chartValues = chartMonths.length > 0
+    ? chartMonths.map((item) => item.totalCommission)
+    : [0];
+  const hasChartData = chartValues.some((value) => value > 0);
+
+  if (shouldShowOnboarding || (fromConfirmation === 'true' && !hasSeenOnboarding)) {
     return <Onboarding />;
   }
 
@@ -135,19 +179,21 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.chartContainer}>
+        {hasChartData ? (
         <LineChart
           data={{
-            labels: ["Jun", "Jul", "Ago", "Sep", "Oct"],
-            datasets: [{ data: [70000, 60000, 80000, 70000, 65000] }]
+            labels: chartLabels,
+            datasets: [{ data: chartValues }]
           }}
-          width={screenWidth + 70} // Ajusta según tus necesidades
+          width={screenWidth}
           height={200}
           yAxisLabel=""
           yAxisSuffix=""
+          formatYLabel={formatChartAxisAmount}
           withVerticalLines={true}
-          withHorizontalLines={false}
+          withHorizontalLines={true}
           withVerticalLabels={true}
-          withHorizontalLabels={false}
+          withHorizontalLabels={true}
           withInnerLines={true}
           withOuterLines={false}
           chartConfig={{
@@ -166,7 +212,8 @@ export default function HomeScreen() {
             },
             propsForBackgroundLines: {
               stroke: Colors.common.gray1,
-              strokeWidth: 1
+              strokeWidth: 0.5,
+              strokeOpacity: 0.25,
             },
             fillShadowGradient: Colors.common.green1,
             fillShadowGradientOpacity: 1,
@@ -175,9 +222,15 @@ export default function HomeScreen() {
           style={{
             marginVertical: 8,
             borderRadius: 0,
-            marginLeft: -50
           }}
         />
+        ) : (
+          <View style={[styles.chartEmptyState, { backgroundColor: themeColors.backgroundCardColor }]}>
+            <ThemedText variant="paragraph" textAlign="center">
+              Aun no hay comisiones para graficar
+            </ThemedText>
+          </View>
+        )}
       </View>
 
       <View style={styles.cardContainer}>
@@ -247,7 +300,6 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
       </View>
-      {isLoading && <LoadingScreen />}
     </ThemedLayout>
   );
 }
@@ -296,6 +348,14 @@ const styles = StyleSheet.create({
   chartContainer: {
     borderRadius: 16,
     overflow: 'hidden',
+    marginHorizontal: -24,
+    paddingBottom: 24,
+  },
+  chartEmptyState: {
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
   },
   cardContainer: {
     width: '100%',

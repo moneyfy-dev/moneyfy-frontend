@@ -127,7 +127,6 @@ export default function RegisterScreen() {
         }
 
         try {
-            console.log('[RegisterScreen] submit', { email: email.trim() });
             const formData: RegisterRequest = {
                 name: sanitizedNombre,
                 surname: sanitizedApellido,

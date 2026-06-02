@@ -14,3 +14,23 @@ export interface Wallet {
     updatedDate: string;
     walletDetail: any[];
   }
+
+export interface MonthlyCommission {
+    transactionId: string;
+    approvalDate: string;
+    commission: number;
+}
+
+export interface MonthlyEarningMonth {
+    month: string;
+    totalCommission: number;
+    totalAmount: number;
+    commissions: MonthlyCommission[];
+}
+
+export interface MonthlyEarnings {
+    months: MonthlyEarningMonth[];
+    finalCommissions: number;
+    finalAmount: number;
+    lastMonth: string;
+}

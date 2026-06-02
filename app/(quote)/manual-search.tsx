@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { Brand, Model, OWNER_OPTIONS_MAP, ROUTES } from '@/core/types';
-import { View, StyleSheet } from 'react-native';
+import { ScrollView, TextInput, View, StyleSheet } from 'react-native';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
 import {
     ThemedView,
@@ -13,12 +13,15 @@ import {
     MessageModal,
     LoadingScreen
 } from "@/shared/components";
-import { validateEmail, validateName, validatePhoneNumber, validatePPU, validateRUT } from '@/shared/utils/validations';
+import { formatRUT, validateEmail, validateName, validatePhoneNumber, validatePPU, validateRUT } from '@/shared/utils/validations';
 import { useQuote } from '@/core/context';
+import { getQuoteErrorMessage } from '@/shared/utils/quoteErrors';
 
 export default function ManualSearchScreen() {
     const themeColors = useThemeColor();
     const router = useRouter();
+    const scrollRef = useRef<ScrollView>(null);
+    const rutInputRef = useRef<TextInput>(null);
     const {
         startQuotationFlow,
         getAvailableVehicles,
@@ -27,6 +30,9 @@ export default function ManualSearchScreen() {
     } = useQuote();
     const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
     const [selectedModel, setSelectedModel] = useState<Model | null>(null);
+    const [quoteError, setQuoteError] = useState('');
+    const [rutErrorVisible, setRutErrorVisible] = useState(false);
+    const [rutInputY, setRutInputY] = useState(0);
 
     const [formData, setFormData] = useState({
         ppu: '',
@@ -59,6 +65,18 @@ export default function ManualSearchScreen() {
     });
 
     useMessageConfig(['/quoter/vehicle/quote']);
+
+    const focusRutInput = () => {
+        scrollRef.current?.scrollTo({ y: Math.max(rutInputY - 24, 0), animated: true });
+        setTimeout(() => {
+            rutInputRef.current?.focus();
+        }, 250);
+    };
+
+    const closeRutError = () => {
+        setRutErrorVisible(false);
+        focusRutInput();
+    };
 
     const validateForm = () => {
         let isValid = true;
@@ -160,6 +178,10 @@ export default function ManualSearchScreen() {
 
     const handleSubmit = async () => {
         if (!validateForm()) {
+            if (formData.purchaserId && !validateRUT(formData.purchaserId)) {
+                focusRutInput();
+                setRutErrorVisible(true);
+            }
             return;
           }
       
@@ -181,7 +203,30 @@ export default function ManualSearchScreen() {
             return;
           }
 
+        if (!formData.ppu || !formData.brand || !formData.model || !formData.year || !formData.version ||
+            !formData.purchaserId || !formData.purchaserName || !formData.purchaserPaternalSur ||
+            !formData.purchaserMaternalSur || !formData.purchaserEmail || !formData.purchaserPhone || !formData.isOwner) {
+            setErrors({
+              ppu: !formData.ppu ? 'Ingrese la patente del vehiculo' : '',
+              brand: !formData.brand ? 'Ingrese la marca del vehiculo' : '',
+              model: !formData.model ? 'Ingrese el modelo del vehiculo' : '',
+              year: !formData.year ? 'Ingrese el ano del vehiculo' : '',
+              version: !formData.version ? 'Ingrese la version del vehiculo' : '',
+              purchaserId: !formData.purchaserId ? 'Ingrese el RUT del comprador' : '',
+              purchaserName: !formData.purchaserName ? 'Ingrese el nombre del comprador' : '',
+              purchaserPaternalSur: !formData.purchaserPaternalSur ? 'Ingrese el apellido paterno del comprador' : '',
+              purchaserMaternalSur: !formData.purchaserMaternalSur ? 'Ingrese el apellido materno del comprador' : '',
+              purchaserEmail: !formData.purchaserEmail ? 'Ingrese el email del comprador' : '',
+              purchaserPhone: !formData.purchaserPhone ? 'Ingrese el telefono del comprador' : '',
+              isOwner: !formData.isOwner ? 'Ingrese si es el dueno del vehiculo' : '',
+            });
+            return;
+        }
+
+        const formattedPurchaserId = formatRUT(formData.purchaserId);
+
         try {
+            setFormData(prev => ({ ...prev, purchaserId: formattedPurchaserId }));
             const response = await startQuotationFlow({
                 quoterId: '',
                 ppu: formData.ppu.toUpperCase(),
@@ -189,7 +234,7 @@ export default function ManualSearchScreen() {
                 model: formData.model,
                 year: formData.year,
                 requestType: 'Manual',
-                purchaserId: formData.purchaserId,
+                purchaserId: formattedPurchaserId,
                 purchaserName: formData.purchaserName,
                 purchaserPaternalSur: formData.purchaserPaternalSur,
                 purchaserMaternalSur: formData.purchaserMaternalSur,
@@ -206,6 +251,11 @@ export default function ManualSearchScreen() {
                 }
             });
         } catch (error) {
+            setQuoteError(getQuoteErrorMessage(error, {
+                emptyPlansMessage: 'No encontramos planes vigentes para este vehiculo. Intenta con otros datos o vuelve a cotizar mas tarde.',
+                genericMessage: 'No fue posible obtener planes para esta cotizacion. Intentalo nuevamente en unos minutos.',
+                invalidJwtMessage: 'La API rechazo la sesion de cotizacion. Cierra sesion e ingresa nuevamente; si sigue ocurriendo, el backend debe renovar el refresh token al iniciar sesion.',
+            }));
         }
     };
 
@@ -213,7 +263,7 @@ export default function ManualSearchScreen() {
         <>
             {isLoading ? <LoadingScreen /> : (
 
-                <ThemedLayout padding={[0, 40]}>
+                <ThemedLayout padding={[0, 40]} scrollRef={scrollRef}>
                     <View style={styles.content}>
 
                         <ThemedInput
@@ -272,14 +322,17 @@ export default function ManualSearchScreen() {
                             Datos del comprador
                         </ThemedText>
 
-                        <ThemedInput
-                            label="RUT del comprador"
-                            value={formData.purchaserId}
-                            onChangeText={(value) => setFormData({ ...formData, purchaserId: value })}
-                            error={errors.purchaserId}
-                            placeholder="RUT"
-                            isRUT={true}
-                        />
+                        <View onLayout={(event) => setRutInputY(event.nativeEvent.layout.y)}>
+                            <ThemedInput
+                                ref={rutInputRef}
+                                label="RUT del comprador"
+                                value={formData.purchaserId}
+                                onChangeText={(value) => setFormData({ ...formData, purchaserId: value })}
+                                error={errors.purchaserId}
+                                placeholder="RUT"
+                                isRUT={true}
+                            />
+                        </View>
 
                         <ThemedInput
                             label="Nombre"
@@ -341,6 +394,34 @@ export default function ManualSearchScreen() {
 
             )
             }
+            <MessageModal
+                isVisible={!!quoteError}
+                onClose={() => setQuoteError('')}
+                title="No se pudo cotizar"
+                message={quoteError}
+                icon={{
+                    name: 'alert-circle-outline',
+                    color: themeColors.status.warning,
+                }}
+                primaryButton={{
+                    text: 'Entendido',
+                    onPress: () => setQuoteError(''),
+                }}
+            />
+            <MessageModal
+                isVisible={rutErrorVisible}
+                onClose={closeRutError}
+                title="RUT invalido"
+                message="Revisa el RUT ingresado. Debe tener un formato valido y digito verificador correcto."
+                icon={{
+                    name: 'alert-circle-outline',
+                    color: themeColors.status.warning,
+                }}
+                primaryButton={{
+                    text: 'Entendido',
+                    onPress: closeRutError,
+                }}
+            />
         </>
     );
 }

@@ -30,4 +30,4 @@ interface AuthContextType extends AuthState {
   requestPasswordReset: (email: string) => Promise<PasswordResetResponse>;
 }
 
-export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);

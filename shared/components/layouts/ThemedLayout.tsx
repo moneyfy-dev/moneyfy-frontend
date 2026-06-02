@@ -1,5 +1,6 @@
 import React from 'react';
 import { KeyboardAvoidingView, ScrollView, Platform, StyleSheet, ViewStyle, RefreshControl, RefreshControlProps } from 'react-native';
+import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { ThemedSafeAreaView } from '../layouts/ThemedSafeAreaView';
 import { BgSection } from '../images/BgSection';
@@ -11,27 +12,32 @@ interface ThemedLayoutProps {
     children: React.ReactNode;
     contentContainerStyle?: ViewStyle;
     padding?: PaddingProp;
+    scrollRef?: React.Ref<ScrollView>;
     refreshControl?: React.ReactElement<RefreshControlProps>;
     variant?: 'default' | 'card';
     gradientColors?: readonly [string, string, ...string[]];
     showBgSection?: boolean;
+    safeAreaEdges?: Edge[];
 }
 
 export const ThemedLayout: React.FC<ThemedLayoutProps> = ({ 
     children, 
     contentContainerStyle,
     padding = [40, 40],
+    scrollRef,
     refreshControl,
     variant = 'default',
     gradientColors,
     showBgSection = true,
+    safeAreaEdges,
 }) => {
     const themeColors = useThemeColor();
+    const insets = useSafeAreaInsets();
     const [paddingTop, paddingBottom] = Array.isArray(padding) ? padding : [padding, padding];
 
     if (variant === 'card') {
         return (
-            <ThemedSafeAreaView style={styles.container}>
+            <ThemedSafeAreaView style={styles.container} edges={safeAreaEdges}>
                 <LinearGradient
                     colors={gradientColors ?? ([themeColors.backgroundColor, themeColors.backgroundColor] as const)}
                     style={styles.gradient}
@@ -51,19 +57,24 @@ export const ThemedLayout: React.FC<ThemedLayoutProps> = ({
     }
 
     return (
-        <ThemedSafeAreaView style={styles.container}>
+        <ThemedSafeAreaView style={styles.container} edges={safeAreaEdges}>
             {showBgSection && <BgSection style={styles.backgroundSvg} />}
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
                 style={styles.keyboardAvoidingView}
             >
                 <ScrollView 
+                    ref={scrollRef}
                     contentContainerStyle={[
                         styles.scrollViewContent, 
-                        { paddingTop, paddingBottom },
+                        { paddingTop, paddingBottom: Math.max(paddingBottom, insets.bottom + 24) },
                         contentContainerStyle
                     ]}
                     refreshControl={refreshControl}
+                    keyboardShouldPersistTaps="handled"
+                    keyboardDismissMode="on-drag"
+                    showsVerticalScrollIndicator={false}
+                    automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
                 >
                     {children}
                 </ScrollView>

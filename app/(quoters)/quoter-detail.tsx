@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Quoter, QuoterStatus, InsurancePlan } from '@/core/types';
+import { Quoter, QuoterStatus, InsurancePlan, ROUTES } from '@/core/types';
 import { View, StyleSheet } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedLayout, ThemedText, QuoteCard, VehicleCard, IconContainer, QuoterInfoCard, LoadingScreen } from '@/shared/components';
+import { ThemedLayout, ThemedText, QuoteCard, VehicleCard, IconContainer, QuoterInfoCard, LoadingScreen, ThemedButton, MessageModal } from '@/shared/components';
 import { format } from 'date-fns';
-import { useUser } from '@/core/context';
-import { useQuote } from '@/core/context';
+import { useUser, useQuote } from '@/core/context';
+import { getQuoteErrorMessage } from '@/shared/utils/quoteErrors';
 
 export default function QuoterDetailScreen() {
   const params = useLocalSearchParams();
+  const router = useRouter();
   const themeColors = useThemeColor();
   const [quoter, setQuoter] = useState<Quoter | null>(null);
   const [plan, setPlan] = useState<InsurancePlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [resumeError, setResumeError] = useState('');
   const { user } = useUser();
-  const { searchPlanById } = useQuote();
+  const { searchPlanById, hydrateQuoteSession, startQuotationFlow } = useQuote();
 
   useEffect(() => {
     const loadQuoterData = async () => {
@@ -42,6 +44,7 @@ export default function QuoterDetailScreen() {
             monthlyPriceUF: currentQuoter.quoterPlanData.monthlyPriceUF || 0,
             totalMonths: currentQuoter.quoterPlanData.totalMonths || 0,
             valueUF: currentQuoter.quoterPlanData.valueUF || 0,
+            deductibleDesc: currentQuoter.quoterPlanData.deductibleDesc || plan.deductibleDesc,
           };
           setPlan(insurancePlan);
         }
@@ -76,6 +79,72 @@ export default function QuoterDetailScreen() {
 
   const getTextColor = (status: QuoterStatus) => {
     return status === 'Caducado' ? Colors.common.black : Colors.common.white;
+  };
+
+  const canResumeQuote =
+    quoter.quoterStatus === 'Cotizando'
+    || (!!plan && (quoter.quoterStatus === 'Recopilando' || quoter.quoterStatus === 'Pendiente'));
+
+  const handleResumeQuote = async () => {
+    if (!quoter) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      if (quoter.quoterStatus === 'Cotizando') {
+        await hydrateQuoteSession({
+          vehicle: quoter.quoterCarData,
+          plans: [],
+          quoterId: quoter.quoterId,
+        });
+
+        await startQuotationFlow({
+          quoterId: quoter.quoterId,
+          ppu: quoter.quoterCarData.ppu,
+          brand: quoter.quoterCarData.brand,
+          model: quoter.quoterCarData.model,
+          year: quoter.quoterCarData.year,
+          requestType: 'Auto',
+          purchaserId: quoter.quoterPurchaserData.personalId,
+          purchaserName: quoter.quoterPurchaserData.name,
+          purchaserPaternalSur: quoter.quoterPurchaserData.paternalSurname,
+          purchaserMaternalSur: quoter.quoterPurchaserData.maternalSurname,
+          purchaserEmail: quoter.quoterPurchaserData.email,
+          purchaserPhone: quoter.quoterPurchaserData.phone,
+          ownerRelationOption: quoter.quoterPurchaserData.ownerRelationOption,
+          colour: quoter.quoterCarData.colour,
+          engineNum: quoter.quoterCarData.engineNum,
+          chassisNum: quoter.quoterCarData.chassisNum,
+        });
+
+        router.push(ROUTES.QUOTE.QUOTE_RESULTS);
+        return;
+      }
+
+      if (!plan) {
+        return;
+      }
+
+      await hydrateQuoteSession({
+        vehicle: quoter.quoterCarData,
+        plans: [plan],
+        quoterId: quoter.quoterId,
+      });
+
+      router.push({
+        pathname: ROUTES.QUOTE.PAYMENT_QR,
+        params: { quoterId: quoter.quoterId, planId: plan.planId }
+      });
+    } catch (error) {
+      setResumeError(getQuoteErrorMessage(error, {
+        emptyPlansMessage: 'No encontramos planes disponibles para retomar esta cotizacion. Puedes iniciar una nueva cotizacion con los datos actualizados.',
+        genericMessage: 'No fue posible retomar esta cotizacion. Intentalo nuevamente en unos minutos.',
+        invalidJwtMessage: 'La API rechazo la sesion de cotizacion al retomar este flujo. Cierra sesion e ingresa nuevamente; si sigue ocurriendo, el backend debe renovar el refresh token al iniciar sesion.',
+      }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -172,8 +241,36 @@ export default function QuoterDetailScreen() {
           personalData={quoter.quoterOwnerData}
           addressData={quoter.quoterAddressData}
         />
+
+        {canResumeQuote && (
+          <ThemedButton
+            text={
+              quoter.quoterStatus === 'Pendiente'
+                ? 'Ver codigo de pago'
+                : quoter.quoterStatus === 'Cotizando'
+                  ? 'Continuar cotizacion'
+                  : 'Continuar compra'
+            }
+            onPress={handleResumeQuote}
+            style={styles.resumeButton}
+          />
+        )}
       </View>
       {isLoading && <LoadingScreen />}
+      <MessageModal
+        isVisible={!!resumeError}
+        onClose={() => setResumeError('')}
+        title="No se pudo continuar"
+        message={resumeError}
+        icon={{
+          name: 'alert-circle-outline',
+          color: themeColors.status.warning,
+        }}
+        primaryButton={{
+          text: 'Entendido',
+          onPress: () => setResumeError(''),
+        }}
+      />
     </ThemedLayout>
   );
 }
@@ -225,5 +322,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  resumeButton: {
+    marginTop: 12,
   },
 });

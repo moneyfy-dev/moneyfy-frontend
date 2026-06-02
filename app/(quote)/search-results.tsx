@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { OWNER_OPTIONS_MAP, ROUTES } from '@/core/types';
-import { View, StyleSheet } from 'react-native';
+import { ScrollView, TextInput, View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
 import {
   ThemedText,
@@ -10,17 +11,25 @@ import {
   ThemedButton,
   ThemedView,
   VehicleCard,
-  LoadingScreen
+  LoadingScreen,
+  MessageModal
 } from '@/shared/components';
 import { useQuote } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
-import { validateRUT, validateName, validateEmail, validatePhoneNumber } from '@/shared/utils/validations';
+import { formatRUT, validateRUT, validateName, validateEmail, validatePhoneNumber } from '@/shared/utils/validations';
+import { getQuoteErrorMessage } from '@/shared/utils/quoteErrors';
 
 export default function SearchResultsScreen() {
   const { value } = useLocalSearchParams();
   const themeColors = useThemeColor();
+  const insets = useSafeAreaInsets();
   const router = useRouter();
+  const scrollRef = useRef<ScrollView>(null);
+  const rutInputRef = useRef<TextInput>(null);
   const { startQuotationFlow, isLoading, vehicle, quoterId } = useQuote();
+  const [quoteError, setQuoteError] = useState('');
+  const [rutErrorVisible, setRutErrorVisible] = useState(false);
+  const [rutInputY, setRutInputY] = useState(0);
   const [formData, setFormData] = useState({
     purchaserId: '',
     purchaserName: '',
@@ -30,7 +39,6 @@ export default function SearchResultsScreen() {
     purchaserPhone: '',
     isOwner: 'Si, soy el dueño del vehículo'
   });
-  const [ownerOption, setOwnerOption] = useState(Object.keys(OWNER_OPTIONS_MAP)[0]);
   const [errors, setErrors] = useState({
     purchaserId: '',
     purchaserName: '',
@@ -41,6 +49,18 @@ export default function SearchResultsScreen() {
   });
 
   useMessageConfig(['/quoter/vehicle/quote']);
+
+  const focusRutInput = () => {
+    scrollRef.current?.scrollTo({ y: Math.max(rutInputY - 24, 0), animated: true });
+    setTimeout(() => {
+      rutInputRef.current?.focus();
+    }, 250);
+  };
+
+  const closeRutError = () => {
+    setRutErrorVisible(false);
+    focusRutInput();
+  };
 
   // Verificar que tenemos los datos necesarios
   useEffect(() => {
@@ -97,6 +117,10 @@ export default function SearchResultsScreen() {
   const handleQuote = async () => {
     
     if (!validateForm()) {
+      if (formData.purchaserId && !validateRUT(formData.purchaserId)) {
+        focusRutInput();
+        setRutErrorVisible(true);
+      }
       return;
     }
 
@@ -119,29 +143,45 @@ export default function SearchResultsScreen() {
       !formData.purchaserMaternalSur ||
       !formData.purchaserEmail ||
       !formData.purchaserPhone ||
-      !ownerOption ||
+      !formData.isOwner ||
       !quoterId) {
+      setErrors({
+        purchaserId: !formData.purchaserId ? 'Ingrese el RUT del comprador' : '',
+        purchaserName: !formData.purchaserName ? 'Ingrese el nombre del comprador' : '',
+        purchaserPaternalSur: !formData.purchaserPaternalSur ? 'Ingrese el apellido paterno del comprador' : '',
+        purchaserMaternalSur: !formData.purchaserMaternalSur ? 'Ingrese el apellido materno del comprador' : '',
+        purchaserEmail: !formData.purchaserEmail ? 'Ingrese el email del comprador' : '',
+        purchaserPhone: !formData.purchaserPhone ? 'Ingrese el telefono del comprador' : '',
+      });
       return;
     }
 
+    const formattedPurchaserId = formatRUT(formData.purchaserId);
+
     try {
-      const response = await startQuotationFlow({
+      setFormData(prev => ({ ...prev, purchaserId: formattedPurchaserId }));
+      await startQuotationFlow({
         quoterId: quoterId,
         ppu: vehicle.ppu,
         brand: vehicle.brand,
         model: vehicle.model,
         year: vehicle.year,
         requestType: 'Auto',
-        purchaserId: formData.purchaserId,
+        purchaserId: formattedPurchaserId,
         purchaserName: formData.purchaserName,
         purchaserPaternalSur: formData.purchaserPaternalSur,
         purchaserMaternalSur: formData.purchaserMaternalSur,
         purchaserEmail: formData.purchaserEmail,
         purchaserPhone: formData.purchaserPhone,
-        ownerRelationOption: OWNER_OPTIONS_MAP[ownerOption as keyof typeof OWNER_OPTIONS_MAP],
+        ownerRelationOption: OWNER_OPTIONS_MAP[formData.isOwner as keyof typeof OWNER_OPTIONS_MAP],
       });
       router.push(ROUTES.QUOTE.QUOTE_RESULTS);
     } catch (error) {
+      setQuoteError(getQuoteErrorMessage(error, {
+        emptyPlansMessage: 'No encontramos planes vigentes para este vehiculo. Intenta con otra patente o vuelve a cotizar mas tarde.',
+        genericMessage: 'No fue posible obtener planes para esta cotizacion. Intentalo nuevamente en unos minutos.',
+        invalidJwtMessage: 'La API rechazo la sesion de cotizacion. Cierra sesion e ingresa nuevamente; si sigue ocurriendo, el backend debe renovar el refresh token al iniciar sesion.',
+      }));
     }
   };
 
@@ -176,7 +216,7 @@ export default function SearchResultsScreen() {
   return (
     <>
       {isLoading ? <LoadingScreen /> : (
-        <ThemedLayout padding={[0, 40]}>
+        <ThemedLayout padding={[0, Math.max(120, insets.bottom + 96)]} scrollRef={scrollRef}>
           <View style={styles.content}>
             <View style={styles.header}>
               <ThemedText variant="superTitle">
@@ -208,14 +248,17 @@ export default function SearchResultsScreen() {
               </ThemedText>
             </View>
 
-            <ThemedInput
-              label="RUT del comprador"
-              value={formData.purchaserId}
-              onChangeText={(value) => setFormData({ ...formData, purchaserId: value })}
-              error={errors.purchaserId}
-              placeholder="RUT"
-              isRUT={true}
-            />
+            <View onLayout={(event) => setRutInputY(event.nativeEvent.layout.y)}>
+              <ThemedInput
+                ref={rutInputRef}
+                label="RUT del comprador"
+                value={formData.purchaserId}
+                onChangeText={(value) => setFormData({ ...formData, purchaserId: value })}
+                error={errors.purchaserId}
+                placeholder="RUT"
+                isRUT={true}
+              />
+            </View>
 
             <ThemedInput
               label="Nombre"
@@ -267,14 +310,42 @@ export default function SearchResultsScreen() {
             />
           </View>
 
-          <ThemedButton
-            text="Siguiente"
-            onPress={handleQuote}
-            disabled={!vehicle || !formData.purchaserId || !formData.purchaserName || !formData.purchaserPaternalSur || !formData.purchaserMaternalSur || !ownerOption}
+            <ThemedButton
+              text="Siguiente"
+              onPress={handleQuote}
+            disabled={!vehicle || !formData.purchaserId || !formData.purchaserName || !formData.purchaserPaternalSur || !formData.purchaserMaternalSur || !formData.purchaserEmail || !formData.purchaserPhone || !formData.isOwner}
             style={styles.button}
           />
         </ThemedLayout>
       )}
+      <MessageModal
+        isVisible={!!quoteError}
+        onClose={() => setQuoteError('')}
+        title="No se pudo cotizar"
+        message={quoteError}
+        icon={{
+          name: 'alert-circle-outline',
+          color: themeColors.status.warning,
+        }}
+        primaryButton={{
+          text: 'Entendido',
+          onPress: () => setQuoteError(''),
+        }}
+      />
+      <MessageModal
+        isVisible={rutErrorVisible}
+        onClose={closeRutError}
+        title="RUT invalido"
+        message="Revisa el RUT ingresado. Debe tener un formato valido y digito verificador correcto."
+        icon={{
+          name: 'alert-circle-outline',
+          color: themeColors.status.warning,
+        }}
+        primaryButton={{
+          text: 'Entendido',
+          onPress: closeRutError,
+        }}
+      />
     </>
   );
 }

@@ -29,7 +29,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const hydrateUserData = useCallback(async (force: boolean = false) => {
     try {
-      console.warn('[UserProvider.hydrateUserData] start', { force });
       setIsLoading(true);
       
       // Verificar si necesitamos actualizar
@@ -43,12 +42,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { token, sessionToken } = await storage.auth.getTokens();
 
       if (!token || !sessionToken) {
-        console.warn('[UserProvider.hydrateUserData] no tokens');
         throw new Error('No tokens available');
       }
 
       const response = await userService.getUserData();
-      console.log(response.data.user.quoters);
       if (response?.data?.user) {
         await storage.user.setData(response.data.user);
         setUser(response.data.user);

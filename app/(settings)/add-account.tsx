@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { ScrollView, TextInput, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, ThemedCheckGroup, MessageModal } from '@/shared/components';
-import { validateName, validateEmail, validateRUT, validateBankAccount } from '@/shared/utils/validations';
+import { formatRUT, validateName, validateEmail, validateRUT, validateBankAccount } from '@/shared/utils/validations';
 import { useSettings } from '@/core/context';
 import { BankAccount } from '@/core/types';
 
@@ -19,7 +20,12 @@ const BANKS = [
 export default function AddAccountScreen() {
     const { accountId } = useLocalSearchParams<{ accountId: string }>();
     const router = useRouter();
+    const insets = useSafeAreaInsets();
+    const themeColors = useThemeColor();
+    const scrollRef = useRef<ScrollView>(null);
+    const rutInputRef = useRef<TextInput>(null);
     const { accounts, addAccount, updateAccount } = useSettings();
+    const [rutErrorVisible, setRutErrorVisible] = useState(false);
     const [formData, setFormData] = useState<Omit<BankAccount, 'accountId' | 'selected'>>({
         personalId: '',
         holderName: '',
@@ -37,6 +43,18 @@ export default function AddAccountScreen() {
     });
 
     useMessageConfig(['/accounts/create', '/accounts/update']);
+
+    const focusRutInput = () => {
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+        setTimeout(() => {
+            rutInputRef.current?.focus();
+        }, 250);
+    };
+
+    const closeRutError = () => {
+        setRutErrorVisible(false);
+        focusRutInput();
+    };
 
     useEffect(() => {
         if (accountId) {
@@ -90,6 +108,10 @@ export default function AddAccountScreen() {
 
     const handleSave = async () => {
         if (!validateForm()) {
+            if (formData.personalId && !validateRUT(formData.personalId)) {
+                focusRutInput();
+                setRutErrorVisible(true);
+            }
             return;
         }
 
@@ -110,11 +132,17 @@ export default function AddAccountScreen() {
             return;
           }
 
+        const formattedPersonalId = formatRUT(formData.personalId);
+        const accountData = {
+            ...formData,
+            personalId: formattedPersonalId,
+        };
+
         try {
             if (accountId) {
-                await updateAccount(accountId, formData);
+                await updateAccount(accountId, accountData);
             } else {
-                await addAccount({...formData, selected: false});
+                await addAccount({ ...accountData, selected: false });
             }
             router.back();
         } catch (error) {
@@ -128,8 +156,10 @@ export default function AddAccountScreen() {
     ];
 
     return (
-        <ThemedLayout padding={[0, 40]}>
+        <>
+        <ThemedLayout padding={[0, Math.max(120, insets.bottom + 96)]} scrollRef={scrollRef}>
             <ThemedInput
+                ref={rutInputRef}
                 label="RUT"
                 value={formData.personalId}
                 onChangeText={(text) => setFormData(prev => ({ ...prev, personalId: text }))}
@@ -198,6 +228,21 @@ export default function AddAccountScreen() {
                 disabled={!formData.personalId || !formData.holderName || !formData.email || !formData.accountNumber || !formData.bank || !formData.accountType}
             />
         </ThemedLayout>
+        <MessageModal
+            isVisible={rutErrorVisible}
+            onClose={closeRutError}
+            title="RUT invalido"
+            message="Revisa el RUT ingresado. Debe tener un formato valido y digito verificador correcto."
+            icon={{
+                name: 'alert-circle-outline',
+                color: themeColors.status.warning,
+            }}
+            primaryButton={{
+                text: 'Entendido',
+                onPress: closeRutError,
+            }}
+        />
+        </>
     );
 }
 

@@ -29,12 +29,23 @@ export interface QuoterPlanData {
   monthlyPriceUF: number;
   totalMonths: number;
   valueUF: number;
+  deductibleDesc?: string;
 }
 
 export interface QuoterAddressData {
   street: string;
   streetNumber: string;
   department: string;
+}
+
+export interface QuoterPurchaserData {
+  personalId: string;
+  name: string;
+  paternalSurname: string;
+  maternalSurname: string;
+  email: string;
+  phone: string;
+  ownerRelationOption: string;
 }
 
 export interface QuoterPayment {
@@ -53,5 +64,6 @@ export interface Quoter {
   quoterCarData: QuoterCarData;
   quoterPlanData: QuoterPlanData;
   quoterAddressData: QuoterAddressData;
+  quoterPurchaserData: QuoterPurchaserData;
   quoterPayment: QuoterPayment;
 }

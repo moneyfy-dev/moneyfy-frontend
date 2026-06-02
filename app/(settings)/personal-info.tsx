@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import * as FileSystem from 'expo-file-system';
 import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
-import { ThemedLayout, ThemedDatePicker, ThemedInput, ThemedButton, ProfilePictureModal, AvatarIcon, MessageModal, ThemedText } from '@/shared/components';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useMessageConfig, useThemeColor } from '@/shared/hooks';
+import { ThemedLayout, ThemedDatePicker, ThemedInput, ThemedButton, ProfilePictureModal, AvatarIcon, ThemedText } from '@/shared/components';
 import { validateName, validatePhoneNumber, validateAddress } from '@/shared/utils/validations';
 import { useSettings } from '@/core/context';
 import { PersonalData, ROUTES } from '@/core/types';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useMessageConfig } from '@/shared/hooks';
 
 interface FormData extends Omit<PersonalData, 'dateOfBirth' | 'email'> {
     dateOfBirth: Date | null;
@@ -27,6 +26,7 @@ interface FormErrors {
 export default function PersonalInfoScreen() {
     const { personalInfo, updatePersonalInfo } = useSettings();
     const themeColors = useThemeColor();
+    const insets = useSafeAreaInsets();
     const [isModalVisible, setModalVisible] = useState(false);
     const [formData, setFormData] = useState<FormData>({
         name: personalInfo.name || '',
@@ -145,24 +145,16 @@ export default function PersonalInfoScreen() {
             !formData.phone ||
             !formData.address ||
             !formData.dateOfBirth) {
+            setErrors({
+              name: !formData.name ? 'Ingrese el nombre' : '',
+              surname: !formData.surname ? 'Ingrese el apellido' : '',
+              phone: !formData.phone ? 'Ingrese el telefono' : '',
+              address: !formData.address ? 'Ingrese la direccion' : '',
+            });
             return;
           }
 
         try {
-            let profilePictureToSend = formData.profilePicture;
-
-            // Si la imagen está en base64 (imagen existente del usuario)
-            if (formData.profilePicture && formData.profilePicture.startsWith('data:image')) {
-                const base64Data = formData.profilePicture.split(',')[1];
-                const filePath = `${FileSystem.documentDirectory}profilePicture.jpg`;
-                await FileSystem.writeAsStringAsync(filePath, base64Data, { encoding: FileSystem.EncodingType.Base64 });
-                profilePictureToSend = filePath;
-            } else if (!formData.profilePicture) {
-                // Si el usuario ha eliminado la imagen
-                profilePictureToSend = '';
-            }
-            // Si no, es una nueva imagen seleccionada (ya está en formato URI)
-
             const updateData: Partial<PersonalData> = {
                 name: formData.name,
                 surname: formData.surname,
@@ -171,8 +163,10 @@ export default function PersonalInfoScreen() {
                 dateOfBirth: formData.dateOfBirth?.toISOString().split('T')[0] || '',
             };
 
-            if (profilePictureToSend !== '') {
-                updateData.profilePicture = profilePictureToSend;
+            if (!formData.profilePicture) {
+                updateData.profilePicture = '';
+            } else if (!formData.profilePicture.startsWith('data:image')) {
+                updateData.profilePicture = formData.profilePicture;
             }
 
             await updatePersonalInfo(updateData);
@@ -197,7 +191,7 @@ export default function PersonalInfoScreen() {
 
 
     return (
-        <ThemedLayout padding={[0, 40]}>
+        <ThemedLayout padding={[0, Math.max(120, insets.bottom + 96)]}>
             <View style={styles.content}>
                 <View style={styles.profileSection}>
                     <TouchableOpacity onPress={thereIsProfilePicture} style={styles.profileImageContainer}>
@@ -276,8 +270,7 @@ export default function PersonalInfoScreen() {
 
 const styles = StyleSheet.create({
     content: {
-        flex: 1,
-        marginBottom: 48,
+        flexGrow: 0,
     },
     profileSection: {
         flexDirection: 'column',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { InsurancePlan, ROUTES } from '@/core/types';
 import { View, StyleSheet, Pressable, FlatList } from 'react-native';
@@ -22,7 +22,6 @@ export default function QuoteResults() {
     const [showFilters, setShowFilters] = useState(false);
     const router = useRouter();
     const { plans, vehicle } = useQuote();
-    const [filteredPlans, setFilteredPlans] = useState<InsurancePlan[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState<Filters>({
         insurerName: '',
@@ -34,10 +33,22 @@ export default function QuoteResults() {
         deductible: ''
     });
 
+    const getInsurerName = (plan: InsurancePlan) =>
+        typeof plan.insurer === 'string' ? plan.insurer : plan.insurer?.name ?? '';
+
+    const getPlanId = (plan: InsurancePlan) =>
+        plan.planId || (plan as any).quoterPlanId || (plan as any).idPlan || (plan as any).id || '';
+
     // Obtener valores únicos para los filtros
-    const uniqueInsurers = Array.from(new Set(plans?.map(plan => plan.insurer.name) || []));
-    const uniqueWorkshopTypes = Array.from(new Set(plans?.map(plan => plan.workshopType) || []));
-    const uniqueDeductibles = React.useMemo(() => {
+    const uniqueInsurers = useMemo(
+        () => Array.from(new Set((plans || []).map(getInsurerName).filter(Boolean))),
+        [plans]
+    );
+    const uniqueWorkshopTypes = useMemo(
+        () => Array.from(new Set((plans || []).map(plan => plan.workshopType).filter(Boolean))),
+        [plans]
+    );
+    const uniqueDeductibles = useMemo(() => {
         if (!plans) return [];
         
         return Array.from(new Set(plans.map(plan => plan.deductible.toString())))
@@ -45,13 +56,6 @@ export default function QuoteResults() {
             .sort((a, b) => a - b)  // Ordenar numéricamente
             .map(String);  // Volver a convertir a strings
     }, [plans]);
-
-    useEffect(() => {
-        console.log(plans);
-        if (plans) {
-            filterPlans();
-        }
-    }, [plans, searchQuery, filters]);
 
     // Función para formatear números con separador de miles
     const formatNumber = (value: string) => {
@@ -66,22 +70,22 @@ export default function QuoteResults() {
         return value.replace(/\./g, '');
     };
 
-    const filterPlans = () => {
-        if (!plans) return;
+    const filteredPlans = useMemo(() => {
+        if (!plans) return [];
 
         let filtered = [...plans];
 
         // Filtrar por búsqueda de aseguradora
         if (searchQuery) {
             filtered = filtered.filter(plan => 
-                plan.insurer.name.toLowerCase().includes(searchQuery.toLowerCase())
+                getInsurerName(plan).toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
 
         // Filtrar por aseguradora específica
         if (filters.insurerName) {
             filtered = filtered.filter(plan => 
-                plan.insurer.name === filters.insurerName
+                getInsurerName(plan) === filters.insurerName
             );
         }
 
@@ -109,8 +113,8 @@ export default function QuoteResults() {
             );
         }
 
-        setFilteredPlans(filtered);
-    };
+        return filtered;
+    }, [filters, plans, searchQuery]);
 
     const resetFilters = () => {
         setFilters({
@@ -126,14 +130,20 @@ export default function QuoteResults() {
     };
 
     const handleSelectPlan = (plan: InsurancePlan) => {
+        const planIndex = plans.findIndex(candidate => candidate === plan);
+        const selectedPlanId = getPlanId(plan);
+
         router.push({
             pathname: ROUTES.QUOTE.CONFIRM_ADDRESS,
-            params: { planId: plan.planId }
+            params: {
+                planId: selectedPlanId,
+                planIndex: planIndex >= 0 ? String(planIndex) : undefined,
+            }
         });
     };
 
     return (
-        <ThemedLayoutFlatList padding={[0, 24]}>
+        <ThemedLayoutFlatList padding={[0, 24]} contentContainerStyle={styles.screenContent}>
             <View style={styles.container}>
                 {vehicle && (
                     <View style={styles.header}>
@@ -169,6 +179,8 @@ export default function QuoteResults() {
 
                 <FlatList
                     data={filteredPlans}
+                    style={styles.planList}
+                    contentContainerStyle={styles.planListContent}
                     renderItem={({ item }) => (
                         <QuoteCard
                             plan={item}
@@ -176,7 +188,13 @@ export default function QuoteResults() {
                             showButton={true}
                         />
                     )}
-                    keyExtractor={(item) => item.planId}
+                    keyExtractor={(item, index) => [
+                        getPlanId(item),
+                        getInsurerName(item),
+                        item.deductible,
+                        item.monthlyPriceUF,
+                        index,
+                    ].join('-')}
                 />
 
                 <FiltersModal
@@ -229,15 +247,18 @@ export default function QuoteResults() {
                             </View>
                         </View>
 
-                        {/* Filtro de Tipo de Taller 
-                        <View style={[styles.filterSection, { borderBottomColor: themeColors.borderBackgroundColor }]}>
-                            <ThemedText variant="subTitle" marginBottom={10}>Tipo de Taller</ThemedText>
-                            <ThemedCheckGroup
-                                options={uniqueWorkshopTypes.map(type => ({ key: type, label: type }))}
-                                selectedValue={filters.workshopType}
-                                onSelect={(value) => setFilters({ ...filters, workshopType: value })}
-                            />
-                        </View>*/}
+                        {uniqueWorkshopTypes.length > 0 && (
+                            <View style={[styles.filterSection, { borderBottomColor: themeColors.borderBackgroundColor }]}>
+                                <ThemedText variant="subTitle" marginBottom={10}>Tipo de Taller</ThemedText>
+                                <ThemedInput
+                                    value={filters.workshopType}
+                                    onChangeText={(value) => setFilters({ ...filters, workshopType: value })}
+                                    placeholder="Selecciona un tipo de taller"
+                                    isSelect={true}
+                                    options={uniqueWorkshopTypes}
+                                />
+                            </View>
+                        )}
 
                         {/* Filtro de Deducible */}
                         <View style={[styles.filterSection, { borderBottomColor: themeColors.borderBackgroundColor }]}>
@@ -275,6 +296,9 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    screenContent: {
+        paddingBottom: 0,
+    },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -293,6 +317,14 @@ const styles = StyleSheet.create({
     },
     filterIcon: {
         padding: 12
+    },
+    planList: {
+        flex: 1,
+        minHeight: 0,
+    },
+    planListContent: {
+        gap: 16,
+        paddingBottom: 8,
     },
     card: {
         padding: 16,

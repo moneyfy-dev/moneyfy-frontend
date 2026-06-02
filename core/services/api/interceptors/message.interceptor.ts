@@ -9,6 +9,10 @@ interface ApiErrorResponse {
   data?: any;
 }
 
+const shouldSkipGlobalMessage = (config: any) => {
+  return Boolean(config?.skipGlobalErrorMessage || config?.skipGlobalSuccessMessage);
+};
+
 let messageHandler: {
   showError: (message: string) => void;
   showSuccess: (message: string) => void;
@@ -47,7 +51,7 @@ export const setupMessageInterceptor = () => {
   api.interceptors.response.use(
     (response: AxiosResponse) => {
       try {
-        if (messageHandler) {
+        if (messageHandler && !shouldSkipGlobalMessage(response.config)) {
           const endpoint = getEndpointFromUrl(response.config.url);
           const config = messageHandler.getEndpointConfig(endpoint);
           
@@ -63,17 +67,9 @@ export const setupMessageInterceptor = () => {
       }
     },
     async (error: AxiosError) => {
-      if (messageHandler) {
+      if (messageHandler && !shouldSkipGlobalMessage(error.config)) {
         const endpoint = getEndpointFromUrl(error.config?.url);
         const status = error.response?.status || 500;
-        console.warn('[API] error', {
-          method: error.config?.method,
-          url: error.config?.url,
-          baseURL: error.config?.baseURL,
-          status,
-          code: (error as any)?.code,
-          message: error.message,
-        });
         const defaultMessage = (error.response?.data as ApiErrorResponse)?.message || error.message || 'Error de conexión';
         
         // Usar el mensaje predefinido según el endpoint y status

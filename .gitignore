@@ -13,6 +13,10 @@ npm-debug.*
 *.orig.*
 web-build/
 
+# Postman local exports
+MoneyFy - Prod.postman_environment.json
+MoneyFy API - Producción.postman_collection (1).json
+
 # macOS
 .DS_Store
 

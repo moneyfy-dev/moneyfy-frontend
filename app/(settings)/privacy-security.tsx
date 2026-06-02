@@ -24,16 +24,18 @@ export default function PrivacySecurityScreen() {
         setIsBiometricEnabled(security.fingerprintEnabled);
     }, [security.fingerprintEnabled]);
 
-    const handleToggle = async () => {
+    const handleToggle = async (newValue: boolean) => {
         if (isLoading) return;
-        const newValue = !isBiometricEnabled;
+        const previousValue = isBiometricEnabled;
 
         try {
+            setIsBiometricEnabled(newValue);
             setIsLoading(true);
 
             if (newValue) {
                 const isAvailable = await isBiometricAvailable();
                 if (!isAvailable) {
+                    setIsBiometricEnabled(previousValue);
                     setErrorMessage('La autenticación biométrica no está disponible');
                     setIsErrorModalVisible(true);
                     return;
@@ -46,7 +48,6 @@ export default function PrivacySecurityScreen() {
             ]);
 
             await updateSecurity({ fingerprintEnabled: newValue });
-            setIsBiometricEnabled(newValue);
 
             setSuccessMessage(newValue ?
                 'Autenticación biométrica activada' :
@@ -54,6 +55,7 @@ export default function PrivacySecurityScreen() {
             );
             setIsSuccessModalVisible(true);
         } catch (error) {
+            setIsBiometricEnabled(previousValue);
             setErrorMessage('Error al actualizar la configuración');
             setIsErrorModalVisible(true);
         } finally {

@@ -1,5 +1,6 @@
 import React from 'react';
-import { KeyboardAvoidingView, ScrollView, Platform, StyleSheet, ViewStyle, View } from 'react-native';
+import { StyleSheet, ViewStyle, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedSafeAreaView } from '../layouts/ThemedSafeAreaView';
 import { BgSection } from '../images/BgSection';
 
@@ -16,25 +17,25 @@ export const ThemedLayoutFlatList: React.FC<ThemedLayoutProps> = ({
     contentContainerStyle,
     padding = [40, 40] // Valor por defecto
 }) => {
+    const insets = useSafeAreaInsets();
     const [paddingVertical, paddingHorizontal] = Array.isArray(padding) ? padding : [padding, padding];
 
     return (
         <ThemedSafeAreaView style={styles.container}>
             <BgSection style={styles.backgroundSvg} />
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-                style={styles.keyboardAvoidingView}
+            <View
+                style={[
+                    styles.content,
+                    {
+                        paddingTop: paddingVertical,
+                        paddingBottom: Math.max(paddingVertical, insets.bottom + 24),
+                        paddingHorizontal,
+                    },
+                    contentContainerStyle
+                ]}
             >
-                <View
-                    style={[
-                        styles.scrollViewContent, 
-                        { paddingVertical, paddingHorizontal },
-                        contentContainerStyle
-                    ]}
-                >
-                    {children}
-                </View>
-            </KeyboardAvoidingView>
+                {children}
+            </View>
         </ThemedSafeAreaView>
     );
 };
@@ -43,11 +44,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    keyboardAvoidingView: {
+    content: {
         flex: 1,
-    },
-    scrollViewContent: {
-        flexGrow: 1,
     },
     backgroundSvg: {
         position: 'absolute',

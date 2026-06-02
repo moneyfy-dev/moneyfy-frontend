@@ -39,8 +39,9 @@ export const settingsService = {
             }
         });
 
-        // Solo agregar profilePicture si existe y es una nueva imagen (no base64)
-        if (info.profilePicture && !info.profilePicture.startsWith('data:image')) {
+        if (info.profilePicture === '') {
+            formData.append('profilePicture', '');
+        } else if (info.profilePicture && !info.profilePicture.startsWith('data:image')) {
             const uriParts = info.profilePicture.split('.');
             const fileType = uriParts[uriParts.length - 1];
 

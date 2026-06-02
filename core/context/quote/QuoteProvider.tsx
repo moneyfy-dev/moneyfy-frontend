@@ -3,10 +3,10 @@ import { QuoteContext } from './QuoteContext';
 import { quoteService } from '@/core/services/quote';
 import { useUser } from '../user/useUser';
 import { storage } from '@/shared/utils/storage';
-import { 
-    type Vehicle, 
-    type InsurancePlan, 
-    type QuoteVehicleParams, 
+import {
+    type Vehicle,
+    type InsurancePlan,
+    type QuoteVehicleParams,
     type SelectPlanParams,
     type SearchResponse,
     type QuoteVehicleResponse,
@@ -14,7 +14,6 @@ import {
     type GenerateTransactionParams,
     type FinalizeQuoteParams,
     type ApiResponse,
-    ROUTES,
 } from '@/core/types';
 
 export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -26,14 +25,13 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [error, setError] = useState<string | null>(null);
     const [availableVehicles, setAvailableVehicles] = useState<Brand[]>([]);
 
-    // Cargar datos del storage al iniciar
     useEffect(() => {
         const loadQuoteData = async () => {
             try {
                 const [storedVehicle, storedPlans, storedQuoterId] = await Promise.all([
                     storage.quote.getVehicle(),
                     storage.quote.getPlans(),
-                    storage.quote.getQuoterId()
+                    storage.quote.getQuoterId(),
                 ]);
 
                 if (storedVehicle) setVehicle(storedVehicle);
@@ -47,13 +45,12 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, []);
 
     const searchVehicle = useCallback(async (
-        ownerId: string, 
+        ownerId: string,
         ppu: string
     ): Promise<SearchResponse> => {
         setIsLoading(true);
         try {
             const response = await quoteService.searchVehicle(ownerId, ppu);
-
 
             if (response.data?.user) {
                 await updateUserData(response.data.user);
@@ -63,7 +60,7 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 setVehicle(response.data.vehicle);
                 await storage.quote.setVehicle(response.data.vehicle);
             }
-            
+
             if (response.data?.quoterId) {
                 setQuoterId(response.data.quoterId as string);
                 await storage.quote.setQuoterId(response.data.quoterId as string);
@@ -71,7 +68,7 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
             return response;
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Error al buscar vehículo';
+            const message = error instanceof Error ? error.message : 'Error al buscar vehiculo';
             setError(message);
             throw error;
         } finally {
@@ -93,25 +90,28 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
             if (response.data.quoterId) {
                 setQuoterId(response.data.quoterId);
+                await storage.quote.setQuoterId(response.data.quoterId);
             }
 
             return response;
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Error al iniciar cotización';
+            const message = error instanceof Error ? error.message : 'Error al iniciar cotizacion';
             setError(message);
             throw error;
         } finally {
             setIsLoading(false);
         }
-    }, [updateUserData]);
+    }, []);
 
     const selectPlan = useCallback(async (
         planData: SelectPlanParams
     ): Promise<void> => {
-        console.log(planData)
         setIsLoading(true);
         try {
-            await quoteService.selectPlan(planData);
+            const response = await quoteService.selectPlan(planData);
+            if (response.data?.user) {
+                await updateUserData(response.data.user);
+            }
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Error al seleccionar plan';
             setError(message);
@@ -136,7 +136,7 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
             return response;
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Error al obtener vehículos disponibles';
+            const message = error instanceof Error ? error.message : 'Error al obtener vehiculos disponibles';
             setError(message);
             throw error;
         } finally {
@@ -149,11 +149,31 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setPlans([]);
         setQuoterId(null);
         setError(null);
-        
+
         try {
             await storage.quote.clearQuote();
         } catch (error) {
         }
+    }, []);
+
+    const hydrateQuoteSession = useCallback(async ({
+        vehicle,
+        plans,
+        quoterId,
+    }: {
+        vehicle: Vehicle;
+        plans: InsurancePlan[];
+        quoterId: string;
+    }) => {
+        setVehicle(vehicle);
+        setPlans(plans);
+        setQuoterId(quoterId);
+
+        await Promise.all([
+            storage.quote.setVehicle(vehicle),
+            storage.quote.setPlans(plans),
+            storage.quote.setQuoterId(quoterId),
+        ]);
     }, []);
 
     const searchPlanById = useCallback(async (
@@ -162,7 +182,6 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsLoading(true);
         try {
             const response = await quoteService.searchPlanById(planId);
-            console.log(response.data.data.plans);
             return response.data;
         } catch (error) {
             throw error;
@@ -176,13 +195,16 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     ): Promise<void> => {
         setIsLoading(true);
         try {
-            await quoteService.generateTransaction(params);
+            const response = await quoteService.generateTransaction(params);
+            if (response.data?.user) {
+                await updateUserData(response.data.user);
+            }
         } catch (error) {
             throw error;
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [updateUserData]);
 
     const finalizeQuote = useCallback(async (
         params: FinalizeQuoteParams
@@ -217,9 +239,10 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 searchPlanById,
                 generateTransaction,
                 finalizeQuote,
+                hydrateQuoteSession,
             }}
         >
             {children}
         </QuoteContext.Provider>
     );
-}; 
+};

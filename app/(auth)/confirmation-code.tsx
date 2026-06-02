@@ -36,11 +36,6 @@ export default function ConfirmationCodeScreen() {
                 }, 3000);
             }
         } catch (error: any) {
-            console.warn('[ConfirmationCode] error', {
-                message: error?.message,
-                httpStatus: error?.response?.status,
-                apiData: error?.response?.data,
-            });
             const apiMessage =
                 error?.response?.data?.message ||
                 (typeof error?.response?.data === 'string' ? error.response.data : null);

@@ -56,6 +56,23 @@ export const validatePhoneNumber = (phone: string): boolean => {
     return phoneRegex.test(phone.trim());
 };
 
+export const cleanRUT = (rut: string): string => {
+    return rut.replace(/[^\dkK]/g, '').slice(0, 9);
+};
+
+export const formatRUT = (rut: string): string => {
+    const cleaned = cleanRUT(rut);
+
+    if (cleaned.length <= 1) {
+        return cleaned;
+    }
+
+    const rutDigits = cleaned.slice(0, -1);
+    const dv = cleaned.slice(-1).toLowerCase();
+
+    return `${rutDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}-${dv}`;
+};
+
 export const validateAddress = (address: string): boolean => {
     const addressRegex = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ0-9\s,.]+$/;
     return addressRegex.test(address.trim());
@@ -63,16 +80,16 @@ export const validateAddress = (address: string): boolean => {
 
 export const validateRUT = (rut: string): boolean => {
     // Eliminar puntos y guión del RUT
-    rut = rut.replace(/\./g, '').replace('-', '');
+    const cleanedRut = cleanRUT(rut);
 
     // Validar formato
-    if (!/^0*(\d{1,3}(\.?\d{3})*)-?[\dkK]$/.test(rut)) {
+    if (!/^\d{1,8}[\dkK]$/.test(cleanedRut)) {
         return false;
     }
 
     // Obtener dígitos y dígito verificador
-    const rutDigits = rut.slice(0, -1);
-    const dv = rut.slice(-1).toLowerCase();
+    const rutDigits = cleanedRut.slice(0, -1);
+    const dv = cleanedRut.slice(-1).toLowerCase();
 
     // Calcular dígito verificador
     let sum = 0;

@@ -27,10 +27,15 @@ interface QuoteContextType {
     startQuotationFlow: (quoteData: QuoteVehicleParams) => Promise<QuoteVehicleResponse>;
     selectPlan: (planData: SelectPlanParams) => Promise<void>;
     getAvailableVehicles: () => Promise<VehiclesResponse>;
-    clearQuoteData: () => void;
+    clearQuoteData: () => Promise<void>;
     searchPlanById: (planId: string) => Promise<ApiResponse>;
     generateTransaction: (params: GenerateTransactionParams) => Promise<void>;
-    finalizeQuote: (params: FinalizeQuoteParams) => Promise<void>;  
+    finalizeQuote: (params: FinalizeQuoteParams) => Promise<void>;
+    hydrateQuoteSession: (payload: {
+        vehicle: Vehicle;
+        plans: InsurancePlan[];
+        quoterId: string;
+    }) => Promise<void>;
 }
 
 export const QuoteContext = createContext<QuoteContextType | undefined>(undefined); 

@@ -37,6 +37,7 @@ export interface InsurancePlan {
   monthlyPrice: number;
   monthlyPriceUF: number;
   deductible: number;
+  deductibleDesc?: string;
   discount: number;
   stolenVehicle: string;
   totalLoss: string;
@@ -76,6 +77,7 @@ export interface SelectPlanParams {
   monthlyPriceUF: number;
   monthlyPrice: number;
   deductible: number;
+  deductibleDesc: string;
   discount: number;
   ownerName: string;
   ownerPaternalSur: string;
@@ -106,6 +108,10 @@ export interface QuoteVehicleResponse {
   status: number;
   data: {
     quoterId: string;
+    error?: string;
+    errorMessage?: string;
+    requestBody?: string;
+    response?: string;
     insurer: Insurer;
     plans: InsurancePlan[];
   };
@@ -121,6 +127,9 @@ export interface QuoteResult {
   plans: InsurancePlan[];
   quoterId: string | null;
   insurer?: Insurer;
+  error?: string;
+  errorMessage?: string;
+  insurerAlias?: string;
 }
 
 export interface Model {

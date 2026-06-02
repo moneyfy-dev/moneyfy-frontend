@@ -1,8 +1,8 @@
 import { api } from '../api/config';
-import type { 
-    SearchResponse, 
-    QuoteVehicleParams, 
-    QuoteVehicleResponse, 
+import type {
+    SearchResponse,
+    QuoteVehicleParams,
+    QuoteVehicleResponse,
     SelectPlanParams,
     VehiclesResponse,
     QuoteResult,
@@ -11,132 +11,212 @@ import type {
     ApiResponse
 } from '@/core/types';
 
+const EMPTY_QUOTE_RESULT: QuoteResult = {
+    plans: [],
+    quoterId: null,
+};
+
+export class NoQuotePlansError extends Error {
+    details: QuoteResult[];
+
+    constructor(details: QuoteResult[]) {
+        super('No se encontraron planes disponibles');
+        this.name = 'NoQuotePlansError';
+        this.details = details;
+    }
+}
+
+const normalizeInsurer = (planInsurer: unknown, responseInsurer: QuoteVehicleResponse['data']['insurer']) => {
+    if (responseInsurer && typeof responseInsurer === 'object') {
+        return responseInsurer;
+    }
+
+    if (planInsurer && typeof planInsurer === 'object') {
+        return planInsurer;
+    }
+
+    if (typeof planInsurer === 'string') {
+        return {
+            insurerId: '',
+            name: planInsurer,
+            alias: '',
+            darkLogo: '',
+            lightLogo: '',
+        };
+    }
+
+    return {
+        insurerId: '',
+        name: '',
+        alias: '',
+        darkLogo: '',
+        lightLogo: '',
+    };
+};
+
+const getInsurerAliases = (response: SearchResponse): string[] => {
+    const rawInsurers = response.data?.insurers as unknown[] | undefined;
+
+    if (!Array.isArray(rawInsurers)) {
+        return [];
+    }
+
+    return rawInsurers
+        .map((insurer) => {
+            if (typeof insurer === 'string') {
+                return insurer;
+            }
+
+            if (
+                insurer &&
+                typeof insurer === 'object' &&
+                'alias' in insurer &&
+                typeof insurer.alias === 'string'
+            ) {
+                return insurer.alias;
+            }
+
+            return null;
+        })
+        .filter((alias): alias is string => !!alias);
+};
+
+const buildQuoteResponse = (response: QuoteVehicleResponse): QuoteVehicleResponse => {
+    const plans = (response.data?.plans || []).map((plan) => ({
+        ...plan,
+        planId: plan.planId || (plan as any).quoterPlanId || (plan as any).idPlan || (plan as any).id || '',
+        insurer: normalizeInsurer(plan.insurer, response.data?.insurer),
+    }));
+    const insurer = normalizeInsurer(plans[0]?.insurer, response.data.insurer);
+
+    return {
+        ...response,
+        data: {
+            ...response.data,
+            plans,
+            insurer,
+        }
+    };
+};
+
 export const quoteService = {
-    // Búsqueda de compañías aseguradoras
-    searchCompanies(): Promise<SearchResponse> {
-        return api.get('/quoter/search/insurers')
-            .then(response => {
-                return response.data;
-            })
+    searchCompanies(config?: Record<string, unknown>): Promise<SearchResponse> {
+        return api.get('/quoter/search/insurers', config as any)
+            .then(response => response.data)
             .catch(error => {
                 throw error;
             });
     },
 
-    // Búsqueda de vehículo
     searchVehicle(ownerId: string, ppu: string): Promise<SearchResponse> {
         return api.post('/quoter/search/vehicle', { ownerId, ppu })
-            .then(response => {
-                return response.data; // Esto ya devuelve el objeto con message, status y data
-            })
-            .catch(error => {
-                console.error('❌ Error en searchVehicle:', error.response?.data);
-                throw error;
-            });
+            .then(response => response.data);
     },
 
-    // Cotización de vehículo
-    quoteVehicle(quoteData: QuoteVehicleParams): Promise<QuoteVehicleResponse> {
-        return api.post('/quoter/search/plan', quoteData)
-            .then(response => {
-                return response.data;
-            })
+    quoteVehicle(quoteData: QuoteVehicleParams, config?: Record<string, unknown>): Promise<QuoteVehicleResponse> {
+        return api.post('/quoter/search/plan', quoteData, config as any)
+            .then(response => response.data)
             .catch(error => {
                 throw error;
             });
     },
 
-    // Selección de plan
     selectPlan(planData: SelectPlanParams): Promise<QuoteVehicleResponse> {
-        return api.put('/quoter/select/plan', planData);
+        return api.put('/quoter/select/plan', planData, {
+            skipGlobalErrorMessage: true,
+        } as any);
     },
 
-    // Obtener vehículos disponibles
     getAvailableVehicles: async (): Promise<VehiclesResponse> => {
         const response = await api.get('/quoter/search/vehicle/brands');
         return response.data;
     },
 
-    // Flujo completo de cotización
     async startQuotationFlow(quoteData: Omit<QuoteVehicleParams, 'insurerAlias'>): Promise<QuoteVehicleResponse> {
         try {
-            // 1. Obtener compañías
-            const companiesResponse = await this.searchCompanies();
+            let insurerAliases: string[] = [];
 
-            // Transformar el array de strings en array de Company
-            const companies = (companiesResponse.data?.insurers || []).map(alias => ({
-                name: alias,
-                alias: alias
-            }));
-            
-            if (companies.length === 0) {
-                throw new Error('No hay compañías disponibles para cotizar');
+            try {
+                const companiesResponse = await this.searchCompanies({
+                    skipGlobalErrorMessage: true,
+                });
+                insurerAliases = getInsurerAliases(companiesResponse);
+            } catch {
             }
 
-            // 2. Crear cotizaciones en paralelo con manejo individual de errores
-            const quotePromises = companies.map(async (company): Promise<QuoteResult> => {
+            if (insurerAliases.length === 0) {
+                throw new Error('No hay aseguradoras configuradas para cotizar');
+            }
+
+            const quotePromises = insurerAliases.map(async (insurerAlias): Promise<QuoteResult> => {
                 try {
-                    const quoteParams: QuoteVehicleParams = {
-                        ...quoteData,
-                        insurerAlias: company.alias,
-                    };
-                    const response = await this.quoteVehicle(quoteParams);
-                    
-                    if (!response.data?.plans) {
+                    const response = buildQuoteResponse(await this.quoteVehicle(
+                        {
+                            ...quoteData,
+                            insurerAlias,
+                        },
+                        {
+                            skipGlobalErrorMessage: true,
+                        }
+                    ));
+
+                    if (!response.data?.plans?.length) {
                         return {
                             plans: [],
-                            quoterId: response.data?.quoterId || null
+                            quoterId: response.data?.quoterId || null,
+                            insurer: response.data?.insurer,
+                            insurerAlias,
+                            error: response.data?.error,
+                            errorMessage: response.data?.errorMessage,
                         };
                     }
 
-                    const plansWithInsurer = response.data.plans.map(plan => ({
-                        ...plan,
-                        insurer: response.data.insurer
-                    }));
-
                     return {
-                        plans: plansWithInsurer,
+                        plans: response.data.plans,
                         quoterId: response.data.quoterId,
-                        insurer: response.data.insurer
+                        insurer: response.data.insurer,
+                        insurerAlias,
+                        error: response.data.error,
+                        errorMessage: response.data.errorMessage,
                     };
                 } catch (error) {
                     return {
-                        plans: [],
-                        quoterId: null
+                        ...EMPTY_QUOTE_RESULT,
+                        insurerAlias,
+                        error: String((error as any)?.response?.status || ''),
+                        errorMessage: (error as any)?.response?.data?.message || (error as Error)?.message || 'Error al cotizar',
                     };
                 }
             });
 
-            // 3. Ejecutar cotizaciones con timeout
-            const results = await Promise.all<QuoteResult>(
-                quotePromises.map(p => 
+            const results = await Promise.all(
+                quotePromises.map((promise) =>
                     Promise.race<QuoteResult>([
-                        p,
-                        new Promise<QuoteResult>((_, reject) => 
-                            setTimeout(() => reject(new Error('Timeout en cotización')), 30000)
-                        )
+                        promise,
+                        new Promise<QuoteResult>((resolve) => {
+                            setTimeout(() => resolve(EMPTY_QUOTE_RESULT), 30000);
+                        })
                     ])
                 )
             );
-            
-            // 4. Filtrar y procesar resultados
-            const allPlans = results
-                .map((result: QuoteResult) => result.plans)
-                .flat()
-                .filter(plan => plan !== null && plan !== undefined);
 
-            const quoterId = results.find((result: QuoteResult) => result.quoterId)?.quoterId;
-            
+            const allPlans = results
+                .map((result) => result.plans)
+                .flat()
+                .filter((plan) => plan !== null && plan !== undefined);
+
+            const quoterId = results.find((result) => result.quoterId)?.quoterId;
+
             if (allPlans.length === 0) {
-                throw new Error('No se encontraron planes disponibles');
+                throw new NoQuotePlansError(results);
             }
 
             if (!quoterId) {
-                throw new Error('No se pudo obtener un quoterId válido');
+                throw new Error('No se pudo obtener un quoterId valido');
             }
 
             return {
-                message: 'Cotización exitosa',
+                message: 'Cotizacion exitosa',
                 status: 200,
                 data: {
                     plans: allPlans,
@@ -145,7 +225,6 @@ export const quoteService = {
                 }
             };
         } catch (error) {
-            console.error('Error en startQuotationFlow:', error);
             throw error;
         }
     },
@@ -161,4 +240,4 @@ export const quoteService = {
     finalizeQuote(params: FinalizeQuoteParams): Promise<any> {
         return api.put('/quoter/finalize/quote', params);
     }
-}; 
+};

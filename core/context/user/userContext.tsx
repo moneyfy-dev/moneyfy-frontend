@@ -15,4 +15,4 @@ interface UserContextType extends UserState {
   getReferreds: () => Promise<ApiResponse>;
 }
 
-export const UserContext = createContext<UserContextType>({} as UserContextType);
+export const UserContext = createContext<UserContextType | undefined>(undefined);

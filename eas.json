@@ -7,14 +7,14 @@
     "development": {
       "android": {
         "buildType": "apk",
-        "node": "18.18.0",
+        "node": "22.21.1",
         "environment": "development"
       }
     },
     "preview": {
       "android": {
         "buildType": "apk",
-        "node": "18.18.0"
+        "node": "22.21.1"
       }
     },
     "production": {

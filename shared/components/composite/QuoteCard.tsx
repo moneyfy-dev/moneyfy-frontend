@@ -17,6 +17,9 @@ export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) 
   const [isExpanded, setIsExpanded] = useState(false);
   const themeColors = useThemeColor();
   const discountPercent = plan.discount ? Number(plan.discount) * 100 : 0; // Manejar caso donde discount puede ser string o number
+  const insurerObject = typeof plan.insurer === 'object' ? plan.insurer : null;
+  const insurerName = typeof plan.insurer === 'string' ? plan.insurer : plan.insurer?.name ?? '';
+  const insurerAlias = insurerObject?.alias ?? '';
   
   // Calcular valores mensuales
   const monthlyPrice = plan.monthlyPrice;
@@ -47,12 +50,10 @@ export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) 
       <View style={styles.cardHeader}>
         
         <View style={styles.logoContainer}>
-          {plan.insurer && typeof plan.insurer === 'object' && (
-            <InsurerLogo
-              darkLogo={plan.insurer.darkLogo}
-              lightLogo={plan.insurer.lightLogo}
-              />
-          )}
+          <InsurerLogo
+            insurerName={insurerName}
+            insurerAlias={insurerAlias}
+          />
         </View>
 
         <ThemedText variant='paragraph' style={styles.planName}>

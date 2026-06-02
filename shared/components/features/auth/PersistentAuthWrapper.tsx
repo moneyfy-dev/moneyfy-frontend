@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { storage } from '../../../utils/storage';
 import { STORAGE_KEYS } from '@/core/types';
 import PersistentAuthScreen from '../../../components/screens/PersistentAuthScreen';
+import { LoadingScreen } from '../../animations/LoadingScreen';
 
-export function PersistentAuthWrapper({ children }: { children: React.ReactNode }) {
+interface PersistentAuthWrapperProps {
+  children: React.ReactNode;
+  enabled?: boolean;
+}
+
+export function PersistentAuthWrapper({ children, enabled = true }: PersistentAuthWrapperProps) {
   const [isReady, setIsReady] = useState(false);
   const [authMethods, setAuthMethods] = useState<{
     biometric: boolean;
@@ -13,11 +18,7 @@ export function PersistentAuthWrapper({ children }: { children: React.ReactNode 
     biometric: false,
     pin: false
   });
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const router = useRouter();
-  const segments = useSegments();
-  const rootNavigationState = useRootNavigationState();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -26,6 +27,12 @@ export function PersistentAuthWrapper({ children }: { children: React.ReactNode 
   }, []);
 
   useEffect(() => {
+    if (!enabled) {
+      setIsReady(true);
+      setIsAuthenticated(false);
+      return;
+    }
+
     const prepare = async () => {
       try {
         const biometricEnabled = await storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED);
@@ -43,54 +50,21 @@ export function PersistentAuthWrapper({ children }: { children: React.ReactNode 
       }
     };
     prepare();
-  }, []);
-
-  useEffect(() => {
-    if (!isReady || !rootNavigationState?.key || !isMounted) return;
-
-    const inAuthGroup = segments[0] === '(auth)';
-    const currentRoute = segments[segments.length - 1];
-    const isPersistentAuthRoute = currentRoute === 'persistent-auth';
-    const isInitialAuth = !isAuthenticated && !isAuthenticating;
-
-    if (!inAuthGroup && !isPersistentAuthRoute && isInitialAuth) {
-      const navigate = async () => {
-        try {
-          if (authMethods.biometric || authMethods.pin) {
-            await router.replace('/(auth)/persistent-auth');
-          }
-        } catch (error) {
-          console.error('Navigation error:', error);
-        }
-      };
-
-      requestAnimationFrame(() => {
-        navigate();
-      });
-    }
-  }, [isReady, segments, rootNavigationState?.key, authMethods, isAuthenticated, isMounted]);
-
-  useEffect(() => {
-    if (isAuthenticated && segments[0] === '(auth)') {
-      requestAnimationFrame(() => {
-        router.replace('/(tabs)');
-      });
-    }
-  }, [isAuthenticated, segments]);
+  }, [enabled]);
 
   const handleAuthSuccess = () => {
-    setIsAuthenticating(false);
     setIsAuthenticated(true);
   };
 
-  if (!isReady || !rootNavigationState?.key || !isMounted) {
+  if (!enabled) {
     return <>{children}</>;
   }
 
+  if (!isReady || !isMounted) {
+    return <LoadingScreen />;
+  }
+
   if ((authMethods.biometric || authMethods.pin) && !isAuthenticated) {
-    if (!isAuthenticating) {
-      setIsAuthenticating(true);
-    }
     return (
       <PersistentAuthScreen 
         authMethods={authMethods}

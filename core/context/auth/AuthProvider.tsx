@@ -1,5 +1,6 @@
 ﻿import React, { useState, useCallback } from 'react';
 import { AuthContext } from './AuthContext';
+import { useEffect } from 'react';
 import { STORAGE_KEYS } from '@/core/types';
 import { storage } from '@/shared/utils/storage';
 import { authService } from '@/core/services';
@@ -17,61 +18,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     isPersistentAuthRequired: false,
-    isLoading: false
+    isLoading: true
   });
   const router = useRouter();
 
   // InicializaciÃ³n
 
   const checkAuthStatus = useCallback(async (): Promise<void> => {
+    setAuthState(prev => ({
+      ...prev,
+      isLoading: true
+    }));
+
     try {
       const { token, sessionToken } = await storage.auth.getTokens();
       const userData = await storage.user.getData();
 
       if (!token || !sessionToken || !userData) {
-        setAuthState(prev => ({
-          ...prev,
+        setAuthState({
           isAuthenticated: false,
-          isPersistentAuthRequired: false
-        }));
+          isPersistentAuthRequired: false,
+          isLoading: false
+        });
         return;
       }
 
       // Verificar todos los flags necesarios
-      const [biometricEnabled, persistentAuth] =
+      const [biometricEnabled, persistentAuth, pinEnabled] =
         await Promise.all([
           storage.get(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED),
           storage.get(STORAGE_KEYS.AUTH.PERSISTENT_AUTH),
+          storage.getSecure(STORAGE_KEYS.AUTH.PIN),
         ]);
 
       const shouldRequireAuth =
-        biometricEnabled === 'true' &&
-        persistentAuth === 'true'
+        persistentAuth === 'true' &&
+        (biometricEnabled === 'true' || !!pinEnabled);
 
-      setAuthState(prev => ({
-        ...prev,
+      setAuthState({
         isAuthenticated: true,
-        isPersistentAuthRequired: shouldRequireAuth
-      }));
+        isPersistentAuthRequired: shouldRequireAuth,
+        isLoading: false
+      });
 
     } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
+      setAuthState({
         isAuthenticated: false,
-        isPersistentAuthRequired: false
-      }));
+        isPersistentAuthRequired: false,
+        isLoading: false
+      });
     }
   }, []);
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
 
   const login = async (email: string, password: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
       const response = await authService.login(email, password);
-
-      console.warn('[AuthProvider.login] response', {
-        status: response.status,
-        hasTokens: !!response.data?.tokens?.jwtRefresh && !!response.data?.tokens?.jwtSession,
-      });
 
       if ((response.status === 200 || response.status === 202) &&
         response.data?.tokens?.jwtRefresh &&
@@ -109,11 +115,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return response;
 
     } catch (error: any) {
-      console.warn('[AuthProvider.login] error', {
-        message: error?.message,
-        code: error?.code,
-        httpStatus: error?.response?.status,
-      });
       setAuthState(prev => ({ ...prev, isLoading: false }));
       throw error;
     }
@@ -155,20 +156,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (data: RegisterRequest) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    console.warn('[AuthProvider.register] start', { email: data.email });
     try {
       const response = await authService.register(data);
 
       if (!response.data) {
         throw new Error('Respuesta de registro inválida');
       }
-      console.warn('[AuthProvider.register] response', { status: response.status });
       return response;
     } catch (error: any) {
-      console.warn('[AuthProvider.register] error', {
-        message: error?.message,
-        httpStatus: error?.response?.status,
-      });
       throw error;
     } finally {
       setAuthState(prev => ({ ...prev, isLoading: false }));
@@ -207,9 +202,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           throw new Error('Respuesta de registro invÃ¡lida');
         }
 
-        console.warn('[AuthProvider.confirmPasswordReset] tokens', {
-          hasTokens: !!response.data.tokens?.jwtRefresh && !!response.data.tokens?.jwtSession,
-        });
         await storage.auth.setTokens(
           response.data.tokens.jwtRefresh,
           response.data.tokens.jwtSession
@@ -244,10 +236,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           throw new Error('Respuesta de registro invÃ¡lida');
         }
 
-        console.warn('[AuthProvider.confirmCode] tokens', {
-          status: response.status,
-          hasTokens: !!response.data.tokens?.jwtRefresh && !!response.data.tokens?.jwtSession,
-        });
         await storage.auth.setTokens(
           response.data.tokens.jwtRefresh,
           response.data.tokens.jwtSession
@@ -263,11 +251,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return response;
     } catch (error) {
-      console.warn('[AuthProvider.confirmCode] error', {
-        message: (error as any)?.message,
-        httpStatus: (error as any)?.response?.status,
-        apiData: (error as any)?.response?.data,
-      });
       setAuthState(prev => ({ ...prev, isLoading: false }));
       throw error;
     }

@@ -102,7 +102,7 @@ export default function ReferredsScreen() {
                     value={searchQuery}
                     onChangeText={handleSearch}
                     placeholder="Buscar por nombre"
-                    onIconPress={() => console.log('Buscar:', searchQuery)}
+                    onIconPress={() => {}}
                 />
             </View>
 

@@ -77,10 +77,6 @@ export const storage = {
         ]);
 
         if (!token || !sessionToken) {
-          console.warn('[storage.getTokens] incomplete', {
-            hasToken: !!token,
-            hasSessionToken: !!sessionToken,
-          });
           return { token: null, sessionToken: null };
         }
 
@@ -97,17 +93,10 @@ export const storage = {
           throw new Error('Tokens inválidos');
         }
 
-        console.warn('[storage.setTokens] start', {
-          tokenLen: token.length,
-          sessionTokenLen: sessionToken.length,
-        });
-
         await Promise.all([
           storage.setSecure(STORAGE_KEYS.AUTH.TOKEN, token),
           storage.setSecure(STORAGE_KEYS.AUTH.SESSION_TOKEN, sessionToken),
         ]);
-
-        console.warn('[storage.setTokens] done');
 
       } catch (error) {
         throw error;
