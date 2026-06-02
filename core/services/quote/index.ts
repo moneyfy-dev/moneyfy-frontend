@@ -84,7 +84,7 @@ const getInsurerAliases = (response: SearchResponse): string[] => {
 const buildQuoteResponse = (response: QuoteVehicleResponse): QuoteVehicleResponse => {
     const plans = (response.data?.plans || []).map((plan) => ({
         ...plan,
-        planId: plan.planId || (plan as any).quoterPlanId || (plan as any).idPlan || (plan as any).id || '',
+        planId: plan.planId || (plan as any).uniquePlan || (plan as any).quoterPlanId || (plan as any).idPlan || (plan as any).id || '',
         insurer: normalizeInsurer(plan.insurer, response.data?.insurer),
     }));
     const insurer = normalizeInsurer(plans[0]?.insurer, response.data.insurer);

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, StyleSheet, TouchableOpacity, Share, Clipboard } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Share } from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
 import {
     ThemedLayout,

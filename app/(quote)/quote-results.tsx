@@ -37,7 +37,7 @@ export default function QuoteResults() {
         typeof plan.insurer === 'string' ? plan.insurer : plan.insurer?.name ?? '';
 
     const getPlanId = (plan: InsurancePlan) =>
-        plan.planId || (plan as any).quoterPlanId || (plan as any).idPlan || (plan as any).id || '';
+        plan.planId || (plan as any).uniquePlan || (plan as any).quoterPlanId || (plan as any).idPlan || (plan as any).id || '';
 
     // Obtener valores únicos para los filtros
     const uniqueInsurers = useMemo(

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, Share, Clipboard, TouchableOpacity, Pressable } from 'react-native';
+import { View, StyleSheet, FlatList, Share, TouchableOpacity, Pressable } from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 import { useUser } from '@/core/context';
 import { ThemedListLayout, ThemedText, LoadingScreen, ThemedButton, ThemedLayout, IconContainer, ThemedInput } from '@/shared/components';
 import { Referred, ReferredStatus } from '@/core/types';
