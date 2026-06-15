@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { STORAGE_KEYS } from '@/core/types';
-import type { Vehicle, InsurancePlan } from '@/core/types';
+import type { Vehicle, InsurancePlan, OwnerDataDraft } from '@/core/types';
 
 export const storage = {
   // Métodos genéricos
@@ -172,6 +172,18 @@ export const storage = {
         await storage.set(STORAGE_KEYS.QUOTE.QUOTER_ID, quoterId);
       } else {
         await storage.remove(STORAGE_KEYS.QUOTE.QUOTER_ID);
+      }
+    },
+
+    async getOwnerData() {
+      return storage.get<OwnerDataDraft>(STORAGE_KEYS.QUOTE.OWNER_DATA);
+    },
+
+    async setOwnerData(ownerData: OwnerDataDraft | null) {
+      if (ownerData) {
+        await storage.set(STORAGE_KEYS.QUOTE.OWNER_DATA, ownerData);
+      } else {
+        await storage.remove(STORAGE_KEYS.QUOTE.OWNER_DATA);
       }
     },
 

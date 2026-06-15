@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { BankAccount } from '@/core/types';
 import Colors from '@/constants/Colors';
-import { StyleSheet, TouchableOpacity, View, FlatList, Modal, Alert } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, FlatList, Modal } from 'react-native';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { ThemedText } from '../ui/ThemedText';
 import { Ionicons } from '@expo/vector-icons';

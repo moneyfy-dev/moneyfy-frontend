@@ -14,6 +14,7 @@ interface ThemedAutocompleteProps {
   error?: string;
   disabled?: boolean;
   zIndex?: number;
+  onDropdownVisibilityChange?: (visible: boolean) => void;
 }
 
 export const ThemedAutocomplete = ({
@@ -25,12 +26,18 @@ export const ThemedAutocomplete = ({
   placeholder = '',
   error,
   disabled = false,
-  zIndex = 1
+  zIndex = 1,
+  onDropdownVisibilityChange,
 }: ThemedAutocompleteProps) => {
   const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
   const [showOptions, setShowOptions] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const themeColors = useThemeColor();
+  const optionsHeight = Math.min(filteredOptions.length * 50, 200);
+
+  const setOptionsVisibility = (visible: boolean) => {
+    setShowOptions(visible);
+  };
 
   useEffect(() => {
     if (value.length > 0) {
@@ -43,10 +50,18 @@ export const ThemedAutocomplete = ({
     }
   }, [value, options]);
 
+  useEffect(() => {
+    onDropdownVisibilityChange?.(showOptions && filteredOptions.length > 0);
+  }, [showOptions, filteredOptions.length, onDropdownVisibilityChange]);
+
+  useEffect(() => {
+    return () => onDropdownVisibilityChange?.(false);
+  }, [onDropdownVisibilityChange]);
+
   const handleInputChange = (text: string) => {
     if (!disabled) {
       onChangeText(text);
-      setShowOptions(true);
+      setOptionsVisibility(true);
     }
   };
 
@@ -54,7 +69,7 @@ export const ThemedAutocomplete = ({
     if (!disabled) {
       onSelect(item);
       onChangeText(item);
-      setShowOptions(false);
+      setOptionsVisibility(false);
     }
   };
 
@@ -89,13 +104,13 @@ export const ThemedAutocomplete = ({
             onFocus={() => {
               if (!disabled) {
                 setIsFocused(true);
-                setShowOptions(true);
+                setOptionsVisibility(true);
               }
             }}
             editable={!disabled}
           />
           <TouchableOpacity 
-            onPress={() => !disabled && setShowOptions(!showOptions)}
+            onPress={() => !disabled && setOptionsVisibility(!showOptions)}
             disabled={disabled}
             style={styles.iconButton}
           >
@@ -110,16 +125,22 @@ export const ThemedAutocomplete = ({
         {showOptions && filteredOptions.length > 0 && (
           <View style={[
             styles.optionsContainer,
-            { backgroundColor: themeColors.backgroundColor }
+            {
+              backgroundColor: themeColors.backgroundColor,
+              height: optionsHeight,
+            }
           ]}>
-            <ScrollView 
-              nestedScrollEnabled={true}
+            <ScrollView
+              nestedScrollEnabled
               keyboardShouldPersistTaps="handled"
-              contentContainerStyle={styles.optionsScrollContent}
+              showsVerticalScrollIndicator
+              style={styles.optionsList}
+              contentContainerStyle={styles.optionsListContent}
+              onTouchStart={(event) => event.stopPropagation()}
             >
               {filteredOptions.map((item, index) => (
                 <TouchableOpacity
-                  key={index}
+                  key={`${item}-${index}`}
                   style={[
                     styles.option,
                     { 
@@ -196,9 +217,13 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     zIndex: 50,
+    overflow: 'hidden',
   },
-  optionsScrollContent: {
-    flexGrow: 1,
+  optionsList: {
+    flex: 1,
+  },
+  optionsListContent: {
+    flexGrow: 0,
   },
   option: {
     padding: 16,
@@ -207,4 +232,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
-}); 
+});

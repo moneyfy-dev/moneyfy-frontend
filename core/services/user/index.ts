@@ -2,7 +2,8 @@ import { api } from '../api';
 import type { 
   User,
   ApiResponse,
-  MonthlyEarnings
+  MonthlyEarnings,
+  Payment
 } from '@/core/types';
 
 export const userService = {
@@ -64,6 +65,13 @@ export const userService = {
 
   getMonthlyEarnings: async (): Promise<ApiResponse<{ monthlyEarnings: MonthlyEarnings; user?: User }>> => {
     const response = await api.post('/users/monthly/earnings', {}, {
+      skipGlobalErrorMessage: true,
+    } as any);
+    return response.data;
+  },
+
+  getPayments: async (): Promise<ApiResponse<{ userPayments: Payment[]; user?: User }>> => {
+    const response = await api.post('/users/obtain/payments', {}, {
       skipGlobalErrorMessage: true,
     } as any);
     return response.data;

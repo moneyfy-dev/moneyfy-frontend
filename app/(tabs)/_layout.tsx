@@ -8,7 +8,11 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const themeColors = useThemeColor();
-  const { shouldShowOnboarding } = useOnboarding();
+  const {
+    hasSeenOnboarding,
+    shouldShowOnboarding,
+    isOnboardingStatusLoaded,
+  } = useOnboarding();
   const insets = useSafeAreaInsets();
   const tabBarBottomPadding = Math.max(insets.bottom, 12);
   const tabBarHeight = 56 + tabBarBottomPadding + 8;
@@ -25,7 +29,10 @@ export default function TabLayout() {
           paddingBottom: tabBarBottomPadding,
           borderTopWidth: 0,
           borderTopColor: themeColors.unfocusedBorderColor,
-          display: shouldShowOnboarding ? 'none' : 'flex',
+          display:
+            !isOnboardingStatusLoaded || shouldShowOnboarding || !hasSeenOnboarding
+              ? 'none'
+              : 'flex',
         },
         tabBarLabelStyle: {
           fontSize: 12,

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, StyleSheet, TouchableOpacity, Share } from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
+import * as Clipboard from 'expo-clipboard';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
 import {
     ThemedLayout,
@@ -12,21 +12,19 @@ import {
     QuoteCard,
     TicketEdge,
     Logo,
-    MessageModal,
     LoadingScreen,
     LottieAnimation
 } from '@/shared/components';
 import { useQuote } from '@/core/context';
-import { ROUTES, QuoterStatus } from '@/core/types';
+import { ROUTES } from '@/core/types';
 import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function PaymentQRScreen() {
     const router = useRouter();
     const { planId, planIndex } = useLocalSearchParams();
-    const { vehicle, plans, quoterId, isLoading, generateTransaction, finalizeQuote } = useQuote();
+    const { vehicle, plans, quoterId, isLoading, generateTransaction } = useQuote();
     const [isCopied, setIsCopied] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
     const [isTransaction, setIsTransaction] = useState(false);
     const themeColors = useThemeColor();
     const link = `https://bci.cl/id=${quoterId}`;
@@ -38,7 +36,7 @@ export default function PaymentQRScreen() {
         ? plans[parsedPlanIndex]
         : plans.find(plan => plan.planId === planIdValue);
 
-    useMessageConfig(['/quoter/finalize/quote']);
+    useMessageConfig(['/quoter/generate/transaction']);
 
     const handleShare = async () => {
         try {
@@ -52,7 +50,7 @@ export default function PaymentQRScreen() {
 
     const handleCopyCode = async () => {
         try {
-            await Clipboard.setString(link);
+            await Clipboard.setStringAsync(link);
             setIsCopied(true);
             // Resetear el estado después de 2 segundos
             setTimeout(() => {
@@ -78,18 +76,7 @@ export default function PaymentQRScreen() {
     };
 
 
-    const handleResolveQuote = async (status: QuoterStatus) => {
-        try {
-            await finalizeQuote({ quoterId, transactionStatus: status });
-            // Si llegamos aquí, significa que todo fue exitoso
-            setIsSuccess(true);
-
-        } catch (error) {
-            console.error('Error en la transacción:', error);
-        }
-    };
-
-    if (isSuccess) {
+    if (isTransaction) {
         return (
             <ThemedLayout padding={[40, 40]}>
                 <View style={styles.successContainer}>
@@ -99,7 +86,10 @@ export default function PaymentQRScreen() {
                         loop={false}
                     />
                     <ThemedText variant="title" textAlign="center">
-                        Transacción completada exitosamente
+                        Cotización enviada correctamente
+                    </ThemedText>
+                    <ThemedText variant="paragraph" textAlign="center">
+                        La transacción quedó pendiente de validación. Su estado se actualizará cuando sea revisada.
                     </ThemedText>
                     <ThemedButton
                         text="Volver al inicio"
@@ -235,33 +225,12 @@ export default function PaymentQRScreen() {
                         </View>
                     </View>
 
-                    {!isTransaction ? (
-                        <View style={styles.buttonContainer}>
-                            <ThemedButton
-                                text="Generar transacción"
-                                onPress={() => handleTransactionFlow()}
-                            />
-                        </View>
-
-                    ) : (
-                        <View style={styles.buttonContainer}>
-                            <ThemedButton
-                                text="Aprobar"
-
-                                onPress={() => handleResolveQuote('Aprobado')}
-                            />
-                            <ThemedButton
-                                text="Rechazar"
-                                onPress={() => handleResolveQuote('Rechazado')}
-                                backgroundColor={themeColors.status.error}
-                            />
-                            <ThemedButton
-                                text="Caducar"
-                                onPress={() => handleResolveQuote('Caducado')}
-                                backgroundColor={themeColors.status.info}
-                            />
-                        </View>
-                    )}
+                    <View style={styles.buttonContainer}>
+                        <ThemedButton
+                            text="Generar transacción"
+                            onPress={handleTransactionFlow}
+                        />
+                    </View>
                 </ThemedLayout>
 
             )}

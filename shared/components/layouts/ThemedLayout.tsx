@@ -13,6 +13,7 @@ interface ThemedLayoutProps {
     contentContainerStyle?: ViewStyle;
     padding?: PaddingProp;
     scrollRef?: React.Ref<ScrollView>;
+    scrollEnabled?: boolean;
     refreshControl?: React.ReactElement<RefreshControlProps>;
     variant?: 'default' | 'card';
     gradientColors?: readonly [string, string, ...string[]];
@@ -25,6 +26,7 @@ export const ThemedLayout: React.FC<ThemedLayoutProps> = ({
     contentContainerStyle,
     padding = [40, 40],
     scrollRef,
+    scrollEnabled = true,
     refreshControl,
     variant = 'default',
     gradientColors,
@@ -65,6 +67,7 @@ export const ThemedLayout: React.FC<ThemedLayoutProps> = ({
             >
                 <ScrollView 
                     ref={scrollRef}
+                    scrollEnabled={scrollEnabled}
                     contentContainerStyle={[
                         styles.scrollViewContent, 
                         { paddingTop, paddingBottom: Math.max(paddingBottom, insets.bottom + 24) },
@@ -73,6 +76,7 @@ export const ThemedLayout: React.FC<ThemedLayoutProps> = ({
                     refreshControl={refreshControl}
                     keyboardShouldPersistTaps="handled"
                     keyboardDismissMode="on-drag"
+                    nestedScrollEnabled
                     showsVerticalScrollIndicator={false}
                     automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
                 >

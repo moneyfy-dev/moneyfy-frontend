@@ -14,7 +14,8 @@ export const QuoterInfoCard = ({ personalData, addressData }: QuoterInfoCardProp
   const themeColors = useThemeColor();
 
   const hasPersonalData = personalData.name;
-  const hasAddressData = addressData.street || addressData.streetNumber;
+  const hasAddressData =
+    addressData.street || addressData.streetNumber || addressData.city || addressData.commune;
 
   if (!hasPersonalData && !hasAddressData) return null;
 
@@ -79,6 +80,22 @@ export const QuoterInfoCard = ({ personalData, addressData }: QuoterInfoCardProp
                 <ThemedText variant="paragraph" color={themeColors.textColorAccent}>{addressData.department}</ThemedText>
               </View>
             )}
+            {addressData.city && (
+              <View style={styles.infoRow}>
+                <ThemedText variant="paragraph" color={themeColors.textParagraph}>Ciudad:</ThemedText>
+                <ThemedText variant="paragraph" color={themeColors.textColorAccent}>
+                  {addressData.city}
+                </ThemedText>
+              </View>
+            )}
+            {addressData.commune && (
+              <View style={styles.infoRow}>
+                <ThemedText variant="paragraph" color={themeColors.textParagraph}>Comuna:</ThemedText>
+                <ThemedText variant="paragraph" color={themeColors.textColorAccent}>
+                  {addressData.commune}
+                </ThemedText>
+              </View>
+            )}
           </View>
         </View>
       )}
@@ -109,4 +126,4 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-}); 
+});

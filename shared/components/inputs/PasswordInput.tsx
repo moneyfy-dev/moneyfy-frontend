@@ -1,6 +1,6 @@
 import React, { forwardRef, useState, useRef } from 'react';
 import { ThemedInputCommonProps } from '@/core/types';
-import { TextInput, TouchableOpacity, StyleSheet, NativeSyntheticEvent, TextInputFocusEventData } from 'react-native';
+import { TextInput, TouchableOpacity, StyleSheet, type TextInputProps } from 'react-native';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { BaseInput } from '../inputs/BaseInput';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,9 +12,9 @@ export const PasswordInput = forwardRef<TextInput, ThemedInputCommonProps>(
     const inputRef = useRef<TextInput>(null);
     const themeColors = useThemeColor();
 
-    const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    const handleBlur: NonNullable<TextInputProps['onBlur']> = (event) => {
       setIsFocused(false);
-      props.onBlur?.(e);
+      props.onBlur?.(event);
     };
 
     const handleInputPress = () => {

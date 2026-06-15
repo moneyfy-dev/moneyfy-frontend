@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'expo-router';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Brand, Model, OWNER_OPTIONS_MAP, ROUTES } from '@/core/types';
 import { ScrollView, TextInput, View, StyleSheet } from 'react-native';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
@@ -20,6 +20,11 @@ import { getQuoteErrorMessage } from '@/shared/utils/quoteErrors';
 export default function ManualSearchScreen() {
     const themeColors = useThemeColor();
     const router = useRouter();
+    const params = useLocalSearchParams<{
+        ownerId?: string;
+        ppu?: string;
+        quoterId?: string;
+    }>();
     const scrollRef = useRef<ScrollView>(null);
     const rutInputRef = useRef<TextInput>(null);
     const {
@@ -33,14 +38,27 @@ export default function ManualSearchScreen() {
     const [quoteError, setQuoteError] = useState('');
     const [rutErrorVisible, setRutErrorVisible] = useState(false);
     const [rutInputY, setRutInputY] = useState(0);
+    const [openAutocomplete, setOpenAutocomplete] = useState<'brand' | 'model' | null>(null);
+
+    const handleBrandDropdownVisibility = useCallback((visible: boolean) => {
+        setOpenAutocomplete(current =>
+            visible ? 'brand' : current === 'brand' ? null : current
+        );
+    }, []);
+
+    const handleModelDropdownVisibility = useCallback((visible: boolean) => {
+        setOpenAutocomplete(current =>
+            visible ? 'model' : current === 'model' ? null : current
+        );
+    }, []);
 
     const [formData, setFormData] = useState({
-        ppu: '',
+        ppu: params.ppu || '',
         brand: '',
         model: '',
         year: '',
         version: '',
-        purchaserId: '',
+        purchaserId: params.ownerId || '',
         purchaserName: '',
         purchaserPaternalSur: '',
         purchaserMaternalSur: '',
@@ -228,7 +246,7 @@ export default function ManualSearchScreen() {
         try {
             setFormData(prev => ({ ...prev, purchaserId: formattedPurchaserId }));
             const response = await startQuotationFlow({
-                quoterId: '',
+                quoterId: params.quoterId || '',
                 ppu: formData.ppu.toUpperCase(),
                 brand: formData.brand,
                 model: formData.model,
@@ -263,7 +281,11 @@ export default function ManualSearchScreen() {
         <>
             {isLoading ? <LoadingScreen /> : (
 
-                <ThemedLayout padding={[0, 40]} scrollRef={scrollRef}>
+                <ThemedLayout
+                    padding={[0, 40]}
+                    scrollRef={scrollRef}
+                    scrollEnabled={!openAutocomplete}
+                >
                     <View style={styles.content}>
 
                         <ThemedInput
@@ -284,6 +306,7 @@ export default function ManualSearchScreen() {
                             options={availableVehicles.map(b => b.brand)}
                             placeholder="Selecciona una marca"
                             zIndex={2}
+                            onDropdownVisibilityChange={handleBrandDropdownVisibility}
                         />
 
                         <ThemedAutocomplete
@@ -296,6 +319,7 @@ export default function ManualSearchScreen() {
                             placeholder="Selecciona un modelo"
                             disabled={!selectedBrand}
                             zIndex={1}
+                            onDropdownVisibilityChange={handleModelDropdownVisibility}
                         />
 
                         <ThemedInput

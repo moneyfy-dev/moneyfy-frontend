@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { StyleSheet, TouchableOpacity, Dimensions, FlatList, Animated, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, Dimensions, Animated, View } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedView, ThemedLayoutFlatList, ThemedText, IconContainer, TabSelector, AccountListScreen, AnimatedCard } from '@/shared/components';
+import { ThemedView, ThemedLayoutFlatList, ThemedText, TabSelector, AccountListScreen, PaymentHistory } from '@/shared/components';
 import { es } from 'date-fns/locale';
 import { format } from 'date-fns';
 import { useUser } from '@/core/context';
@@ -12,106 +12,12 @@ const { height: screenHeight } = Dimensions.get('window');
 
 type TabType = 'account' | 'history';
 
-type WithdrawalRecord = {
-    id: string;
-    bank: string;
-    accountNumber: string;
-    amount: number;
-    date: string;
-    remaining: number;
-};
-
-// Mock data
-const mockWithdrawals: WithdrawalRecord[] = [
-    {
-        id: '1',
-        bank: 'Banco Falabella',
-        accountNumber: '17286536',
-        amount: 45000,
-        date: '2024-03-15',
-        remaining: 155000
-    },
-    {
-        id: '2',
-        bank: 'Banco Falabella',
-        accountNumber: '17286536',
-        amount: 35000,
-        date: '2024-02-15',
-        remaining: 200000
-    },
-    {
-        id: '3',
-        bank: 'Banco Falabella',
-        accountNumber: '17286536',
-        amount: 50000,
-        date: '2024-01-15',
-        remaining: 235000
-    },
-    {
-        id: '4',
-        bank: 'Banco Falabella',
-        accountNumber: '17286536',
-        amount: 40000,
-        date: '2023-12-15',
-        remaining: 285000
-    },
-    {
-        id: '5',
-        bank: 'Banco Estado',
-        accountNumber: '23451789',
-        amount: 55000,
-        date: '2023-11-15',
-        remaining: 325000
-    },
-    {
-        id: '6',
-        bank: 'Banco Falabella',
-        accountNumber: '17286536',
-        amount: 45000,
-        date: '2024-03-15',
-        remaining: 155000
-    },
-    {
-        id: '7',
-        bank: 'Banco Falabella',
-        accountNumber: '17286536',
-        amount: 35000,
-        date: '2024-02-15',
-        remaining: 200000
-    },
-    {
-        id: '8',
-        bank: 'Banco Falabella',
-        accountNumber: '17286536',
-        amount: 50000,
-        date: '2024-01-15',
-        remaining: 235000
-    },
-    {
-        id: '9',
-        bank: 'Banco Falabella',
-        accountNumber: '17286536',
-        amount: 40000,
-        date: '2023-12-15',
-        remaining: 285000
-    },
-    {
-        id: '10',
-        bank: 'Banco Estado',
-        accountNumber: '23451789',
-        amount: 55000,
-        date: '2023-11-15',
-        remaining: 325000
-    }
-];
-
 export default function WithdrawalScreen() {
     const themeColors = useThemeColor();
     const [isFormVisible, setIsFormVisible] = useState(false);
     const { user } = useUser();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<TabType>('history');
-    const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>(mockWithdrawals);
     const formAnimation = useRef(new Animated.Value(screenHeight)).current;
 
     function calcularProximoPago(): Date {
@@ -143,36 +49,6 @@ export default function WithdrawalScreen() {
         { type: 'history', label: 'Últimos', title: 'Pagos', icon: 'time-outline' },
         { type: 'account', label: 'Cuentas', title: 'Mis Cuentas', icon: 'card-outline' },
     ];
-
-    const WithdrawalItem = ({ item, index, isLast }: { item: WithdrawalRecord, index: number, isLast: boolean }) => (
-        <View style={[styles.withdrawalItem, {
-            borderBottomWidth: isLast ? 0 : 1,
-            borderBottomColor: themeColors.borderBackgroundColor
-        }]}>
-            <View style={styles.leftContent}>
-                <IconContainer
-                    icon="card-outline"
-                    size={24}
-                    backgroundColor={themeColors.buttonBackgroundColor}
-                />
-                <View>
-                    <ThemedText variant="subTitleBold">{item.bank}</ThemedText>
-                    <ThemedText variant="paragraph">{item.accountNumber}</ThemedText>
-                    <ThemedText variant="paragraph" color={themeColors.textParagraph}>
-                        Fecha de pago: {format(new Date(item.date), 'dd/MM/yyyy')}
-                    </ThemedText>
-                </View>
-            </View>
-            <View style={styles.rightContent}>
-                <ThemedText variant="subTitleBold" color={themeColors.status.error}>
-                    -${item.amount.toLocaleString()}
-                </ThemedText>
-                <ThemedText variant="paragraph">
-                    Retenido ${item.remaining.toLocaleString()}
-                </ThemedText>
-            </View>
-        </View>
-    );
 
     const showDetails = () => {
         setIsFormVisible(true);
@@ -276,20 +152,7 @@ export default function WithdrawalScreen() {
                             />
                         </View>
                     ) : (
-                        <FlatList
-                            data={withdrawals}
-                            renderItem={({ item, index }) => (
-                                <WithdrawalItem
-                                    item={item}
-                                    index={index}
-                                    isLast={index === withdrawals.length - 1}
-                                />
-                            )}
-                            keyExtractor={(item) => item.id}
-                            style={[styles.list, { borderTopColor: themeColors.borderBackgroundColor }]}
-                            contentContainerStyle={styles.listContent}
-                            scrollEnabled={true}
-                        />
+                        <PaymentHistory horizontalPadding={0} />
                     )}
                 </ThemedView>
             </Animated.View>
@@ -368,28 +231,6 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         alignItems: 'center',
-    },
-    list: {
-        flex: 1,
-        width: '100%',
-        borderTopWidth: 1,
-    },
-    listContent: {
-        paddingBottom: 16,
-    },
-    withdrawalItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingVertical: 16,
-    },
-    leftContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 16,
-    },
-    rightContent: {
-        alignItems: 'flex-end',
-        justifyContent: 'center',
     },
     accountListContainer: {
         flex: 1,

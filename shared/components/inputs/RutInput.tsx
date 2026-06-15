@@ -1,6 +1,6 @@
 import React, { forwardRef, useState } from 'react';
 import { ThemedInputCommonProps } from '@/core/types';
-import { TextInput, StyleSheet, NativeSyntheticEvent, TextInputFocusEventData } from 'react-native';
+import { TextInput, StyleSheet, type TextInputProps } from 'react-native';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { BaseInput } from '../inputs/BaseInput';
 import { cleanRUT, formatRUT } from '@/shared/utils/validations';
@@ -15,10 +15,10 @@ export const RutInput = forwardRef<TextInput, ThemedInputCommonProps>(
       onChangeText(cleaned.length >= 8 ? formatRUT(cleaned) : cleaned);
     };
 
-    const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    const handleBlur: NonNullable<TextInputProps['onBlur']> = (event) => {
       setIsFocused(false);
       onChangeText(formatRUT(value));
-      props.onBlur?.(e);
+      props.onBlur?.(event);
     };
 
     return (

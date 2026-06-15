@@ -1,0 +1,78 @@
+env: load .env
+env: export API_URL
+Starting project at D:\Connect360\Referidos-App\v5\ReferidosApp
+Starting Metro Bundler
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\entry.js ▓▓▓▓░░░░░░░░░░░░ 26.5% (17/33)
+λ node_modules\expo-router\node\render.js ▓▓▓▓▓▓░░░░░░░░░░ 43.3% (216/396)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 52.0% (383/531)
+λ node_modules\expo-router\node\render.js ▓▓▓▓▓▓▓▓░░░░░░░░ 51.4% ( 645/1178)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 52.0% ( 944/1645)
+λ node_modules\expo-router\node\render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 62.2% (1445/1832)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 87.8% (1801/1939)
+λ node_modules\expo-router\node\render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.2% (2011/2106)
+λ Bundling failed 16037ms node_modules\expo-router\node\render.js (2347 modules)
+
+Metro error: Unable to resolve module fbjs/lib/invariant from D:\Connect360\Referidos-App\v5\ReferidosApp\node_modules\react-native-web\dist\exports\AppRegistry\index.js: fbjs/lib/invariant could not be found within the project or in these directories:
+  node_modules\react-native-web\node_modules
+  node_modules
+[0m [90m 12 |[39m
+ [90m 13 |[39m [36mimport[39m _objectSpread [36mfrom[39m [32m"@babel/runtime/helpers/objectSpread2"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 14 |[39m [36mimport[39m invariant [36mfrom[39m [32m'fbjs/lib/invariant'[39m[33m;[39m
+ [90m    |[39m                        [31m[1m^[22m[39m
+ [90m 15 |[39m [36mimport[39m unmountComponentAtNode [36mfrom[39m [32m'../unmountComponentAtNode'[39m[33m;[39m
+ [90m 16 |[39m [36mimport[39m renderApplication[33m,[39m { getApplication [36mas[39m _getApplication } [36mfrom[39m [32m'./renderApplication'[39m[33m;[39m
+ [90m 17 |[39m [36mvar[39m emptyObject [33m=[39m {}[33m;[39m[0m
+
+Import stack:
+
+ node_modules\react-native-web\dist\exports\AppRegistry\index.js
+ | import "fbjs/lib/invariant"
+
+ node_modules\react-native-web\dist\index.js
+ | import "./exports/AppRegistry"
+
+ node_modules\expo-router\build\static\renderStaticContent.js
+ | import "react-native-web/dist/index"
+
+ node_modules\expo-router\node\render.js
+ | import "expo-router/build/static/renderStaticContent"
+
+ 
+ | import "expo-router/node/render.js"
+
+
+Call Stack
+  <unknown> (node_modules\react-native-web\dist\exports\AppRegistry\index.js)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 98.0% (2188/2210)
+Web Bundling failed 16325ms node_modules\expo-router\entry.js (2267 modules)
+Android node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.3% ( 685/1337)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.3% (2441/2554)
+Android Bundled 9164ms node_modules\expo-router\entry.js (2914 modules)
+ ERROR  Register error: [AxiosError: Request failed with status code 410] 
+
+Call Stack
+  settle (node_modules\axios\lib\core\settle.js)
+  onloadend (node_modules\axios\lib\adapters\xhr.js)
+  invoke (node_modules\react-native\src\private\webapis\dom\events\EventTarget.js)
+  dispatch (node_modules\react-native\src\private\webapis\dom\events\EventTarget.js)
+  INTERNAL_DISPATCH_METHOD_KEY (node_modules\react-native\src\private\webapis\dom\events\EventTarget.js)
+  dispatchTrustedEvent (node_modules\react-native\src\private\webapis\dom\events\internals\EventTargetInternals.js)
+  setReadyState (node_modules\react-native\Libraries\Network\XMLHttpRequest.js)
+  __didCompleteResponse (node_modules\react-native\Libraries\Network\XMLHttpRequest.js)
+  apply (<native>)
+  RCTNetworking.addListener$argument_1 (node_modules\react-native\Libraries\Network\XMLHttpRequest.js)
+  apply (<native>)
+  emit (node_modules\react-native\Libraries\vendor\emitter\EventEmitter.js)
+  apply (<native>)
+  <anonymous> (node_modules\@babel\runtime\helpers\superPropGet.js)
+  RCTDeviceEventEmitterImpl#emit (node_modules\react-native\Libraries\EventEmitter\RCTDeviceEventEmitter.js)
+  request (node_modules\axios\lib\core\Axios.js)
+  throw (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _throw (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)

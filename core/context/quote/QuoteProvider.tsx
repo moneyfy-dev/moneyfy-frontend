@@ -12,9 +12,33 @@ import {
     type QuoteVehicleResponse,
     type Brand,
     type GenerateTransactionParams,
-    type FinalizeQuoteParams,
+    type OwnerDataDraft,
     type ApiResponse,
 } from '@/core/types';
+
+const EMPTY_OWNER_DATA: OwnerDataDraft = {
+    ownerName: '',
+    ownerPaternalSur: '',
+    ownerMaternalSur: '',
+    street: '',
+    streetNumber: '',
+    department: '',
+    city: '',
+    commune: '',
+};
+
+const buildOwnerDataDraft = (quoteData: QuoteVehicleParams): OwnerDataDraft => {
+    if (quoteData.ownerRelationOption !== '0') {
+        return { ...EMPTY_OWNER_DATA };
+    }
+
+    return {
+        ...EMPTY_OWNER_DATA,
+        ownerName: quoteData.purchaserName.trim(),
+        ownerPaternalSur: quoteData.purchaserPaternalSur.trim(),
+        ownerMaternalSur: quoteData.purchaserMaternalSur.trim(),
+    };
+};
 
 export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { updateUserData } = useUser();
@@ -24,19 +48,22 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [availableVehicles, setAvailableVehicles] = useState<Brand[]>([]);
+    const [ownerDataDraft, setOwnerDataDraft] = useState<OwnerDataDraft>(EMPTY_OWNER_DATA);
 
     useEffect(() => {
         const loadQuoteData = async () => {
             try {
-                const [storedVehicle, storedPlans, storedQuoterId] = await Promise.all([
+                const [storedVehicle, storedPlans, storedQuoterId, storedOwnerData] = await Promise.all([
                     storage.quote.getVehicle(),
                     storage.quote.getPlans(),
                     storage.quote.getQuoterId(),
+                    storage.quote.getOwnerData(),
                 ]);
 
                 if (storedVehicle) setVehicle(storedVehicle);
                 if (storedPlans) setPlans(storedPlans);
                 if (storedQuoterId) setQuoterId(storedQuoterId);
+                if (storedOwnerData) setOwnerDataDraft(storedOwnerData);
             } catch (error) {
             }
         };
@@ -50,6 +77,8 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     ): Promise<SearchResponse> => {
         setIsLoading(true);
         try {
+            setOwnerDataDraft(EMPTY_OWNER_DATA);
+            await storage.quote.setOwnerData(null);
             const response = await quoteService.searchVehicle(ownerId, ppu);
 
             if (response.data?.user) {
@@ -82,6 +111,25 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsLoading(true);
         try {
             const response = await quoteService.startQuotationFlow(quoteData);
+            const nextOwnerData = buildOwnerDataDraft(quoteData);
+            setOwnerDataDraft(nextOwnerData);
+            await storage.quote.setOwnerData(nextOwnerData);
+            const sameVehicle = vehicle?.ppu === quoteData.ppu;
+            const quotedVehicle: Vehicle = {
+                ppu: quoteData.ppu,
+                brand: quoteData.brand,
+                model: quoteData.model,
+                year: quoteData.year,
+                type: sameVehicle ? vehicle.type : '',
+                colour: quoteData.colour || (sameVehicle ? vehicle.colour : ''),
+                engineNum: quoteData.engineNum || (sameVehicle ? vehicle.engineNum : ''),
+                chassisNum: quoteData.chassisNum || (sameVehicle ? vehicle.chassisNum : ''),
+                manufacturer: sameVehicle ? vehicle.manufacturer : '',
+                isFound: quoteData.requestType === 'Auto',
+            };
+
+            setVehicle(quotedVehicle);
+            await storage.quote.setVehicle(quotedVehicle);
 
             if (response.data.plans) {
                 setPlans(response.data.plans);
@@ -101,7 +149,7 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [vehicle]);
 
     const selectPlan = useCallback(async (
         planData: SelectPlanParams
@@ -149,11 +197,20 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setPlans([]);
         setQuoterId(null);
         setError(null);
+        setOwnerDataDraft(EMPTY_OWNER_DATA);
 
         try {
             await storage.quote.clearQuote();
         } catch (error) {
         }
+    }, []);
+
+    const updateOwnerDataDraft = useCallback((values: Partial<OwnerDataDraft>) => {
+        setOwnerDataDraft(current => {
+            const updated = { ...current, ...values };
+            void storage.quote.setOwnerData(updated);
+            return updated;
+        });
     }, []);
 
     const hydrateQuoteSession = useCallback(async ({
@@ -206,22 +263,6 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     }, [updateUserData]);
 
-    const finalizeQuote = useCallback(async (
-        params: FinalizeQuoteParams
-    ): Promise<void> => {
-        setIsLoading(true);
-        try {
-            const response = await quoteService.finalizeQuote(params);
-            if (response.data?.user) {
-                await updateUserData(response.data.user);
-            }
-        } catch (error) {
-            throw error;
-        } finally {
-            setIsLoading(false);
-        }
-    }, [updateUserData]);
-
     return (
         <QuoteContext.Provider
             value={{
@@ -230,6 +271,7 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 quoterId,
                 isLoading,
                 error,
+                ownerDataDraft,
                 searchVehicle,
                 startQuotationFlow,
                 selectPlan,
@@ -238,7 +280,7 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 clearQuoteData,
                 searchPlanById,
                 generateTransaction,
-                finalizeQuote,
+                updateOwnerDataDraft,
                 hydrateQuoteSession,
             }}
         >

@@ -8,7 +8,7 @@ import {
     SelectPlanParams,
     QuoteVehicleResponse,
     GenerateTransactionParams,
-    FinalizeQuoteParams,
+    OwnerDataDraft,
     Brand,
     ApiResponse
 } from '@/core/types';
@@ -21,6 +21,7 @@ interface QuoteContextType {
     isLoading: boolean;
     error: string | null;
     availableVehicles: Brand[];
+    ownerDataDraft: OwnerDataDraft;
     
     // Acciones
     searchVehicle: (ownerId: string, ppu: string) => Promise<SearchResponse>;
@@ -30,7 +31,7 @@ interface QuoteContextType {
     clearQuoteData: () => Promise<void>;
     searchPlanById: (planId: string) => Promise<ApiResponse>;
     generateTransaction: (params: GenerateTransactionParams) => Promise<void>;
-    finalizeQuote: (params: FinalizeQuoteParams) => Promise<void>;
+    updateOwnerDataDraft: (values: Partial<OwnerDataDraft>) => void;
     hydrateQuoteSession: (payload: {
         vehicle: Vehicle;
         plans: InsurancePlan[];

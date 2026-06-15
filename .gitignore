@@ -14,8 +14,19 @@ npm-debug.*
 web-build/
 
 # Postman local exports
+EXT CHRISTIAN TORRES.postman_collection.json
 MoneyFy - Prod.postman_environment.json
 MoneyFy API - Producción.postman_collection (1).json
+
+# API reference payloads
+MoneyFy_Prod_API.postman_collection.json
+MoneyFy_Prod_Environment.postman_environment.json
+api_bci_respuesta_busqueda_patente.json
+api_bci_respuesta_tarifacion.json
+api_fdi_respuesta_cotizaciones.json
+api_fdi_respuesta_informacion_deal.json
+api_moneyfy_respuesta_cotizacion_bci.json
+api_moneyfy_respuesta_cotizacion_fdi.json
 
 # macOS
 .DS_Store

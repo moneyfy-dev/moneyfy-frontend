@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ROUTES } from '@/core/types';
 import { View, StyleSheet } from 'react-native';
@@ -9,8 +9,11 @@ import {
     ThemedInput,
     ThemedButton,
     LoadingScreen,
+    ThemedAutocomplete,
 } from '@/shared/components';
 import { useQuote } from '@/core/context';
+import { catalogService } from '@/core/services/catalog';
+import type { City } from '@/core/types';
 import { validateAddress } from '@/shared/utils/validations';
 import { useMessageConfig } from '@/shared/hooks';
 
@@ -32,12 +35,25 @@ const FIELD_LABELS: Record<string, string> = {
     street: 'calle',
     streetNumber: 'numero',
     department: 'departamento',
+    city: 'ciudad',
+    commune: 'comuna',
 };
 
 const getBackendValidationErrors = (error: unknown): Record<string, string> => {
     const data = (error as any)?.response?.data?.data;
     return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
 };
+
+const OWNER_DATA_FIELDS = new Set([
+    'ownerName',
+    'ownerPaternalSur',
+    'ownerMaternalSur',
+    'street',
+    'streetNumber',
+    'department',
+    'city',
+    'commune',
+]);
 
 const formatBackendError = (field: string, message: string) =>
     `${FIELD_LABELS[field] || field}: ${message}`;
@@ -54,15 +70,15 @@ export default function ConfirmOwnerDataScreen() {
     const { planId, planIndex } = useLocalSearchParams();
     const router = useRouter();
     const insets = useSafeAreaInsets();
-    const { selectPlan, isLoading, vehicle, plans, quoterId } = useQuote();
-    const [formData, setFormData] = useState({
-        ownerName: '',
-        ownerPaternalSur: '',
-        ownerMaternalSur: '',
-        street: '',
-        streetNumber: '',
-        department: ''
-    });
+    const {
+        selectPlan,
+        isLoading,
+        vehicle,
+        plans,
+        quoterId,
+        ownerDataDraft: formData,
+        updateOwnerDataDraft,
+    } = useQuote();
 
     const [errors, setErrors] = useState({
         ownerName: '',
@@ -71,8 +87,36 @@ export default function ConfirmOwnerDataScreen() {
         street: '',
         streetNumber: '',
         department: '',
+        city: '',
+        commune: '',
     });
     const [formError, setFormError] = useState('');
+    const [cities, setCities] = useState<City[]>([]);
+    const [catalogError, setCatalogError] = useState('');
+
+    useEffect(() => {
+        let active = true;
+
+        catalogService.getCities()
+            .then((items) => {
+                if (active) setCities(items);
+            })
+            .catch(() => {
+                if (active) {
+                    setCatalogError('No fue posible cargar las ciudades. Intenta nuevamente.');
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    const cityOptions = useMemo(() => cities.map((item) => item.city), [cities]);
+    const communeOptions = useMemo(
+        () => cities.find((item) => item.city === formData.city)?.locations || [],
+        [cities, formData.city],
+    );
 
     useMessageConfig(['/quoter/select/plan']);
 
@@ -98,6 +142,8 @@ export default function ConfirmOwnerDataScreen() {
             street: '',
             streetNumber: '',
             department: '',
+            city: '',
+            commune: '',
         };
 
         if (formData.ownerName && !validateBackendName(formData.ownerName)) {
@@ -120,6 +166,16 @@ export default function ConfirmOwnerDataScreen() {
             isValid = false;
         }
 
+        if (!formData.city.trim()) {
+            newErrors.city = 'Selecciona una ciudad';
+            isValid = false;
+        }
+
+        if (!formData.commune.trim()) {
+            newErrors.commune = 'Selecciona una comuna';
+            isValid = false;
+        }
+
         setErrors(newErrors);
         setFormError('');
         return isValid;
@@ -131,14 +187,16 @@ export default function ConfirmOwnerDataScreen() {
             return;
         }
 
-        if (!formData.ownerName.trim() && !formData.ownerPaternalSur.trim() && !formData.ownerMaternalSur.trim() && !formData.street.trim() && !formData.streetNumber.trim() && !formData.department.trim()) {
+        if (!formData.ownerName.trim() && !formData.ownerPaternalSur.trim() && !formData.ownerMaternalSur.trim() && !formData.street.trim() && !formData.streetNumber.trim() && !formData.department.trim() && !formData.city.trim() && !formData.commune.trim()) {
             setErrors({
                 ownerName: 'Ingrese el nombre del propietario',
                 ownerPaternalSur: 'Ingrese el apellido paterno del propietario',
                 ownerMaternalSur: 'Ingrese el apellido materno del propietario',
                 street: 'Ingrese la calle del propietario',
                 department: '',
-                streetNumber: 'Ingrese el número de la calle del propietario'
+                streetNumber: 'Ingrese el número de la calle del propietario',
+                city: 'Selecciona una ciudad',
+                commune: 'Selecciona una comuna',
             });
             return;
         }
@@ -147,6 +205,8 @@ export default function ConfirmOwnerDataScreen() {
             !formData.ownerMaternalSur ||
             !formData.street ||
             !formData.streetNumber ||
+            !formData.city ||
+            !formData.commune ||
             !selectedPlan) {
             return;
         }
@@ -175,7 +235,9 @@ export default function ConfirmOwnerDataScreen() {
                 ownerMaternalSur: formData.ownerMaternalSur.trim(),
                 street: formData.street.trim(),
                 streetNumber: formData.streetNumber.trim(),
-                department: formData.department.trim()
+                department: formData.department.trim(),
+                city: formData.city.trim(),
+                commune: formData.commune.trim(),
             });
 
             router.push({
@@ -188,6 +250,8 @@ export default function ConfirmOwnerDataScreen() {
             });
         } catch (error) {
             const backendErrors = getBackendValidationErrors(error);
+            const responseStatus = (error as any)?.response?.status;
+            const responseMessage = (error as any)?.response?.data?.message;
             const visibleErrors = {
                 ownerName: backendErrors.ownerName || '',
                 ownerPaternalSur: backendErrors.ownerPaternalSur || '',
@@ -195,16 +259,22 @@ export default function ConfirmOwnerDataScreen() {
                 street: backendErrors.street || '',
                 streetNumber: backendErrors.streetNumber || '',
                 department: backendErrors.department || '',
+                city: backendErrors.city || '',
+                commune: backendErrors.commune || '',
             };
             const hiddenErrors = Object.entries(backendErrors)
-                .filter(([field]) => !(field in visibleErrors))
+                .filter(([field]) => !OWNER_DATA_FIELDS.has(field) && field !== 'info')
                 .map(([field, message]) => formatBackendError(field, String(message)));
 
             setErrors(visibleErrors);
             setFormError(
                 hiddenErrors.length > 0
                     ? `El backend rechazo datos del plan: ${hiddenErrors.join(', ')}`
-                    : 'Revisa los campos marcados antes de continuar.'
+                    : responseStatus === 424
+                        ? 'La cotizacion perdio su estado activo antes de seleccionar el plan. Vuelve a cotizar para generar una sesion consistente.'
+                        : responseMessage
+                            ? String(responseMessage)
+                            : 'Revisa los campos marcados antes de continuar.'
             );
         }
     };
@@ -246,21 +316,21 @@ export default function ConfirmOwnerDataScreen() {
                                 label="Nombre"
                                 placeholder="Nombre"
                                 value={formData.ownerName}
-                                onChangeText={(value) => setFormData({ ...formData, ownerName: value })}
+                                onChangeText={(value) => updateOwnerDataDraft({ ownerName: value })}
                                 error={errors.ownerName}
                             />
                             <ThemedInput
                                 label='Apellido Paterno'
                                 placeholder="Apellido Paterno"
                                 value={formData.ownerPaternalSur}
-                                onChangeText={(value) => setFormData({ ...formData, ownerPaternalSur: value })}
+                                onChangeText={(value) => updateOwnerDataDraft({ ownerPaternalSur: value })}
                                 error={errors.ownerPaternalSur}
                             />
                             <ThemedInput
                                 label='Apellido Materno'
                                 placeholder="Apellido Materno"
                                 value={formData.ownerMaternalSur}
-                                onChangeText={(value) => setFormData({ ...formData, ownerMaternalSur: value })}
+                                onChangeText={(value) => updateOwnerDataDraft({ ownerMaternalSur: value })}
                                 error={errors.ownerMaternalSur}
                             />
 
@@ -268,14 +338,50 @@ export default function ConfirmOwnerDataScreen() {
                                 label="Calle"
                                 placeholder="Calle"
                                 value={formData.street}
-                                onChangeText={(value) => setFormData({ ...formData, street: value })}
+                                onChangeText={(value) => updateOwnerDataDraft({ street: value })}
                                 error={errors.street}
                             />
+                            <ThemedAutocomplete
+                                label="Ciudad"
+                                placeholder="Selecciona una ciudad"
+                                value={formData.city}
+                                options={cityOptions}
+                                onChangeText={(value) => {
+                                    updateOwnerDataDraft({
+                                        city: value,
+                                        commune: value === formData.city ? formData.commune : '',
+                                    });
+                                }}
+                                onSelect={(value) => {
+                                    updateOwnerDataDraft({
+                                        city: value,
+                                        commune: value === formData.city ? formData.commune : '',
+                                    });
+                                }}
+                                error={errors.city}
+                                zIndex={3}
+                            />
+                            <ThemedAutocomplete
+                                label="Comuna"
+                                placeholder={formData.city ? 'Selecciona una comuna' : 'Selecciona primero una ciudad'}
+                                value={formData.commune}
+                                options={communeOptions}
+                                onChangeText={(value) => updateOwnerDataDraft({ commune: value })}
+                                onSelect={(value) => updateOwnerDataDraft({ commune: value })}
+                                error={errors.commune}
+                                disabled={!formData.city || (!catalogError && communeOptions.length === 0)}
+                                zIndex={2}
+                            />
+                            {!!catalogError && (
+                                <ThemedText variant="notes" color="red" marginBottom={12}>
+                                    {catalogError}
+                                </ThemedText>
+                            )}
                             <ThemedInput
                                 label="Número"
                                 placeholder="Número"
                                 value={formData.streetNumber}
-                                onChangeText={(value) => setFormData({ ...formData, streetNumber: value })}
+                                onChangeText={(value) => updateOwnerDataDraft({ streetNumber: value })}
                                 keyboardType="numeric"
                                 error={errors.streetNumber}
                             />
@@ -283,7 +389,7 @@ export default function ConfirmOwnerDataScreen() {
                                 label="Departamento (opcional)"
                                 placeholder="Departamento"
                                 value={formData.department}
-                                onChangeText={(value) => setFormData({ ...formData, department: value })}
+                                onChangeText={(value) => updateOwnerDataDraft({ department: value })}
                                 error={errors.department}
                             />
                         </View>
@@ -291,7 +397,7 @@ export default function ConfirmOwnerDataScreen() {
                         <ThemedButton
                             text="Continuar"
                             onPress={handleSubmit}
-                            disabled={!formData.ownerName || !formData.ownerPaternalSur || !formData.ownerMaternalSur || !formData.street || !formData.streetNumber}
+                            disabled={!formData.ownerName || !formData.ownerPaternalSur || !formData.ownerMaternalSur || !formData.street || !formData.streetNumber || !formData.city || !formData.commune}
                             style={styles.button}
                         />
 

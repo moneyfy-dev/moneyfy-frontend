@@ -84,6 +84,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 12,
+        minWidth: 0,
     },
     buttonLg: {
         height: 50,
@@ -96,6 +97,8 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         fontWeight: '600',
+        flexShrink: 1,
+        textAlign: 'center',
     },
     textLg: {
         fontSize: 12,

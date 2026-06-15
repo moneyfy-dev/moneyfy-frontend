@@ -282,6 +282,7 @@ export default function QuotersScreen() {
     <ThemedListLayout
       padding={[0, 24]}
       headerComponent={HeaderComponent}
+      reserveBottomInset={false}
     >
       <FlatList
         data={quoters}
@@ -388,7 +389,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   listContent: {
-    paddingBottom: 16,
+    paddingBottom: 24,
   },
   quoterItem: {
     borderBottomWidth: 1,

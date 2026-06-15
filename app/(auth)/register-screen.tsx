@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, Link } from 'expo-router';
 import { RegisterRequest, ROUTES } from '@/core/types';
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
-import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, LoadingScreen } from '@/shared/components';
+import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, LoadingScreen, MessageModal } from '@/shared/components';
 import { validateEmail, validatePassword, validateName, sanitizeName, getPasswordErrors } from '@/shared/utils/validations';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/core/context';
@@ -22,6 +22,7 @@ export default function RegisterScreen() {
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
     const [isFormValid, setIsFormValid] = useState(false);
     const [termsAccepted, setTermsAccepted] = useState(false);
+    const [localError, setLocalError] = useState('');
     const themeColors = useThemeColor();
     const router = useRouter();
     const [touchedFields, setTouchedFields] = useState({
@@ -152,7 +153,9 @@ export default function RegisterScreen() {
                 error?.response?.data?.message ||
                 error?.message ||
                 'Error de conexión. Intenta nuevamente.';
-            Alert.alert('Error', message);
+            if (!error?.response) {
+                setLocalError(message);
+            }
         }
     };
 
@@ -280,6 +283,20 @@ export default function RegisterScreen() {
 
                 </ThemedLayout>
             )}
+            <MessageModal
+                isVisible={!!localError}
+                onClose={() => setLocalError('')}
+                title="No se pudo crear la cuenta"
+                message={localError}
+                icon={{
+                    name: 'alert-circle-outline',
+                    color: themeColors.status.error,
+                }}
+                primaryButton={{
+                    text: 'Entendido',
+                    onPress: () => setLocalError(''),
+                }}
+            />
         </>
     );
 }

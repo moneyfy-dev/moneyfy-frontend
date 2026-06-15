@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { User, ROUTES, MonthlyEarnings } from '@/core/types';
 import { View, StyleSheet, TouchableOpacity, Image, RefreshControl, useWindowDimensions } from 'react-native';
 import Colors from '@/constants/Colors';
@@ -12,8 +12,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { userService } from '@/core/services';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-
-const FORCE_SHOW_ONBOARDING = false;
 
 const formatChartAxisAmount = (value: string) => {
   const amount = Number(value);
@@ -50,9 +48,11 @@ export default function HomeScreen() {
   });
   const screenWidth = windowWidth;
   const toggleBalance = () => setShowBalance(!showBalance);
-  const { hasSeenOnboarding, shouldShowOnboarding, setShouldShowOnboarding } = useOnboarding();
-  const route = useLocalSearchParams();
-  const { fromConfirmation } = route;
+  const {
+    hasSeenOnboarding,
+    shouldShowOnboarding,
+    isOnboardingStatusLoaded,
+  } = useOnboarding();
   const [refreshing, setRefreshing] = useState(false);
   const [monthlyEarnings, setMonthlyEarnings] = useState<MonthlyEarnings | null>(null);
 
@@ -85,9 +85,6 @@ export default function HomeScreen() {
 
     initializeData();
 
-    if (FORCE_SHOW_ONBOARDING || fromConfirmation === 'true') {
-      setShouldShowOnboarding(true);
-    }
   }, []);
 
   const onRefresh = async () => {
@@ -115,8 +112,16 @@ export default function HomeScreen() {
     ? chartMonths.map((item) => item.totalCommission)
     : [0];
   const hasChartData = chartValues.some((value) => value > 0);
+  const currentMonthKey = format(new Date(), 'yyyy-MM');
+  const currentMonthCommissions = chartMonths.find(
+    (item) => item.month.startsWith(currentMonthKey)
+  )?.totalCommission ?? 0;
 
-  if (shouldShowOnboarding || (fromConfirmation === 'true' && !hasSeenOnboarding)) {
+  if (!isOnboardingStatusLoaded) {
+    return <LoadingScreen />;
+  }
+
+  if (shouldShowOnboarding || !hasSeenOnboarding) {
     return <Onboarding />;
   }
 
@@ -160,14 +165,14 @@ export default function HomeScreen() {
 
         <View>
 
-          <ThemedText variant="paragraph" marginBottom={5}>Tu saldo actual</ThemedText>
+          <ThemedText variant="paragraph" marginBottom={5}>Comisiones de este mes</ThemedText>
 
           <View style={styles.balanceRow}>
             <ThemedText variant="subTitleBold" marginBottom={3} color={themeColors.textColorAccent}>
               $ {' '}
             </ThemedText>
             <ThemedText variant="superTitle" color={themeColors.textColor}>
-              {showBalance ? `${typedUser.wallet.totalBalance.toLocaleString('es-CL')}` : '******'}
+              {showBalance ? `${currentMonthCommissions.toLocaleString('es-CL')}` : '******'}
             </ThemedText>
           </View>
 
@@ -240,14 +245,14 @@ export default function HomeScreen() {
         >
           <Ionicons style={{ width: 24, height: 24 }} name="cash-outline" size={24} color={themeColors.white} />
           <View>
-            <ThemedText variant="paragraph" color={themeColors.white}>Saldo Disponible</ThemedText>
+            <ThemedText variant="paragraph" style={{ marginBottom: 5 }} color={themeColors.white}>Comisiones{"\n"}aprobadas</ThemedText>
             <ThemedText variant="title" color={Colors.common.green1}>${' '}{showBalance ? `${typedUser.wallet.availableBalance.toLocaleString('es-CL')}` : '******'}</ThemedText>
           </View>
         </LinearGradient>
         <View style={[styles.card, { backgroundColor: themeColors.backgroundCardColor, flex: 1 }]}>
           <Ionicons style={{ width: 24, height: 24 }} name="lock-closed-outline" size={24} color={themeColors.textColor} />
           <View>
-            <ThemedText variant="paragraph">Saldo Retenido</ThemedText>
+            <ThemedText variant="paragraph" style={{ marginBottom: 5 }}>Comisiones{"\n"}pendientes</ThemedText>
             <ThemedText variant="title">${' '}{showBalance ? `${typedUser.wallet.outstandingBalance.toLocaleString('es-CL')}` : '******'}</ThemedText>
           </View>
         </View>
@@ -328,7 +333,6 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
   balanceContainer: {
-    marginBottom: 24,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -348,8 +352,8 @@ const styles = StyleSheet.create({
   chartContainer: {
     borderRadius: 16,
     overflow: 'hidden',
-    marginHorizontal: -24,
-    paddingBottom: 24,
+    marginHorizontal: -28,
+    paddingBottom: 16,
   },
   chartEmptyState: {
     height: 200,

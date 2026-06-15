@@ -1,34 +1,56 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ROUTES, ConfirmationFlowType } from '@/core/types';
-import { Alert, View, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { View, StyleSheet } from 'react-native';
+import { ConfirmationFlowType, ROUTES } from '@/core/types';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
-import { ThemedLayout, ThemedText, ThemedButton, VerificationCode, ResendCode, LoadingScreen } from '@/shared/components';
-import { useAuth } from '@/core/context';
+import {
+    LoadingScreen,
+    MessageModal,
+    ResendCode,
+    ThemedButton,
+    ThemedLayout,
+    ThemedText,
+    VerificationCode,
+} from '@/shared/components';
+import { useAuth, useOnboarding } from '@/core/context';
 
 export default function ConfirmationCodeScreen() {
-    const route = useLocalSearchParams();
-    const { email, flow } = route;
+    const { email, flow } = useLocalSearchParams<{
+        email: string;
+        flow: ConfirmationFlowType;
+    }>();
     const { confirmCode, resendCode, isLoading } = useAuth();
+    const {
+        setHasSeenOnboarding,
+        setShouldShowOnboarding,
+    } = useOnboarding();
     const router = useRouter();
-    const [code, setCode] = useState('');
     const themeColors = useThemeColor();
+    const [code, setCode] = useState('');
+    const [localError, setLocalError] = useState('');
 
-    useMessageConfig(['/auth/resend/code', '/auth/confirm/registration']);
+    useMessageConfig([
+        '/auth/resend/code',
+        '/auth/confirm/registration',
+        '/auth/confirm/device/change',
+    ]);
 
-    const handleConfirmCode = async (code: string) => {
+    const handleConfirmCode = async () => {
+        if (code.length !== 6) {
+            setLocalError('Ingresa el código de 6 dígitos.');
+            return;
+        }
+
         try {
-            if (!code || code.length !== 6) {
-                Alert.alert('Error', 'Ingresa el código de 6 dígitos.');
-                return;
-            }
-            const response = await confirmCode(
-                email as string,
-                code,
-                flow as ConfirmationFlowType,
-            );
+            const response = await confirmCode(email, code, flow);
 
-            if (flow === 'registerUser' && response.status === 201) {
+            if (
+                flow === 'registerUser' &&
+                (response.status === 200 || response.status === 201)
+            ) {
+                const registeredUserId = response.data?.user?.userId;
+                await setHasSeenOnboarding(false, registeredUserId);
+                setShouldShowOnboarding(true);
                 router.replace(ROUTES.TABS.INDEX);
             } else if (flow === 'changeDevice' && response.status === 200) {
                 setTimeout(() => {
@@ -36,34 +58,40 @@ export default function ConfirmationCodeScreen() {
                 }, 3000);
             }
         } catch (error: any) {
-            const apiMessage =
-                error?.response?.data?.message ||
-                (typeof error?.response?.data === 'string' ? error.response.data : null);
-            Alert.alert('Error', apiMessage || error?.message || 'Error de conexión');
+            // HTTP errors are displayed by the global Moneyfy message provider.
+            if (!error?.response) {
+                setLocalError(error?.message || 'No fue posible validar el código.');
+            }
         }
     };
 
     const handleResendCode = async () => {
         try {
-            await resendCode(
-                email as string,
-                flow as ConfirmationFlowType
-            );
-        } catch (error: any) {
+            await resendCode(email, flow);
+        } catch {
+            // API errors are displayed by the global Moneyfy message provider.
         }
     };
 
     return (
         <>
-            {isLoading ? <LoadingScreen /> : (
+            {isLoading ? (
+                <LoadingScreen />
+            ) : (
                 <ThemedLayout>
                     <View style={styles.pageContainer}>
-
-                        <ThemedText variant='title' textAlign='center' marginBottom={8}>Ingrese el código de confirmación</ThemedText>
-                        <ThemedText variant='paragraph' textAlign='center' marginBottom={10}>
+                        <ThemedText variant="title" textAlign="center" marginBottom={8}>
+                            Ingresa el código de confirmación
+                        </ThemedText>
+                        <ThemedText variant="paragraph" textAlign="center" marginBottom={10}>
                             Un código de 6 dígitos fue enviado a
                         </ThemedText>
-                        <ThemedText variant='paragraph' style={{ color: themeColors.textColorAccent }} textAlign='center' marginBottom={40}>
+                        <ThemedText
+                            variant="paragraph"
+                            color={themeColors.textColorAccent}
+                            textAlign="center"
+                            marginBottom={40}
+                        >
                             {email}
                         </ThemedText>
 
@@ -72,15 +100,25 @@ export default function ConfirmationCodeScreen() {
 
                     <View style={styles.buttonContainer}>
                         <ResendCode onResend={handleResendCode} />
-
-                        <ThemedButton
-                            text="Continuar"
-                            onPress={() => handleConfirmCode(code)}
-                        />
+                        <ThemedButton text="Continuar" onPress={handleConfirmCode} />
                     </View>
-
                 </ThemedLayout>
             )}
+
+            <MessageModal
+                isVisible={!!localError}
+                onClose={() => setLocalError('')}
+                title="Código no válido"
+                message={localError}
+                icon={{
+                    name: 'alert-circle-outline',
+                    color: themeColors.status.error,
+                }}
+                primaryButton={{
+                    text: 'Entendido',
+                    onPress: () => setLocalError(''),
+                }}
+            />
         </>
     );
 }
@@ -90,23 +128,8 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
     },
-    codeContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 8,
-        marginHorizontal: 'auto',
-    },
-    codeInput: {
-        textAlign: 'center',
-        width: 10,
-        padding: 0,
-    },
     buttonContainer: {
         width: '100%',
         marginTop: 24,
     },
-    disabledText: {
-        opacity: 0.5,
-    }
 });

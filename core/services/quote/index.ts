@@ -7,7 +7,7 @@ import type {
     VehiclesResponse,
     QuoteResult,
     GenerateTransactionParams,
-    FinalizeQuoteParams,
+    Insurer,
     ApiResponse
 } from '@/core/types';
 
@@ -26,13 +26,16 @@ export class NoQuotePlansError extends Error {
     }
 }
 
-const normalizeInsurer = (planInsurer: unknown, responseInsurer: QuoteVehicleResponse['data']['insurer']) => {
+const normalizeInsurer = (
+    planInsurer: unknown,
+    responseInsurer: QuoteVehicleResponse['data']['insurer']
+): Insurer => {
     if (responseInsurer && typeof responseInsurer === 'object') {
-        return responseInsurer;
+        return responseInsurer as Insurer;
     }
 
     if (planInsurer && typeof planInsurer === 'object') {
-        return planInsurer;
+        return planInsurer as Insurer;
     }
 
     if (typeof planInsurer === 'string') {
@@ -84,7 +87,7 @@ const getInsurerAliases = (response: SearchResponse): string[] => {
 const buildQuoteResponse = (response: QuoteVehicleResponse): QuoteVehicleResponse => {
     const plans = (response.data?.plans || []).map((plan) => ({
         ...plan,
-        planId: plan.planId || (plan as any).uniquePlan || (plan as any).quoterPlanId || (plan as any).idPlan || (plan as any).id || '',
+        planId: (plan as any).uniquePlan || plan.planId || (plan as any).quoterPlanId || (plan as any).idPlan || (plan as any).id || '',
         insurer: normalizeInsurer(plan.insurer, response.data?.insurer),
     }));
     const insurer = normalizeInsurer(plans[0]?.insurer, response.data.insurer);
@@ -121,7 +124,7 @@ export const quoteService = {
             });
     },
 
-    selectPlan(planData: SelectPlanParams): Promise<QuoteVehicleResponse> {
+    selectPlan(planData: SelectPlanParams): Promise<any> {
         return api.put('/quoter/select/plan', planData, {
             skipGlobalErrorMessage: true,
         } as any);
@@ -148,64 +151,68 @@ export const quoteService = {
                 throw new Error('No hay aseguradoras configuradas para cotizar');
             }
 
-            const quotePromises = insurerAliases.map(async (insurerAlias): Promise<QuoteResult> => {
+            const results: QuoteResult[] = [];
+            let activeQuoterId = quoteData.quoterId || '';
+
+            for (const insurerAlias of insurerAliases) {
                 try {
-                    const response = buildQuoteResponse(await this.quoteVehicle(
+                    const quoteRequest = this.quoteVehicle(
                         {
                             ...quoteData,
+                            quoterId: activeQuoterId || undefined,
                             insurerAlias,
                         },
                         {
                             skipGlobalErrorMessage: true,
                         }
-                    ));
+                    );
+                    const response = buildQuoteResponse(await Promise.race([
+                        quoteRequest,
+                        new Promise<QuoteVehicleResponse>((_, reject) => {
+                            setTimeout(() => reject(new Error('Tiempo de espera agotado al cotizar')), 30000);
+                        }),
+                    ]));
+
+                    if (response.data?.quoterId) {
+                        activeQuoterId = response.data.quoterId;
+                    }
 
                     if (!response.data?.plans?.length) {
-                        return {
+                        results.push({
                             plans: [],
                             quoterId: response.data?.quoterId || null,
                             insurer: response.data?.insurer,
                             insurerAlias,
                             error: response.data?.error,
                             errorMessage: response.data?.errorMessage,
-                        };
+                        });
+                        continue;
                     }
 
-                    return {
+                    results.push({
                         plans: response.data.plans,
                         quoterId: response.data.quoterId,
                         insurer: response.data.insurer,
                         insurerAlias,
                         error: response.data.error,
                         errorMessage: response.data.errorMessage,
-                    };
+                    });
                 } catch (error) {
-                    return {
+                    results.push({
                         ...EMPTY_QUOTE_RESULT,
                         insurerAlias,
                         error: String((error as any)?.response?.status || ''),
                         errorMessage: (error as any)?.response?.data?.message || (error as Error)?.message || 'Error al cotizar',
-                    };
+                    });
                 }
-            });
-
-            const results = await Promise.all(
-                quotePromises.map((promise) =>
-                    Promise.race<QuoteResult>([
-                        promise,
-                        new Promise<QuoteResult>((resolve) => {
-                            setTimeout(() => resolve(EMPTY_QUOTE_RESULT), 30000);
-                        })
-                    ])
-                )
-            );
+            }
 
             const allPlans = results
                 .map((result) => result.plans)
                 .flat()
                 .filter((plan) => plan !== null && plan !== undefined);
 
-            const quoterId = results.find((result) => result.quoterId)?.quoterId;
+            const quoterId = activeQuoterId || results.find((result) => result.quoterId)?.quoterId;
 
             if (allPlans.length === 0) {
                 throw new NoQuotePlansError(results);
@@ -235,9 +242,5 @@ export const quoteService = {
 
     generateTransaction(params: GenerateTransactionParams): Promise<any> {
         return api.put('/quoter/generate/transaction', params);
-    },
-
-    finalizeQuote(params: FinalizeQuoteParams): Promise<any> {
-        return api.put('/quoter/finalize/quote', params);
     }
 };

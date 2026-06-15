@@ -1,6 +1,6 @@
 import React, { forwardRef, useState, useRef } from 'react';
 import { ThemedInputCommonProps } from '@/core/types';
-import { TextInput, StyleSheet, NativeSyntheticEvent, TextInputFocusEventData } from 'react-native';
+import { TextInput, StyleSheet, type TextInputProps } from 'react-native';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { BaseInput } from '../inputs/BaseInput';
 
@@ -10,9 +10,9 @@ export const ThemedTextInput = forwardRef<TextInput, ThemedInputCommonProps>(
     const inputRef = useRef<TextInput>(null);
     const themeColors = useThemeColor();
 
-    const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    const handleBlur: NonNullable<TextInputProps['onBlur']> = (event) => {
       setIsFocused(false);
-      onBlur?.(e);
+      onBlur?.(event);
     };
 
     const handleInputPress = () => {

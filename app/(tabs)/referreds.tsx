@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Share, TouchableOpacity, Pressable } from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
+import * as Clipboard from 'expo-clipboard';
 import { useUser } from '@/core/context';
 import { ThemedListLayout, ThemedText, LoadingScreen, ThemedButton, ThemedLayout, IconContainer, ThemedInput } from '@/shared/components';
 import { Referred, ReferredStatus } from '@/core/types';
@@ -73,7 +73,7 @@ export default function ReferredsScreen() {
 
     const handleCopyCode = async () => {
         try {
-            await Clipboard.setString(user?.codeToRefer || '');
+            await Clipboard.setStringAsync(user?.codeToRefer || '');
             setIsCopied(true);
             setTimeout(() => {
                 setIsCopied(false);
@@ -254,6 +254,7 @@ export default function ReferredsScreen() {
                     <ThemedListLayout
                         padding={[0, 24]}
                         headerComponent={HeaderComponent}
+                        reserveBottomInset={false}
                     >
                         <FlatList
                             data={referreds}

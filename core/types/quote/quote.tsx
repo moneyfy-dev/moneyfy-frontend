@@ -1,4 +1,3 @@
-import { QuoterStatus } from "../quoter/quoter";
 import { User } from "../user/user";
 
 // Tipos base
@@ -12,6 +11,7 @@ export interface Vehicle {
   engineNum: string;
   chassisNum: string;
   manufacturer: string;
+  isFound?: boolean;
 }
 
 export interface Company {
@@ -85,6 +85,38 @@ export interface SelectPlanParams {
   street: string;
   streetNumber: string;
   department: string;
+  city: string;
+  commune: string;
+}
+
+export interface OwnerDataDraft {
+  ownerName: string;
+  ownerPaternalSur: string;
+  ownerMaternalSur: string;
+  street: string;
+  streetNumber: string;
+  department: string;
+  city: string;
+  commune: string;
+}
+
+export interface City {
+  cityId: string;
+  city: string;
+  locations: string[];
+}
+
+export interface CitiesResponse {
+  message: string;
+  status: number;
+  data: {
+    cities: City[];
+    tokens?: {
+      jwtSession: string;
+      jwtRefresh: string;
+    };
+    user?: User;
+  };
 }
 
 // Respuestas de API
@@ -169,9 +201,4 @@ export const OWNER_OPTIONS_MAP = {
 
 export interface GenerateTransactionParams {
     quoterId: string | null;
-}
-
-export interface FinalizeQuoteParams {
-    quoterId: string | null;
-    transactionStatus: QuoterStatus;
 }

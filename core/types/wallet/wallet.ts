@@ -5,7 +5,28 @@ export interface Wallet {
     paymentBalance: number;
   }
 
-  export interface WalletRecord {
+export interface PaymentAccount {
+    rut: string;
+    holderName: string;
+    email: string;
+    bank: string;
+    accountType: string;
+    accountNumber: string;
+}
+
+export interface Payment {
+    paymentId: string;
+    userId: string;
+    account: PaymentAccount;
+    payment: number;
+    voucher: string;
+    paymentDate: string;
+    transactionIds: string[];
+    createdDate: string;
+    updatedDate: string;
+}
+
+export interface WalletRecord {
     amount: number;
     createdDate: string;
     historicalId: string;
@@ -17,7 +38,6 @@ export interface Wallet {
 
 export interface MonthlyCommission {
     transactionId: string;
-    approvalDate: string;
     commission: number;
 }
 

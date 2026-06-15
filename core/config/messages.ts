@@ -135,9 +135,6 @@ export const DEFAULT_ERROR_MESSAGES: ErrorMessageMap = {
   '/quoter/generate/transaction': {
     424: 'Error al generar la transacción'
   },
-  '/quoter/finalize/quote': {
-    424: 'Error al finalizar la cotización'
-  },
   '/quoter/register/available/vehicles': {
     424: 'Error al registrar los vehículos'
   },
@@ -151,4 +148,4 @@ export const DEFAULT_ERROR_MESSAGES: ErrorMessageMap = {
   '/quoter/search/insurers': {
     424: 'Error al obtener las aseguradoras'
   }
-}; 
+};

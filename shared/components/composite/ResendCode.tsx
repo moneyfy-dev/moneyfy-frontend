@@ -19,7 +19,7 @@ export const ResendCode: React.FC<ResendCodeProps> = ({
   const themeColors = useThemeColor();
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (resendTimer > 0) {
       interval = setInterval(() => {
         setResendTimer((prevTimer) => prevTimer - 1);
@@ -27,7 +27,9 @@ export const ResendCode: React.FC<ResendCodeProps> = ({
     } else if (resendTimer === 0) {
       setIsResendDisabled(false);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [resendTimer]);
 
   const handleResend = async () => {

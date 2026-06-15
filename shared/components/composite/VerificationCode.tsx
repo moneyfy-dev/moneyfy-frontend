@@ -14,7 +14,7 @@ export const VerificationCode: React.FC<VerificationCodeProps> = ({
 }) => {
   const themeColors = useThemeColor();
   const [code, setCode] = useState(['', '', '', '', '', '']);
-  const inputRefs = useRef<Array<React.RefObject<TextInput>>>([
+  const inputRefs = useRef<Array<React.RefObject<TextInput | null>>>([
     React.createRef(), React.createRef(), React.createRef(), 
     React.createRef(), React.createRef(), React.createRef()
   ]);

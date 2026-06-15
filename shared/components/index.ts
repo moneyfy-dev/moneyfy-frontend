@@ -59,6 +59,7 @@ export { QuoteCard } from './composite/QuoteCard';
 export { VerificationCode } from './composite/VerificationCode';
 export { AccountListScreen } from './composite/AccountListScreen';
 export { ProfilePictureModal } from './composite/ProfilePictureModal';
+export { PaymentHistory } from './composite/PaymentHistory';
 
 // Layouts
 export { ThemedSafeAreaView } from './layouts/ThemedSafeAreaView';

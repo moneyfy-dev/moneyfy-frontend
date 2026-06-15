@@ -10,6 +10,7 @@ interface ThemedListLayoutProps {
   style?: ViewStyle;
   headerComponent?: React.ReactNode;
   safeAreaEdges?: Edge[];
+  reserveBottomInset?: boolean;
 }
 
 export const ThemedListLayout: React.FC<ThemedListLayoutProps> = ({
@@ -17,7 +18,8 @@ export const ThemedListLayout: React.FC<ThemedListLayoutProps> = ({
   padding,
   style,
   headerComponent,
-  safeAreaEdges
+  safeAreaEdges,
+  reserveBottomInset = true,
 }) => {
   const themeColors = useThemeColor();
   const insets = useSafeAreaInsets();
@@ -28,19 +30,19 @@ export const ThemedListLayout: React.FC<ThemedListLayoutProps> = ({
       return {
         paddingTop: padding,
         paddingHorizontal: padding,
-        paddingBottom: Math.max(padding, insets.bottom + 24),
+        paddingBottom: reserveBottomInset ? Math.max(padding, insets.bottom + 24) : padding,
       };
     }
     return {
       paddingTop: padding[0],
-      paddingBottom: Math.max(padding[0], insets.bottom + 24),
+      paddingBottom: reserveBottomInset ? Math.max(padding[0], insets.bottom + 24) : padding[0],
       paddingHorizontal: padding[1],
     };
   };
 
   return (
     <ThemedSafeAreaView
-      edges={safeAreaEdges}
+      edges={safeAreaEdges ?? (reserveBottomInset ? undefined : ['top', 'left', 'right'])}
       style={[
         styles.container, 
         { backgroundColor: themeColors.backgroundColor },

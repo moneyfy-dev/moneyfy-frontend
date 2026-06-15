@@ -9,6 +9,7 @@ export interface QuoterOwnerData {
 
 export interface QuoterCarData {
   ppu: string;
+  type?: string;
   brand: string;
   model: string;
   year: string;
@@ -36,6 +37,8 @@ export interface QuoterAddressData {
   street: string;
   streetNumber: string;
   department: string;
+  city?: string;
+  commune?: string;
 }
 
 export interface QuoterPurchaserData {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Share, TouchableOpacity } from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
+import * as Clipboard from 'expo-clipboard';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ThemedButton } from '@/shared/components';
 import { useUser } from '@/core/context';
@@ -27,7 +27,7 @@ export default function ReferralCodeScreen() {
 
     const handleCopyCode = async () => {
         try {
-            await Clipboard.setString(user?.codeToRefer || '');
+            await Clipboard.setStringAsync(user?.codeToRefer || '');
             setIsCopied(true);
             setTimeout(() => {
                 setIsCopied(false);

@@ -24,6 +24,8 @@ export default function QuoteScreen() {
   const { user } = useUser();
   const { searchVehicle, isLoading } = useQuote();
   const [rutErrorVisible, setRutErrorVisible] = useState(false);
+  const [manualEntryVisible, setManualEntryVisible] = useState(false);
+  const [manualQuoterId, setManualQuoterId] = useState('');
   const [searchValue, setSearchValue] = useState({
     ownerId: '',
     ppu: '',
@@ -47,6 +49,18 @@ export default function QuoteScreen() {
   const closeRutError = () => {
     setRutErrorVisible(false);
     focusRutInput();
+  };
+
+  const openManualEntry = () => {
+    setManualEntryVisible(false);
+    router.push({
+      pathname: ROUTES.QUOTE.MANUAL_SEARCH,
+      params: {
+        ownerId: searchValue.ownerId,
+        ppu: searchValue.ppu,
+        quoterId: manualQuoterId,
+      },
+    });
   };
 
   if (!hasAccounts) {
@@ -99,10 +113,24 @@ export default function QuoteScreen() {
 
     try {
       setSearchValue(formattedSearchValue);
-      await searchVehicle(
+      const response = await searchVehicle(
         formattedOwnerId,
         formattedSearchValue.ppu
       );
+      const foundVehicle = response.data.vehicle;
+      const isExplicitlyNotFound =
+        foundVehicle?.isFound === false ||
+        String(foundVehicle?.isFound).toLowerCase() === 'false';
+      const isVehicleEmpty =
+        !foundVehicle?.brand?.trim() ||
+        !foundVehicle?.model?.trim() ||
+        !foundVehicle?.year?.trim();
+
+      if (!foundVehicle || isExplicitlyNotFound || isVehicleEmpty) {
+        setManualQuoterId(String(response.data.quoterId || ''));
+        setManualEntryVisible(true);
+        return;
+      }
 
       router.push({
         pathname: ROUTES.QUOTE.SEARCH_RESULTS,
@@ -169,7 +197,13 @@ export default function QuoteScreen() {
 
           <TouchableOpacity
             style={styles.manualEntryButton}
-            onPress={() => router.push(ROUTES.QUOTE.MANUAL_SEARCH)}
+            onPress={() => router.push({
+              pathname: ROUTES.QUOTE.MANUAL_SEARCH,
+              params: {
+                ownerId: searchValue.ownerId,
+                ppu: searchValue.ppu,
+              },
+            })}
           >
             <Ionicons
               name="hand-left-outline"
@@ -200,6 +234,24 @@ export default function QuoteScreen() {
         primaryButton={{
           text: 'Entendido',
           onPress: closeRutError,
+        }}
+      />
+      <MessageModal
+        isVisible={manualEntryVisible}
+        onClose={() => setManualEntryVisible(false)}
+        title="Vehículo no encontrado"
+        message="No encontramos tu vehículo con la patente ingresada. Puedes agregar sus datos manualmente para continuar."
+        icon={{
+          name: 'car-outline',
+          color: themeColors.status.warning,
+        }}
+        primaryButton={{
+          text: 'Agregar manualmente',
+          onPress: openManualEntry,
+        }}
+        secondaryButton={{
+          text: 'Cancelar',
+          onPress: () => setManualEntryVisible(false),
         }}
       />
     </>

@@ -1,6 +1,6 @@
 import React, { forwardRef, useState } from 'react';
 import { ThemedInputCommonProps } from '@/core/types';
-import { TextInput, StyleSheet, NativeSyntheticEvent, TextInputFocusEventData } from 'react-native';
+import { TextInput, StyleSheet, type TextInputProps } from 'react-native';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { BaseInput } from '../inputs/BaseInput';
 
@@ -9,9 +9,9 @@ export const SearchInput = forwardRef<TextInput, ThemedInputCommonProps>(
     const [isFocused, setIsFocused] = useState(false);
     const themeColors = useThemeColor();
 
-    const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    const handleBlur: NonNullable<TextInputProps['onBlur']> = (event) => {
       setIsFocused(false);
-      props.onBlur?.(e);
+      props.onBlur?.(event);
     };
 
     return (
@@ -43,4 +43,4 @@ const styles = StyleSheet.create({
     height: 48,
     paddingVertical: 0,
   }
-}); 
+});

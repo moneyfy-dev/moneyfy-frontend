@@ -94,7 +94,10 @@ export default function QuoterDetailScreen() {
     try {
       if (quoter.quoterStatus === 'Cotizando') {
         await hydrateQuoteSession({
-          vehicle: quoter.quoterCarData,
+          vehicle: {
+            ...quoter.quoterCarData,
+            type: quoter.quoterCarData.type || '',
+          },
           plans: [],
           quoterId: quoter.quoterId,
         });
@@ -127,7 +130,10 @@ export default function QuoterDetailScreen() {
       }
 
       await hydrateQuoteSession({
-        vehicle: quoter.quoterCarData,
+        vehicle: {
+          ...quoter.quoterCarData,
+          type: quoter.quoterCarData.type || '',
+        },
         plans: [plan],
         quoterId: quoter.quoterId,
       });
