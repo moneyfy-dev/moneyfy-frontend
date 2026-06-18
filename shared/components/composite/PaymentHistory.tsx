@@ -13,6 +13,8 @@ interface PaymentHistoryProps {
     horizontalPadding?: number;
 }
 
+const resolvePaymentDate = (payment: Payment) => payment.createdDate || payment.updatedDate || '';
+
 const formatPaymentDate = (value: string) => {
     try {
         return format(parseISO(value), "d 'de' MMMM, yyyy", { locale: es });
@@ -36,7 +38,7 @@ export function PaymentHistory({ horizontalPadding = 24 }: PaymentHistoryProps) 
 
                 setPayments(
                     [...userPayments].sort((a, b) =>
-                        (b.createdDate || b.paymentDate).localeCompare(a.createdDate || a.paymentDate)
+                        resolvePaymentDate(b).localeCompare(resolvePaymentDate(a))
                     )
                 );
             } catch {
@@ -140,7 +142,7 @@ export function PaymentHistory({ horizontalPadding = 24 }: PaymentHistoryProps) 
                                         {item.account?.accountType} {item.account?.accountNumber}
                                     </ThemedText>
                                     <ThemedText variant="notes" color={themeColors.textParagraph}>
-                                        Pagado el {formatPaymentDate(item.paymentDate)}
+                                        Registrado el {formatPaymentDate(resolvePaymentDate(item))}
                                     </ThemedText>
                                     <ThemedText variant="notes" color={themeColors.textParagraph}>
                                         {item.transactionIds?.length ?? 0} comisiones incluidas

@@ -5,7 +5,7 @@ const { apiUrl } = getEnvVars();
 
 export const api = axios.create({
   baseURL: apiUrl,
-  timeout: 0,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },

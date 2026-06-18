@@ -34,6 +34,7 @@ module.exports = {
     },
     plugins: [
       "expo-router",
+      "expo-asset",
       [
         "@react-native-community/datetimepicker",
         {
@@ -42,6 +43,7 @@ module.exports = {
       ],
       "expo-font",
       "expo-secure-store",
+      "expo-web-browser",
     ],
     experiments: {
       typedRoutes: true,

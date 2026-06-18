@@ -82,7 +82,7 @@ export const QuoterInfoCard = ({ personalData, addressData }: QuoterInfoCardProp
             )}
             {addressData.city && (
               <View style={styles.infoRow}>
-                <ThemedText variant="paragraph" color={themeColors.textParagraph}>Ciudad:</ThemedText>
+                <ThemedText variant="paragraph" color={themeColors.textParagraph}>Region:</ThemedText>
                 <ThemedText variant="paragraph" color={themeColors.textColorAccent}>
                   {addressData.city}
                 </ThemedText>

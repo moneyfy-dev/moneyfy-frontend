@@ -1,4 +1,5 @@
 import { User } from "@/core/types";
+import type { AuthTokens } from "./auth";
 
 export interface RegisterRequest {
     name: string;
@@ -10,10 +11,9 @@ export interface RegisterRequest {
 
   export interface RegisterResponse {
     data: {
-      tokens: {
-        jwtRefresh: string;
-        jwtSession: string;
-      };
+      tokens?: AuthTokens;
+      refreshToken?: string;
+      sessionToken?: string;
       user: User;
     };
     message: string;

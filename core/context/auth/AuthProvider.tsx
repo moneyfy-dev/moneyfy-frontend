@@ -3,8 +3,9 @@ import { AuthContext } from './AuthContext';
 import { useEffect } from 'react';
 import { STORAGE_KEYS } from '@/core/types';
 import { storage } from '@/shared/utils/storage';
+import { extractAuthTokens } from '@/shared/utils/authTokens';
 import { authService } from '@/core/services';
-import type { ConfirmationFlowType, LoginResponse, RegisterRequest, RegisterResponse } from '@/core/types';
+import type { ConfirmationFlowType, RegisterRequest } from '@/core/types';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/core/types';
 
@@ -79,36 +80,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authService.login(email, password);
 
-      if ((response.status === 200 || response.status === 202) &&
-        response.data?.tokens?.jwtRefresh &&
-        response.data?.tokens?.jwtSession) {
-        await storage.auth.setTokens(
-          response.data.tokens.jwtRefresh,
-          response.data.tokens.jwtSession
-        );
-      }
-
       switch (response.status) {
         case 200: // Login exitoso
-          await storage.user.setData(response.data.user);
-          await storage.user.updateLastHydration();
-        case 202: // Usuario reactivado
-          await storage.user.setData(response.data.user);
-          await storage.user.updateLastHydration();
-          setAuthState(prev => ({
-            ...prev,
-            isAuthenticated: true,
-            isLoading: false
-          }));
-          router.replace(ROUTES.TABS.INDEX);
+          {
+            const tokens = extractAuthTokens(response);
+            if (!response.data?.user || !tokens) {
+              throw new Error('Respuesta de inicio de sesiÃ³n invÃ¡lida');
+            }
+
+            await storage.auth.setTokens(tokens.refreshToken, tokens.sessionToken);
+            await storage.user.setData(response.data.user);
+            await storage.user.updateLastHydration();
+            setAuthState(prev => ({
+              ...prev,
+              isAuthenticated: true,
+              isLoading: false
+            }));
+            router.replace(ROUTES.TABS.INDEX);
+          }
           break;
 
-        case 226: // Cambio de dispositivo requerido
-          setAuthState(prev => ({ ...prev, isLoading: false }));
-          router.replace({
-            pathname: ROUTES.AUTH.CONFIRMATION,
-            params: { email, flow: 'changeDevice' }
-          });
+        case 202: // Usuario reactivado, el backend no entrega tokens en este flujo
+          if (response.data?.user) {
+            await storage.user.setData(response.data.user);
+            await storage.user.updateLastHydration();
+          }
+          setAuthState(prev => ({
+            ...prev,
+            isAuthenticated: false,
+            isLoading: false
+          }));
+          router.replace(ROUTES.AUTH.LOGIN);
           break;
       }
 
@@ -126,6 +128,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isLoading: true
     }));
     try {
+      await authService.logout().catch(() => undefined);
+
       // Primero limpiar estados
       setAuthState(prev => ({
         ...prev,
@@ -138,6 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         storage.auth.clearAuth(),
         storage.user.clearUser(),
         storage.session.clearAll(),
+        storage.quote.clearQuote(),
         storage.set(STORAGE_KEYS.AUTH.PERSISTENT_AUTH, 'false'),
         storage.set(STORAGE_KEYS.AUTH.BIOMETRIC_ENABLED, 'false')
       ]);
@@ -198,22 +203,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (response.status === 200) {
-        if (!response.data?.tokens || !response.data?.user) {
-          throw new Error('Respuesta de registro invÃ¡lida');
+        const tokens = extractAuthTokens(response);
+        if (!response.data?.user || !tokens) {
+          throw new Error('Respuesta de recuperaciÃ³n de contraseÃ±a invÃ¡lida');
         }
 
-        await storage.auth.setTokens(
-          response.data.tokens.jwtRefresh,
-          response.data.tokens.jwtSession
-        );
+        await storage.auth.setTokens(tokens.refreshToken, tokens.sessionToken);
         await storage.user.setData(response.data.user);
         await storage.user.updateLastHydration();
+        await Promise.all([
+          storage.session.clearAll(),
+          storage.quote.clearQuote(),
+        ]);
 
         setAuthState(prev => ({
           ...prev,
           isAuthenticated: true,
+          isPersistentAuthRequired: false,
           isLoading: false
         }));
+      } else {
+        setAuthState(prev => ({ ...prev, isLoading: false }));
       }
       return response;
     } catch (error) {
@@ -232,14 +242,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await authService.confirmCode({ email, code, flow });
 
       if (response.status === 201 || response.status === 200) {
-        if (!response.data?.tokens || !response.data?.user) {
+        const tokens = extractAuthTokens(response);
+
+        if (!response.data?.user || !tokens) {
           throw new Error('Respuesta de registro invÃ¡lida');
         }
 
-        await storage.auth.setTokens(
-          response.data.tokens.jwtRefresh,
-          response.data.tokens.jwtSession
-        );
+        await storage.auth.setTokens(tokens.refreshToken, tokens.sessionToken);
         await storage.user.setData(response.data.user);
         await storage.user.updateLastHydration();
 

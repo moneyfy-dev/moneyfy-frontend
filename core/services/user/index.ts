@@ -2,6 +2,7 @@ import { api } from '../api';
 import type { 
   User,
   ApiResponse,
+  WeeklyEarnings,
   MonthlyEarnings,
   Payment
 } from '@/core/types';
@@ -9,7 +10,9 @@ import type {
 export const userService = {
   getUserData: async (): Promise<ApiResponse> => {
     try {
-      const response = await api.post('/users/hydration/data');
+      const response = await api.post('/users/hydration/data', {}, {
+        skipGlobalErrorMessage: true,
+      } as any);
       return response.data;
     } catch (error: any) {
       throw error;
@@ -59,7 +62,16 @@ export const userService = {
   },
 
   getReferreds: async (): Promise<ApiResponse> => {
-    const response = await api.post('/users/list/referreds');
+    const response = await api.post('/users/list/referreds', {}, {
+      skipGlobalErrorMessage: true,
+    } as any);
+    return response.data;
+  },
+
+  getWeeklyEarnings: async (): Promise<ApiResponse<{ weeklyEarnings: WeeklyEarnings; user?: User }>> => {
+    const response = await api.post('/users/weekly/earnings', {}, {
+      skipGlobalErrorMessage: true,
+    } as any);
     return response.data;
   },
 

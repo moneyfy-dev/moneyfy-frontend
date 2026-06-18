@@ -1,3 +1,51 @@
+**Avance 15-06-2026 - Fase 1**
+
+Completado:
+- Las solicitudes autenticadas se serializan para respetar la rotación de tokens del backend.
+- La persistencia de tokens queda centralizada en el interceptor de Axios.
+- Una falla de red o un error 5xx durante la hidratación ya no cierra la sesión.
+- Los errores 401, 403 y mensajes de JWT/token inválido sí cierran la sesión.
+- El logout elimina la cotización persistida.
+- `QuoteProvider` limpia también su estado en memoria al cerrar sesión y solo hidrata datos con una cuenta autenticada.
+- Axios tiene timeout global de 30 segundos y fue actualizado de 1.7.9 a 1.18.0.
+- Se aplicaron los parches compatibles recomendados para Expo SDK 54.
+- Se agregaron pruebas para clasificación de errores de autenticación y limpieza del storage de cotización.
+
+Validación:
+- TypeScript: sin errores.
+- ESLint: 0 errores, 49 advertencias preexistentes.
+- Jest: 2 suites, 6 pruebas aprobadas.
+- Expo Doctor: 18/18 verificaciones aprobadas.
+
+Pendiente de la fase 1:
+- El backend no expone actualmente `/auth/verify-session`; no es posible validar la sesión remotamente al arrancar.
+- Falta definir una política central para 401/403 fuera del flujo de hidratación.
+
+**Avance 15-06-2026 - Fase 2**
+
+Completado:
+- Se eliminó el QR ficticio, el enlace a BCI y los datos personales/fechas hardcodeados.
+- La pantalla final ahora confirma vehículo, propietario y plan con datos reales antes de enviar la cotización.
+- La generación de transacción está protegida contra doble toque y llamadas simultáneas.
+- Una transacción exitosa limpia el estado activo de cotización.
+- Las cotizaciones `Pendiente` ya no permiten generar nuevamente la transacción.
+- El ingreso manual actualiza correctamente `brand` y `model`.
+- El historial busca por propietario, comprador, marca, modelo y patente.
+- El filtro de fecha final incluye el día completo.
+- Un cotizante inexistente muestra un estado recuperable en vez de cargar indefinidamente.
+- Se eliminó la dependencia `react-native-qrcode-svg`.
+
+Validación:
+- TypeScript: sin errores.
+- ESLint: 0 errores, 43 advertencias preexistentes.
+- Jest: 3 suites, 9 pruebas aprobadas.
+- Expo Doctor: 18/18 verificaciones aprobadas.
+
+Pendiente de la fase 2:
+- Reanudar cotizaciones continúa dependiendo de estados generales hasta que el backend entregue el paso exacto.
+- La fecha de próximo pago sigue siendo una estimación local y debe provenir del backend.
+- Si en el futuro existe un enlace real de contratación, debe incorporarse como dato explícito de la API.
+
 **Evaluación**
 La app está en un estado de **beta funcional avanzada**, pero todavía no la consideraría lista para producción financiera.
 

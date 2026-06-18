@@ -17,10 +17,9 @@ export interface PaymentAccount {
 export interface Payment {
     paymentId: string;
     userId: string;
-    account: PaymentAccount;
+    account: PaymentAccount | null;
     payment: number;
     voucher: string;
-    paymentDate: string;
     transactionIds: string[];
     createdDate: string;
     updatedDate: string;
@@ -35,6 +34,25 @@ export interface WalletRecord {
     updatedDate: string;
     walletDetail: any[];
   }
+
+export interface WeeklyCommission {
+    transactionId: string;
+    commission: number;
+}
+
+export interface WeeklyEarningDay {
+    date: string;
+    totalCommission: number;
+    totalAmount: number;
+    commissions: WeeklyCommission[];
+}
+
+export interface WeeklyEarnings {
+    days: WeeklyEarningDay[];
+    finalCommissions: number;
+    finalAmount: number;
+    lastDay: string;
+}
 
 export interface MonthlyCommission {
     transactionId: string;

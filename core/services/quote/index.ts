@@ -16,6 +16,8 @@ const EMPTY_QUOTE_RESULT: QuoteResult = {
     quoterId: null,
 };
 
+const QUOTE_PLAN_TIMEOUT_MS = 12000;
+
 export class NoQuotePlansError extends Error {
     details: QuoteResult[];
 
@@ -102,6 +104,30 @@ const buildQuoteResponse = (response: QuoteVehicleResponse): QuoteVehicleRespons
     };
 };
 
+const withAbortableTimeout = async <T>(
+    requestFactory: (signal: AbortSignal) => Promise<T>,
+    timeoutMs: number,
+    timeoutMessage: string
+): Promise<T> => {
+    const controller = new AbortController();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    try {
+        return await new Promise<T>((resolve, reject) => {
+            timeoutId = setTimeout(() => {
+                controller.abort();
+                reject(new Error(timeoutMessage));
+            }, timeoutMs);
+
+            requestFactory(controller.signal).then(resolve).catch(reject);
+        });
+    } finally {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+    }
+};
+
 export const quoteService = {
     searchCompanies(config?: Record<string, unknown>): Promise<SearchResponse> {
         return api.get('/quoter/search/insurers', config as any)
@@ -131,7 +157,9 @@ export const quoteService = {
     },
 
     getAvailableVehicles: async (): Promise<VehiclesResponse> => {
-        const response = await api.get('/quoter/search/vehicle/brands');
+        const response = await api.get('/quoter/search/vehicle/brands', {
+            skipGlobalErrorMessage: true,
+        } as any);
         return response.data;
     },
 
@@ -153,58 +181,88 @@ export const quoteService = {
 
             const results: QuoteResult[] = [];
             let activeQuoterId = quoteData.quoterId || '';
+            const pendingAliases = [...insurerAliases];
 
-            for (const insurerAlias of insurerAliases) {
+            const quoteInsurer = async (
+                insurerAlias: string,
+                quoterIdForRequest: string
+            ): Promise<{ result: QuoteResult; quoterId: string | null }> => {
                 try {
-                    const quoteRequest = this.quoteVehicle(
-                        {
-                            ...quoteData,
-                            quoterId: activeQuoterId || undefined,
-                            insurerAlias,
-                        },
-                        {
-                            skipGlobalErrorMessage: true,
-                        }
-                    );
-                    const response = buildQuoteResponse(await Promise.race([
-                        quoteRequest,
-                        new Promise<QuoteVehicleResponse>((_, reject) => {
-                            setTimeout(() => reject(new Error('Tiempo de espera agotado al cotizar')), 30000);
-                        }),
-                    ]));
-
-                    if (response.data?.quoterId) {
-                        activeQuoterId = response.data.quoterId;
-                    }
+                    const response = buildQuoteResponse(await withAbortableTimeout(
+                        (signal) => this.quoteVehicle(
+                            {
+                                ...quoteData,
+                                quoterId: quoterIdForRequest || undefined,
+                                insurerAlias,
+                            },
+                            {
+                                skipGlobalErrorMessage: true,
+                                signal,
+                            }
+                        ),
+                        QUOTE_PLAN_TIMEOUT_MS,
+                        `Tiempo de espera agotado al cotizar con ${insurerAlias}`
+                    ));
 
                     if (!response.data?.plans?.length) {
-                        results.push({
-                            plans: [],
+                        return {
                             quoterId: response.data?.quoterId || null,
-                            insurer: response.data?.insurer,
-                            insurerAlias,
-                            error: response.data?.error,
-                            errorMessage: response.data?.errorMessage,
-                        });
-                        continue;
+                            result: {
+                                plans: [],
+                                quoterId: response.data?.quoterId || null,
+                                insurer: response.data?.insurer,
+                                insurerAlias,
+                                error: response.data?.error,
+                                errorMessage: response.data?.errorMessage,
+                            },
+                        };
                     }
 
-                    results.push({
-                        plans: response.data.plans,
-                        quoterId: response.data.quoterId,
-                        insurer: response.data.insurer,
-                        insurerAlias,
-                        error: response.data.error,
-                        errorMessage: response.data.errorMessage,
-                    });
+                    return {
+                        quoterId: response.data.quoterId || null,
+                        result: {
+                            plans: response.data.plans,
+                            quoterId: response.data.quoterId,
+                            insurer: response.data.insurer,
+                            insurerAlias,
+                            error: response.data.error,
+                            errorMessage: response.data.errorMessage,
+                        },
+                    };
                 } catch (error) {
-                    results.push({
-                        ...EMPTY_QUOTE_RESULT,
-                        insurerAlias,
-                        error: String((error as any)?.response?.status || ''),
-                        errorMessage: (error as any)?.response?.data?.message || (error as Error)?.message || 'Error al cotizar',
-                    });
+                    return {
+                        quoterId: null,
+                        result: {
+                            ...EMPTY_QUOTE_RESULT,
+                            insurerAlias,
+                            error: String((error as any)?.response?.status || ''),
+                            errorMessage: (error as any)?.response?.data?.message || (error as Error)?.message || 'Error al cotizar',
+                        },
+                    };
                 }
+            };
+
+            if (!activeQuoterId) {
+                while (pendingAliases.length > 0 && !activeQuoterId) {
+                    const insurerAlias = pendingAliases.shift();
+                    if (!insurerAlias) continue;
+
+                    const quoteResult = await quoteInsurer(insurerAlias, '');
+                    results.push(quoteResult.result);
+
+                    if (quoteResult.quoterId) {
+                        activeQuoterId = quoteResult.quoterId;
+                    }
+                }
+            }
+
+            if (activeQuoterId && pendingAliases.length > 0) {
+                const remainingResults = await Promise.all(
+                    pendingAliases.map((insurerAlias) =>
+                        quoteInsurer(insurerAlias, activeQuoterId)
+                    )
+                );
+                results.push(...remainingResults.map((item) => item.result));
             }
 
             const allPlans = results

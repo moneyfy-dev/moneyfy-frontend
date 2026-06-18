@@ -25,8 +25,8 @@ const headerInfo: Record<string, HeaderInfo> = {
     subtitle: "Ingresa los datos del propietario"
   },
   'payment-qr': {
-    title: "Código de pago",
-    subtitle: "Comparte el código para que el cliente realice el pago"
+    title: "Confirmar cotización",
+    subtitle: "Revisa los datos antes de enviar"
   },
 
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, Share, TouchableOpacity, Pressable } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useUser } from '@/core/context';
@@ -12,6 +12,7 @@ export default function ReferredsScreen() {
     const themeColors = useThemeColor();
     const [referreds, setReferreds] = useState<Referred[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [loadError, setLoadError] = useState('');
     const [isCopied, setIsCopied] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [showFilters, setShowFilters] = useState(false);
@@ -23,23 +24,23 @@ export default function ReferredsScreen() {
         }
     });
 
-    useEffect(() => {
-        const loadReferreds = async () => {
-            setIsLoading(true);
-            try {
-                const response = await getReferreds();
-                if (response?.data?.referreds) {
-                    setReferreds(response.data.referreds);
-                }
-            } catch (error) {
-                console.error('Error al cargar referidos:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    const loadReferreds = useCallback(async () => {
+        setIsLoading(true);
+        setLoadError('');
+        try {
+            const response = await getReferreds();
+            setReferreds(response?.data?.referreds ?? []);
+        } catch {
+            setLoadError('No pudimos cargar tu lista de referidos. Intentalo nuevamente en unos minutos.');
+            setReferreds([]);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [getReferreds]);
 
+    useEffect(() => {
         loadReferreds();
-    }, []);
+    }, [loadReferreds]);
 
     const getStatusColor = (status: ReferredStatus) => {
         const colors: Record<ReferredStatus, string> = {
@@ -66,8 +67,7 @@ export default function ReferredsScreen() {
                 title: '¡Únete a Moneyfy!',
                 message: `¡Hola! Te invito a unirte a Moneyfy. Usa mi código de referido: ${user?.codeToRefer}\n\nDescarga la app aquí: https://play.google.com/store/apps/details?id=cl.moneyfy.app.&hl=es_9393`,
             });
-        } catch (error) {
-            console.error('Error al compartir:', error);
+        } catch {
         }
     };
 
@@ -78,8 +78,7 @@ export default function ReferredsScreen() {
             setTimeout(() => {
                 setIsCopied(false);
             }, 2000);
-        } catch (error) {
-            console.error('Error al copiar:', error);
+        } catch {
         }
     };
 
@@ -190,6 +189,27 @@ export default function ReferredsScreen() {
             {
                 isLoading ? (
                     <LoadingScreen />
+                ) : loadError ? (
+                    <ThemedLayout padding={[0, 40]}>
+                        <View style={styles.content}>
+                            <IconContainer
+                                icon="alert-circle-outline"
+                                size={32}
+                                backgroundColor={themeColors.status.warning}
+                                style={styles.errorIcon}
+                            />
+                            <ThemedText variant="title" textAlign="center" marginBottom={12}>
+                                No se pudo cargar
+                            </ThemedText>
+                            <ThemedText variant="paragraph" textAlign="center" marginBottom={24}>
+                                {loadError}
+                            </ThemedText>
+                            <ThemedButton
+                                text="Reintentar"
+                                onPress={loadReferreds}
+                            />
+                        </View>
+                    </ThemedLayout>
                 ) : referreds.length === 0 ? (
                     <ThemedLayout padding={[0, 40]}>
                         <View style={styles.content}>
@@ -273,6 +293,13 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         justifyContent: 'center',
+    },
+    errorIcon: {
+        alignSelf: 'center',
+        width: 64,
+        height: 64,
+        borderRadius: 16,
+        marginBottom: 20,
     },
     codeContainer: {
         alignItems: 'center',

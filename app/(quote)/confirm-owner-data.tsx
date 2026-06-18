@@ -13,7 +13,7 @@ import {
 } from '@/shared/components';
 import { useQuote } from '@/core/context';
 import { catalogService } from '@/core/services/catalog';
-import type { City } from '@/core/types';
+import type { Region } from '@/core/types';
 import { validateAddress } from '@/shared/utils/validations';
 import { useMessageConfig } from '@/shared/hooks';
 
@@ -35,7 +35,7 @@ const FIELD_LABELS: Record<string, string> = {
     street: 'calle',
     streetNumber: 'numero',
     department: 'departamento',
-    city: 'ciudad',
+    city: 'region',
     commune: 'comuna',
 };
 
@@ -91,19 +91,19 @@ export default function ConfirmOwnerDataScreen() {
         commune: '',
     });
     const [formError, setFormError] = useState('');
-    const [cities, setCities] = useState<City[]>([]);
+    const [regions, setRegions] = useState<Region[]>([]);
     const [catalogError, setCatalogError] = useState('');
 
     useEffect(() => {
         let active = true;
 
-        catalogService.getCities()
+        catalogService.getRegions()
             .then((items) => {
-                if (active) setCities(items);
+                if (active) setRegions(items);
             })
             .catch(() => {
                 if (active) {
-                    setCatalogError('No fue posible cargar las ciudades. Intenta nuevamente.');
+                    setCatalogError('No fue posible cargar las regiones. Intenta nuevamente.');
                 }
             });
 
@@ -112,10 +112,10 @@ export default function ConfirmOwnerDataScreen() {
         };
     }, []);
 
-    const cityOptions = useMemo(() => cities.map((item) => item.city), [cities]);
+    const regionOptions = useMemo(() => regions.map((item) => item.region), [regions]);
     const communeOptions = useMemo(
-        () => cities.find((item) => item.city === formData.city)?.locations || [],
-        [cities, formData.city],
+        () => regions.find((item) => item.region === formData.city)?.locations || [],
+        [regions, formData.city],
     );
 
     useMessageConfig(['/quoter/select/plan']);
@@ -166,16 +166,6 @@ export default function ConfirmOwnerDataScreen() {
             isValid = false;
         }
 
-        if (!formData.city.trim()) {
-            newErrors.city = 'Selecciona una ciudad';
-            isValid = false;
-        }
-
-        if (!formData.commune.trim()) {
-            newErrors.commune = 'Selecciona una comuna';
-            isValid = false;
-        }
-
         setErrors(newErrors);
         setFormError('');
         return isValid;
@@ -195,18 +185,16 @@ export default function ConfirmOwnerDataScreen() {
                 street: 'Ingrese la calle del propietario',
                 department: '',
                 streetNumber: 'Ingrese el número de la calle del propietario',
-                city: 'Selecciona una ciudad',
-                commune: 'Selecciona una comuna',
+                city: '',
+                commune: '',
             });
             return;
         }
-        if (!formData.ownerName ||
-            !formData.ownerPaternalSur ||
-            !formData.ownerMaternalSur ||
-            !formData.street ||
-            !formData.streetNumber ||
-            !formData.city ||
-            !formData.commune ||
+        if (!formData.ownerName.trim() ||
+            !formData.ownerPaternalSur.trim() ||
+            !formData.ownerMaternalSur.trim() ||
+            !formData.street.trim() ||
+            !formData.streetNumber.trim() ||
             !selectedPlan) {
             return;
         }
@@ -236,8 +224,6 @@ export default function ConfirmOwnerDataScreen() {
                 street: formData.street.trim(),
                 streetNumber: formData.streetNumber.trim(),
                 department: formData.department.trim(),
-                city: formData.city.trim(),
-                commune: formData.commune.trim(),
             });
 
             router.push({
@@ -342,10 +328,10 @@ export default function ConfirmOwnerDataScreen() {
                                 error={errors.street}
                             />
                             <ThemedAutocomplete
-                                label="Ciudad"
-                                placeholder="Selecciona una ciudad"
+                                label="Region (opcional)"
+                                placeholder="Selecciona una region"
                                 value={formData.city}
-                                options={cityOptions}
+                                options={regionOptions}
                                 onChangeText={(value) => {
                                     updateOwnerDataDraft({
                                         city: value,
@@ -362,8 +348,8 @@ export default function ConfirmOwnerDataScreen() {
                                 zIndex={3}
                             />
                             <ThemedAutocomplete
-                                label="Comuna"
-                                placeholder={formData.city ? 'Selecciona una comuna' : 'Selecciona primero una ciudad'}
+                                label="Comuna (opcional)"
+                                placeholder={formData.city ? 'Selecciona una comuna' : 'Selecciona primero una region'}
                                 value={formData.commune}
                                 options={communeOptions}
                                 onChangeText={(value) => updateOwnerDataDraft({ commune: value })}
@@ -397,7 +383,7 @@ export default function ConfirmOwnerDataScreen() {
                         <ThemedButton
                             text="Continuar"
                             onPress={handleSubmit}
-                            disabled={!formData.ownerName || !formData.ownerPaternalSur || !formData.ownerMaternalSur || !formData.street || !formData.streetNumber || !formData.city || !formData.commune}
+                            disabled={!formData.ownerName.trim() || !formData.ownerPaternalSur.trim() || !formData.ownerMaternalSur.trim() || !formData.street.trim() || !formData.streetNumber.trim()}
                             style={styles.button}
                         />
 

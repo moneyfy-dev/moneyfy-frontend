@@ -1,7 +1,8 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { QuoteContext } from './QuoteContext';
 import { quoteService } from '@/core/services/quote';
 import { useUser } from '../user/useUser';
+import { useAuth } from '../auth/useAuth';
 import { storage } from '@/shared/utils/storage';
 import {
     type Vehicle,
@@ -42,6 +43,7 @@ const buildOwnerDataDraft = (quoteData: QuoteVehicleParams): OwnerDataDraft => {
 
 export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { updateUserData } = useUser();
+    const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const [vehicle, setVehicle] = useState<Vehicle | null>(null);
     const [plans, setPlans] = useState<InsurancePlan[]>([]);
     const [quoterId, setQuoterId] = useState<string | null>(null);
@@ -49,8 +51,27 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [error, setError] = useState<string | null>(null);
     const [availableVehicles, setAvailableVehicles] = useState<Brand[]>([]);
     const [ownerDataDraft, setOwnerDataDraft] = useState<OwnerDataDraft>(EMPTY_OWNER_DATA);
+    const transactionPromiseRef = useRef<Promise<void> | null>(null);
+
+    const resetQuoteState = useCallback(() => {
+        setVehicle(null);
+        setPlans([]);
+        setQuoterId(null);
+        setError(null);
+        setOwnerDataDraft(EMPTY_OWNER_DATA);
+    }, []);
 
     useEffect(() => {
+        if (isAuthLoading) return;
+
+        if (!isAuthenticated) {
+            resetQuoteState();
+            void storage.quote.clearQuote();
+            return;
+        }
+
+        let cancelled = false;
+
         const loadQuoteData = async () => {
             try {
                 const [storedVehicle, storedPlans, storedQuoterId, storedOwnerData] = await Promise.all([
@@ -59,6 +80,8 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                     storage.quote.getQuoterId(),
                     storage.quote.getOwnerData(),
                 ]);
+
+                if (cancelled) return;
 
                 if (storedVehicle) setVehicle(storedVehicle);
                 if (storedPlans) setPlans(storedPlans);
@@ -69,7 +92,11 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         };
 
         loadQuoteData();
-    }, []);
+
+        return () => {
+            cancelled = true;
+        };
+    }, [isAuthenticated, isAuthLoading, resetQuoteState]);
 
     const searchVehicle = useCallback(async (
         ownerId: string,
@@ -193,17 +220,13 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, [updateUserData]);
 
     const clearQuoteData = useCallback(async () => {
-        setVehicle(null);
-        setPlans([]);
-        setQuoterId(null);
-        setError(null);
-        setOwnerDataDraft(EMPTY_OWNER_DATA);
+        resetQuoteState();
 
         try {
             await storage.quote.clearQuote();
         } catch (error) {
         }
-    }, []);
+    }, [resetQuoteState]);
 
     const updateOwnerDataDraft = useCallback((values: Partial<OwnerDataDraft>) => {
         setOwnerDataDraft(current => {
@@ -250,17 +273,25 @@ export const QuoteProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const generateTransaction = useCallback(async (
         params: GenerateTransactionParams
     ): Promise<void> => {
-        setIsLoading(true);
-        try {
-            const response = await quoteService.generateTransaction(params);
-            if (response.data?.user) {
-                await updateUserData(response.data.user);
-            }
-        } catch (error) {
-            throw error;
-        } finally {
-            setIsLoading(false);
+        if (transactionPromiseRef.current) {
+            return transactionPromiseRef.current;
         }
+
+        const transactionPromise = (async () => {
+            setIsLoading(true);
+            try {
+                const response = await quoteService.generateTransaction(params);
+                if (response.data?.user) {
+                    await updateUserData(response.data.user);
+                }
+            } finally {
+                setIsLoading(false);
+                transactionPromiseRef.current = null;
+            }
+        })();
+
+        transactionPromiseRef.current = transactionPromise;
+        return transactionPromise;
     }, [updateUserData]);
 
     return (

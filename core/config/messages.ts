@@ -68,12 +68,9 @@ export const DEFAULT_ERROR_MESSAGES: ErrorMessageMap = {
     424: 'Error al confirmar el registro'
   },
   '/auth/log-in': {
-    424: 'Error al iniciar sesión',
-    226: 'Se requiere actualizar el dispositivo asociado'
-  },
-  '/auth/confirm/device/change': {
-    410: 'El código ha expirado o no es correcto',
-    424: 'Error al confirmar el cambio de dispositivo'
+    401: 'Credenciales incorrectas',
+    423: 'Credenciales incorrectas',
+    424: 'Error al iniciar sesión'
   },
   '/auth/restore/password': {
     424: 'Error al enviar el código de recuperación'

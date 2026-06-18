@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Brand, Model, OWNER_OPTIONS_MAP, ROUTES } from '@/core/types';
+import { Brand, OWNER_OPTIONS_MAP, ROUTES } from '@/core/types';
 import { ScrollView, TextInput, View, StyleSheet } from 'react-native';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
 import {
@@ -27,6 +27,7 @@ export default function ManualSearchScreen() {
     }>();
     const scrollRef = useRef<ScrollView>(null);
     const rutInputRef = useRef<TextInput>(null);
+    const hasLoadedVehiclesRef = useRef(false);
     const {
         startQuotationFlow,
         getAvailableVehicles,
@@ -34,11 +35,12 @@ export default function ManualSearchScreen() {
         isLoading
     } = useQuote();
     const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
-    const [selectedModel, setSelectedModel] = useState<Model | null>(null);
     const [quoteError, setQuoteError] = useState('');
+    const [catalogError, setCatalogError] = useState('');
     const [rutErrorVisible, setRutErrorVisible] = useState(false);
     const [rutInputY, setRutInputY] = useState(0);
     const [openAutocomplete, setOpenAutocomplete] = useState<'brand' | 'model' | null>(null);
+    const [isCatalogLoading, setIsCatalogLoading] = useState(false);
 
     const handleBrandDropdownVisibility = useCallback((visible: boolean) => {
         setOpenAutocomplete(current =>
@@ -162,34 +164,48 @@ export default function ManualSearchScreen() {
     }, []);
 
     useEffect(() => {
-        loadVehicles();
-    }, []);
+        if (hasLoadedVehiclesRef.current) return;
 
-    const loadVehicles = async () => {
-        try {
-            await getAvailableVehicles();
-        } catch (error) {
-        }
-    };
+        hasLoadedVehiclesRef.current = true;
+        let cancelled = false;
+
+        const loadVehicles = async () => {
+            setIsCatalogLoading(true);
+            try {
+                await getAvailableVehicles();
+            } catch {
+                if (!cancelled) {
+                    setCatalogError('No pudimos cargar el listado de marcas y modelos. Puedes ingresar los datos manualmente para continuar.');
+                }
+            } finally {
+                if (!cancelled) {
+                    setIsCatalogLoading(false);
+                }
+            }
+        };
+
+        void loadVehicles();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [getAvailableVehicles]);
 
     const handleBrandSelect = (brandName: string) => {
         const brand = availableVehicles.find(b => b.brand === brandName);
         setSelectedBrand(brand || null);
-        setSelectedModel(null); // Resetear modelo cuando cambia la marca
         setFormData(prev => ({
             ...prev,
-            marca: brandName,
-            modelo: '' // Resetear modelo cuando cambia la marca
+            brand: brandName,
+            model: ''
         }));
     };
 
     const handleModelSelect = (modelName: string) => {
         if (selectedBrand) {
-            const model = selectedBrand.models.find(m => m.model === modelName);
-            setSelectedModel(model || null);
             setFormData(prev => ({
                 ...prev,
-                modelo: modelName
+                model: modelName
             }));
         }
     };
@@ -279,7 +295,7 @@ export default function ManualSearchScreen() {
 
     return (
         <>
-            {isLoading ? <LoadingScreen /> : (
+            {(isLoading || isCatalogLoading) ? <LoadingScreen /> : (
 
                 <ThemedLayout
                     padding={[0, 40]}
@@ -304,7 +320,7 @@ export default function ManualSearchScreen() {
                             error={errors.brand}
                             onSelect={handleBrandSelect}
                             options={availableVehicles.map(b => b.brand)}
-                            placeholder="Selecciona una marca"
+                            placeholder={availableVehicles.length > 0 ? 'Selecciona una marca' : 'Ingresa una marca'}
                             zIndex={2}
                             onDropdownVisibilityChange={handleBrandDropdownVisibility}
                         />
@@ -316,8 +332,8 @@ export default function ManualSearchScreen() {
                             error={errors.model}
                             onSelect={handleModelSelect}
                             options={selectedBrand?.models.map(m => m.model) || []}
-                            placeholder="Selecciona un modelo"
-                            disabled={!selectedBrand}
+                            placeholder={availableVehicles.length > 0 ? 'Selecciona un modelo' : 'Ingresa un modelo'}
+                            disabled={availableVehicles.length > 0 && !selectedBrand}
                             zIndex={1}
                             onDropdownVisibilityChange={handleModelDropdownVisibility}
                         />
@@ -430,6 +446,20 @@ export default function ManualSearchScreen() {
                 primaryButton={{
                     text: 'Entendido',
                     onPress: () => setQuoteError(''),
+                }}
+            />
+            <MessageModal
+                isVisible={!!catalogError}
+                onClose={() => setCatalogError('')}
+                title="Datos no disponibles"
+                message={catalogError}
+                icon={{
+                    name: 'alert-circle-outline',
+                    color: themeColors.status.warning,
+                }}
+                primaryButton={{
+                    text: 'Entendido',
+                    onPress: () => setCatalogError(''),
                 }}
             />
             <MessageModal

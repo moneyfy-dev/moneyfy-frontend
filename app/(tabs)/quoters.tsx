@@ -4,10 +4,11 @@ import { ROUTES, Quoter, QuoterStatus } from '@/core/types';
 import { View, StyleSheet, FlatList, Pressable } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedListLayout, ThemedInput, ThemedText, ThemedButton, ThemedCheckGroup, FiltersModal, LoadingScreen, IconContainer, ThemedDatePicker } from '@/shared/components';
+import { ThemedListLayout, ThemedInput, ThemedText, ThemedButton, ThemedCheckGroup, FiltersModal, IconContainer, ThemedDatePicker } from '@/shared/components';
 import { format } from 'date-fns';
 import { useUser } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
+import { buildQuoterSearchText, isQuoterInDateRange } from '@/shared/utils/quoterFilters';
 
 export default function QuotersScreen() {
   const router = useRouter();
@@ -15,7 +16,6 @@ export default function QuotersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [quoters, setQuoters] = useState<Quoter[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState({
     status: '',
     dateRange: {
@@ -65,7 +65,7 @@ export default function QuotersScreen() {
     // Filtrar por búsqueda
     if (searchQuery) {
       filteredResults = filteredResults.filter(quoter => {
-        const searchText = `${quoter.quoterCarData.brand} ${quoter.quoterCarData.model} ${quoter.quoterCarData.ppu}`.toLowerCase();
+        const searchText = buildQuoterSearchText(quoter);
         return searchText.includes(searchQuery.toLowerCase());
       });
     }
@@ -79,24 +79,13 @@ export default function QuotersScreen() {
 
     // Filtrar por rango de fechas
     if (filters.dateRange.start || filters.dateRange.end) {
-      filteredResults = filteredResults.filter(quoter => {
-        const quoterDate = new Date(quoter.createdDate);
-
-        if (filters.dateRange.start && filters.dateRange.end) {
-          return quoterDate >= filters.dateRange.start &&
-            quoterDate <= filters.dateRange.end;
-        }
-
-        if (filters.dateRange.start) {
-          return quoterDate >= filters.dateRange.start;
-        }
-
-        if (filters.dateRange.end) {
-          return quoterDate <= filters.dateRange.end;
-        }
-
-        return true;
-      });
+      filteredResults = filteredResults.filter((quoter) =>
+        isQuoterInDateRange(
+          quoter.createdDate,
+          filters.dateRange.start,
+          filters.dateRange.end,
+        ),
+      );
     }
 
     setQuoters(filteredResults);
@@ -118,7 +107,7 @@ export default function QuotersScreen() {
 
   useEffect(() => {
     filterQuoters();
-  }, [searchQuery]);
+  }, [filterQuoters]);
 
   const resetFilters = () => {
     setFilters({
@@ -249,7 +238,7 @@ export default function QuotersScreen() {
           type="search"
           value={searchQuery}
           onChangeText={handleSearch}
-          placeholder="Buscar por nombre"
+          placeholder="Buscar por nombre, vehículo o patente"
         />
       </View>
 
@@ -355,7 +344,6 @@ export default function QuotersScreen() {
 
       </FiltersModal>
 
-      {isLoading && <LoadingScreen />}
     </ThemedListLayout>
   );
 }

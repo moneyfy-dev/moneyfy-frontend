@@ -16,23 +16,32 @@ export default function QuoterDetailScreen() {
   const [quoter, setQuoter] = useState<Quoter | null>(null);
   const [plan, setPlan] = useState<InsurancePlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [resumeError, setResumeError] = useState('');
   const { user } = useUser();
   const { searchPlanById, hydrateQuoteSession, startQuotationFlow } = useQuote();
+  const quoterIdParam = Array.isArray(params.id) ? params.id[0] : params.id;
+  const planIdParam = Array.isArray(params.idPlan) ? params.idPlan[0] : params.idPlan;
 
   useEffect(() => {
+    let active = true;
+
     const loadQuoterData = async () => {
+      setHasLoaded(false);
+      setQuoter(null);
+      setPlan(null);
       setIsLoading(true);
+
       try {
         let currentQuoter = null;
 
         if (user?.quoters) {
-          currentQuoter = user.quoters.find(r => r.quoterId === params.id) || null;
-          setQuoter(currentQuoter);
+          currentQuoter = user.quoters.find(r => r.quoterId === quoterIdParam) || null;
+          if (active) setQuoter(currentQuoter);
         }
 
-        if (params.idPlan && currentQuoter) {
-          const response = await searchPlanById(params.idPlan as string);
+        if (planIdParam && currentQuoter) {
+          const response = await searchPlanById(planIdParam);
           const plan = response.data.plans[0];
           const insurer = response.data.insurer;
           const insurancePlan: InsurancePlan = {
@@ -46,21 +55,44 @@ export default function QuoterDetailScreen() {
             valueUF: currentQuoter.quoterPlanData.valueUF || 0,
             deductibleDesc: currentQuoter.quoterPlanData.deductibleDesc || plan.deductibleDesc,
           };
-          setPlan(insurancePlan);
+          if (active) setPlan(insurancePlan);
         }
       } catch (error) {
         console.error('Error loading quoter data:', error);
       } finally {
-        setIsLoading(false);
+        if (active) {
+          setIsLoading(false);
+          setHasLoaded(true);
+        }
       }
     };
 
-    loadQuoterData();
-  }, [params.id]);
+    void loadQuoterData();
+
+    return () => {
+      active = false;
+    };
+  }, [planIdParam, quoterIdParam, searchPlanById, user?.quoters]);
+
+  if (!hasLoaded) {
+    return (
+      <LoadingScreen />
+    );
+  }
 
   if (!quoter) {
     return (
-      <LoadingScreen />
+      <ThemedLayout padding={[40, 40]}>
+        <View style={styles.notFoundContainer}>
+          <ThemedText variant="title" textAlign="center">
+            Cotización no disponible
+          </ThemedText>
+          <ThemedText variant="paragraph" textAlign="center">
+            Esta cotización ya no existe o no pertenece al usuario actual.
+          </ThemedText>
+          <ThemedButton text="Volver" onPress={() => router.back()} />
+        </View>
+      </ThemedLayout>
     );
   }
 
@@ -83,7 +115,7 @@ export default function QuoterDetailScreen() {
 
   const canResumeQuote =
     quoter.quoterStatus === 'Cotizando'
-    || (!!plan && (quoter.quoterStatus === 'Recopilando' || quoter.quoterStatus === 'Pendiente'));
+    || (!!plan && quoter.quoterStatus === 'Recopilando');
 
   const handleResumeQuote = async () => {
     if (!quoter) {
@@ -251,9 +283,7 @@ export default function QuoterDetailScreen() {
         {canResumeQuote && (
           <ThemedButton
             text={
-              quoter.quoterStatus === 'Pendiente'
-                ? 'Ver codigo de pago'
-                : quoter.quoterStatus === 'Cotizando'
+              quoter.quoterStatus === 'Cotizando'
                   ? 'Continuar cotizacion'
                   : 'Continuar compra'
             }
@@ -331,5 +361,10 @@ const styles = StyleSheet.create({
   },
   resumeButton: {
     marginTop: 12,
+  },
+  notFoundContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 24,
   },
 });

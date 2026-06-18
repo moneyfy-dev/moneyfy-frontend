@@ -201,10 +201,10 @@ export default function QuoteResults() {
                     visible={showFilters}
                     onClose={() => setShowFilters(false)}
                 >
-                    <View style={{ gap: 24 }}>
+                    <View style={styles.filtersContent}>
                         {/* Filtro de Aseguradora */}
                         <View style={[styles.filterSection, { borderBottomColor: themeColors.borderBackgroundColor }]}>
-                            <ThemedText variant="subTitle" marginBottom={10}>Aseguradora</ThemedText>
+                            <ThemedText variant="subTitle" marginBottom={6}>Aseguradora</ThemedText>
                             <ThemedInput
                                 value={filters.insurerName}
                                 onChangeText={(value) => setFilters({ ...filters, insurerName: value })}
@@ -216,60 +216,71 @@ export default function QuoteResults() {
 
                         {/* Filtro de Rango de Precios */}
                         <View style={[styles.filterSection, { borderBottomColor: themeColors.borderBackgroundColor }]}>
-                            <ThemedText variant="subTitle" marginBottom={10}>Rango de Precios</ThemedText>
+                            <ThemedText variant="subTitle" marginBottom={6}>Rango de precios</ThemedText>
                             <View style={styles.priceRangeContainer}>
-                                <ThemedInput
-                                    label='Mínimo'
-                                    value={filters.priceRange.min}
-                                    onChangeText={(value) => setFilters({
-                                        ...filters,
-                                        priceRange: { 
-                                            ...filters.priceRange, 
-                                            min: formatNumber(value)
-                                        }
-                                    })}
-                                    placeholder="Mínimo"
-                                    keyboardType="numeric"
-                                />
-                                <ThemedInput
-                                    label='Máximo'
-                                    value={filters.priceRange.max}
-                                    onChangeText={(value) => setFilters({
-                                        ...filters,
-                                        priceRange: { 
-                                            ...filters.priceRange, 
-                                            max: formatNumber(value)
-                                        }
-                                    })}
-                                    placeholder="Máximo"
-                                    keyboardType="numeric"
-                                />
+                                <View style={styles.halfField}>
+                                    <ThemedInput
+                                        label="Mínimo"
+                                        value={filters.priceRange.min}
+                                        onChangeText={(value) => setFilters({
+                                            ...filters,
+                                            priceRange: {
+                                                ...filters.priceRange,
+                                                min: formatNumber(value)
+                                            }
+                                        })}
+                                        placeholder="$0"
+                                        keyboardType="numeric"
+                                    />
+                                </View>
+                                <View style={styles.halfField}>
+                                    <ThemedInput
+                                        label="Máximo"
+                                        value={filters.priceRange.max}
+                                        onChangeText={(value) => setFilters({
+                                            ...filters,
+                                            priceRange: {
+                                                ...filters.priceRange,
+                                                max: formatNumber(value)
+                                            }
+                                        })}
+                                        placeholder="Sin límite"
+                                        keyboardType="numeric"
+                                    />
+                                </View>
                             </View>
                         </View>
 
-                        {uniqueWorkshopTypes.length > 0 && (
-                            <View style={[styles.filterSection, { borderBottomColor: themeColors.borderBackgroundColor }]}>
-                                <ThemedText variant="subTitle" marginBottom={10}>Tipo de Taller</ThemedText>
-                                <ThemedInput
-                                    value={filters.workshopType}
-                                    onChangeText={(value) => setFilters({ ...filters, workshopType: value })}
-                                    placeholder="Selecciona un tipo de taller"
-                                    isSelect={true}
-                                    options={uniqueWorkshopTypes}
-                                />
-                            </View>
-                        )}
-
-                        {/* Filtro de Deducible */}
                         <View style={[styles.filterSection, { borderBottomColor: themeColors.borderBackgroundColor }]}>
-                            <ThemedText variant="subTitle" marginBottom={10}>Deducible</ThemedText>
-                            <ThemedInput
-                                value={filters.deductible}
-                                onChangeText={(value) => setFilters({ ...filters, deductible: value })}
-                                placeholder="Selecciona un deducible"
-                                isSelect={true}
-                                options={uniqueDeductibles}
-                            />
+                            <View style={styles.filterFieldsRow}>
+                                {uniqueWorkshopTypes.length > 0 && (
+                                    <View style={styles.halfField}>
+                                        <ThemedInput
+                                            label="Tipo de taller"
+                                            value={filters.workshopType}
+                                            onChangeText={(value) => setFilters({ ...filters, workshopType: value })}
+                                            placeholder="Todos"
+                                            isSelect={true}
+                                            options={uniqueWorkshopTypes}
+                                        />
+                                    </View>
+                                )}
+                                <View
+                                    style={[
+                                        styles.halfField,
+                                        uniqueWorkshopTypes.length === 0 && styles.fullField,
+                                    ]}
+                                >
+                                    <ThemedInput
+                                        label="Deducible"
+                                        value={filters.deductible}
+                                        onChangeText={(value) => setFilters({ ...filters, deductible: value })}
+                                        placeholder="Todos"
+                                        isSelect={true}
+                                        options={uniqueDeductibles}
+                                    />
+                                </View>
+                            </View>
                         </View>
 
                         <View style={styles.filterButtons}>
@@ -357,17 +368,31 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     filterSection: {
-        flex: 1,
         borderBottomWidth: 1,
-        paddingBottom: 20,
+        paddingBottom: 8,
+    },
+    filtersContent: {
+        gap: 10,
     },
     priceRangeContainer: {
-        flexDirection: 'column',
+        flexDirection: 'row',
+        gap: 10,
+    },
+    filterFieldsRow: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    halfField: {
+        flex: 1,
+        minWidth: 0,
+    },
+    fullField: {
+        flexBasis: '100%',
     },
     filterButtons: {
         flexDirection: 'row',
-        marginTop: 16,
-        gap: 12,
+        marginTop: 2,
+        gap: 10,
     },
     resetButton: {
         flex: 1,

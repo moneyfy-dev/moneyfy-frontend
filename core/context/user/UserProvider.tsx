@@ -6,6 +6,23 @@ import { userService } from '../../services';
 import { differenceInMinutes } from 'date-fns';
 import type { User } from '../../types';
 import { useAuth } from '../auth/useAuth';
+import { isAuthenticationError } from '../../services/api/auth-error';
+
+const isMissingHydratedUserError = (error: unknown) => {
+  if (!error || typeof error !== 'object') return false;
+
+  const response = (error as {
+    response?: {
+      status?: number;
+      data?: unknown;
+    };
+  }).response;
+
+  if (response?.status !== 424) return false;
+
+  const text = JSON.stringify(response.data ?? '').toLowerCase();
+  return text.includes('usuario') || text.includes('user');
+};
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { logout } = useAuth();
@@ -50,25 +67,20 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await storage.user.setData(response.data.user);
         setUser(response.data.user);
         
-        if (response.data.tokens) {
-          await storage.auth.setTokens(
-            response.data.tokens.jwtRefresh,
-            response.data.tokens.jwtSession
-          );
-        }
-
         await storage.user.updateLastHydration();
         setLastHydrationTime(new Date());
       }
     } catch (error) {
-      logout();
+      if (isAuthenticationError(error) || isMissingHydratedUserError(error)) {
+        await logout();
+      }
       throw error;
     } finally {
       setIsLoading(false);
     }
-  }, [lastHydrationTime]);
+  }, [lastHydrationTime, logout]);
 
-  const updateUserData = async (updatedData: Partial<User>) => {
+  const updateUserData = useCallback(async (updatedData: Partial<User>) => {
     try {
       setIsLoading(true);
       const currentUser = await storage.user.getData();
@@ -85,13 +97,13 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const refreshUserData = async () => {
+  const refreshUserData = useCallback(async () => {
     await hydrateUserData(true);
-  };
+  }, [hydrateUserData]);
 
-  const syncWithAuth = async (userData: User) => {
+  const syncWithAuth = useCallback(async (userData: User) => {
     try {
       setIsLoading(true);
       await storage.user.setData(userData);
@@ -103,12 +115,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const getReferreds = async () => {
+  const getReferreds = useCallback(async () => {
     const response = await userService.getReferreds();
     return response;
-  };
+  }, []);
 
   return (
     <UserContext.Provider

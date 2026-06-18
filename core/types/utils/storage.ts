@@ -14,7 +14,7 @@ export const STORAGE_KEYS = {
     THEME: 'theme',
   },
   CATALOGS: {
-    CITIES: 'catalog_cities',
+    REGIONS: 'catalog_regions',
   },
   SESSION: {
     VEHICLES: 'session_vehicles',

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { User, ROUTES, MonthlyEarnings } from '@/core/types';
+import { User, ROUTES, WeeklyEarnings, MonthlyEarnings } from '@/core/types';
 import { View, StyleSheet, TouchableOpacity, Image, RefreshControl, useWindowDimensions } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
@@ -12,6 +12,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { userService } from '@/core/services';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+
+type EarningsMode = 'weekly' | 'monthly';
 
 const formatChartAxisAmount = (value: string) => {
   const amount = Number(value);
@@ -54,11 +56,22 @@ export default function HomeScreen() {
     isOnboardingStatusLoaded,
   } = useOnboarding();
   const [refreshing, setRefreshing] = useState(false);
+  const [weeklyEarnings, setWeeklyEarnings] = useState<WeeklyEarnings | null>(null);
   const [monthlyEarnings, setMonthlyEarnings] = useState<MonthlyEarnings | null>(null);
+  const [earningsMode, setEarningsMode] = useState<EarningsMode>('weekly');
 
-  const loadMonthlyEarnings = async () => {
-    const response = await userService.getMonthlyEarnings();
-    setMonthlyEarnings(response.data?.monthlyEarnings ?? null);
+  const loadEarnings = async () => {
+    try {
+      const response = await userService.getWeeklyEarnings();
+      setWeeklyEarnings(response.data?.weeklyEarnings ?? null);
+      setMonthlyEarnings(null);
+      setEarningsMode('weekly');
+    } catch {
+      const response = await userService.getMonthlyEarnings();
+      setMonthlyEarnings(response.data?.monthlyEarnings ?? null);
+      setWeeklyEarnings(null);
+      setEarningsMode('monthly');
+    }
   };
 
   useEffect(() => {
@@ -78,7 +91,10 @@ export default function HomeScreen() {
     const initializeData = async () => {
       try {
         await hydrateUserData(true);
-        await loadMonthlyEarnings().catch(() => setMonthlyEarnings(null));
+        await loadEarnings().catch(() => {
+          setWeeklyEarnings(null);
+          setMonthlyEarnings(null);
+        });
       } catch {
       }
     };
@@ -91,31 +107,75 @@ export default function HomeScreen() {
     setRefreshing(true);
     try {
       await hydrateUserData(true);
-      await loadMonthlyEarnings().catch(() => setMonthlyEarnings(null));
+      await loadEarnings().catch(() => {
+        setWeeklyEarnings(null);
+        setMonthlyEarnings(null);
+      });
     } catch {
     } finally {
       setRefreshing(false);
     }
   };
 
-  const chartMonths = monthlyEarnings?.months ?? [];
-  const chartLabels = chartMonths.length > 0
-    ? chartMonths.map((item) => {
-      try {
-        return format(parseISO(item.month), 'MMM', { locale: es }).replace('.', '');
-      } catch {
-        return item.month.slice(5, 7);
-      }
-    })
-    : [''];
-  const chartValues = chartMonths.length > 0
-    ? chartMonths.map((item) => item.totalCommission)
-    : [0];
-  const hasChartData = chartValues.some((value) => value > 0);
-  const currentMonthKey = format(new Date(), 'yyyy-MM');
-  const currentMonthCommissions = chartMonths.find(
-    (item) => item.month.startsWith(currentMonthKey)
-  )?.totalCommission ?? 0;
+  const chartPoints = earningsMode === 'weekly'
+    ? [...(weeklyEarnings?.days ?? [])]
+        .sort((left, right) => {
+          const leftTime = Date.parse(left.date);
+          const rightTime = Date.parse(right.date);
+
+          if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime)) {
+            return left.date.localeCompare(right.date);
+          }
+
+          return leftTime - rightTime;
+        })
+        .map((item) => ({
+          label: (() => {
+            try {
+              return format(parseISO(item.date), 'dd MMM', { locale: es }).replace('.', '');
+            } catch {
+              return item.date.slice(5, 10);
+            }
+          })(),
+          value: item.totalCommission,
+        }))
+    : [...(monthlyEarnings?.months ?? [])]
+        .sort((left, right) => {
+          const leftTime = Date.parse(left.month);
+          const rightTime = Date.parse(right.month);
+
+          if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime)) {
+            return left.month.localeCompare(right.month);
+          }
+
+          return leftTime - rightTime;
+        })
+        .map((item) => ({
+          label: (() => {
+            try {
+              return format(parseISO(item.month), 'MMM', { locale: es }).replace('.', '');
+            } catch {
+              return item.month.slice(5, 7);
+            }
+          })(),
+          value: item.totalCommission,
+        }));
+
+  const chartLabels = chartPoints.length > 0 ? chartPoints.map((item) => item.label) : [''];
+  const chartValues = chartPoints.length > 0 ? chartPoints.map((item) => item.value) : [0];
+  const monthlyCommissions = (() => {
+    const currentMonthKey = format(new Date(), 'yyyy-MM');
+    return monthlyEarnings?.months?.find((item) => item.month.startsWith(currentMonthKey))?.totalCommission ?? 0;
+  })();
+  const headlineAmount = earningsMode === 'weekly'
+    ? (weeklyEarnings?.finalCommissions ?? 0)
+    : monthlyCommissions;
+  const headlineLabel = earningsMode === 'weekly'
+    ? 'Comisiones ultimos 7 dias'
+    : 'Comisiones de este mes';
+  const chartHint = earningsMode === 'weekly'
+    ? 'Aun no hay comisiones aprobadas en los ultimos 7 dias.'
+    : 'Aun no hay comisiones aprobadas en los ultimos 5 meses.';
 
   if (!isOnboardingStatusLoaded) {
     return <LoadingScreen />;
@@ -165,14 +225,14 @@ export default function HomeScreen() {
 
         <View>
 
-          <ThemedText variant="paragraph" marginBottom={5}>Comisiones de este mes</ThemedText>
+          <ThemedText variant="paragraph" marginBottom={5}>{headlineLabel}</ThemedText>
 
           <View style={styles.balanceRow}>
             <ThemedText variant="subTitleBold" marginBottom={3} color={themeColors.textColorAccent}>
               $ {' '}
             </ThemedText>
             <ThemedText variant="superTitle" color={themeColors.textColor}>
-              {showBalance ? `${currentMonthCommissions.toLocaleString('es-CL')}` : '******'}
+              {showBalance ? `${headlineAmount.toLocaleString('es-CL')}` : '******'}
             </ThemedText>
           </View>
 
@@ -184,7 +244,6 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.chartContainer}>
-        {hasChartData ? (
         <LineChart
           data={{
             labels: chartLabels,
@@ -229,10 +288,10 @@ export default function HomeScreen() {
             borderRadius: 0,
           }}
         />
-        ) : (
-          <View style={[styles.chartEmptyState, { backgroundColor: themeColors.backgroundCardColor }]}>
-            <ThemedText variant="paragraph" textAlign="center">
-              Aun no hay comisiones para graficar
+        {headlineAmount <= 0 && (
+          <View style={styles.chartHint}>
+            <ThemedText variant="notes" textAlign="center" color={Colors.common.gray1}>
+              {chartHint}
             </ThemedText>
           </View>
         )}
@@ -355,11 +414,9 @@ const styles = StyleSheet.create({
     marginHorizontal: -28,
     paddingBottom: 16,
   },
-  chartEmptyState: {
-    height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
+  chartHint: {
     paddingHorizontal: 24,
+    paddingBottom: 8,
   },
   cardContainer: {
     width: '100%',

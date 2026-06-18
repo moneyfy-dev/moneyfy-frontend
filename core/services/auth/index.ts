@@ -52,9 +52,6 @@ export const authService = {
       case 'registerUser':
         response = await api.post('/auth/confirm/registration', { email: data.email, code: data.code });
         return response.data;
-      case 'changeDevice':
-        response = await api.put('/auth/confirm/device/change', { email: data.email, code: data.code });
-        return response.data;
       default:
         throw new Error('Invalid flow type');
     }
@@ -62,6 +59,11 @@ export const authService = {
 
   resendCode: async (email: string, type: ConfirmationFlowType): Promise<ApiResponse> => {
     const response = await api.put('/auth/resend/code', { email, type });
+    return response.data;
+  },
+
+  logout: async (): Promise<ApiResponse> => {
+    const response = await api.post('/auth/logout');
     return response.data;
   }
 };

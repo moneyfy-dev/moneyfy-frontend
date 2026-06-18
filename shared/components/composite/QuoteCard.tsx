@@ -20,6 +20,19 @@ export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) 
   const insurerObject = typeof plan.insurer === 'object' ? plan.insurer : null;
   const insurerName = typeof plan.insurer === 'string' ? plan.insurer : plan.insurer?.name ?? '';
   const insurerAlias = insurerObject?.alias ?? '';
+  const structuredCoverages = Array.isArray(plan.coverages)
+    ? [...plan.coverages]
+      .filter((coverage) => coverage?.name || coverage?.generalDescription || coverage?.value)
+      .sort((first, second) => Number(first.id ?? 0) - Number(second.id ?? 0))
+      .map((coverage) => ({
+        title: coverage.name || 'Cobertura',
+        description: [
+          coverage.generalDescription,
+          coverage.value,
+          coverage.polCad,
+        ].filter(Boolean).join(' - '),
+      }))
+    : [];
   
   // Calcular valores mensuales
   const monthlyPrice = plan.monthlyPrice;
@@ -31,10 +44,12 @@ export const QuoteCard = ({ plan, onPress, showButton = true }: QuoteCardProps) 
                       plan.totalLoss || 
                       plan.damageThirdParty || 
                       plan.workshopType || 
+                      structuredCoverages.length > 0 ||
                       (plan.details && plan.details.length > 0);
 
   // Mapear las coberturas solo si existen
   const coverages = hasCoverages ? [
+    ...structuredCoverages,
     ...(plan.stolenVehicle ? [{ title: 'Robo del vehículo', description: plan.stolenVehicle }] : []),
     ...(plan.totalLoss ? [{ title: 'Pérdida total', description: plan.totalLoss }] : []),
     ...(plan.damageThirdParty ? [{ title: 'Daños a terceros', description: plan.damageThirdParty }] : []),

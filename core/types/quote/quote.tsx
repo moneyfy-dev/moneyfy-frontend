@@ -43,7 +43,16 @@ export interface InsurancePlan {
   totalLoss: string;
   damageThirdParty: string;
   workshopType: string;
+  coverages?: PlanCoverage[];
   details: string[];
+}
+
+export interface PlanCoverage {
+  id?: number;
+  name?: string;
+  generalDescription?: string;
+  polCad?: string;
+  value?: string;
 }
 
 export interface QuoteVehicleParams {
@@ -85,8 +94,6 @@ export interface SelectPlanParams {
   street: string;
   streetNumber: string;
   department: string;
-  city: string;
-  commune: string;
 }
 
 export interface OwnerDataDraft {
@@ -100,17 +107,18 @@ export interface OwnerDataDraft {
   commune: string;
 }
 
-export interface City {
-  cityId: string;
-  city: string;
+export interface Region {
+  regionId: string;
+  region: string;
   locations: string[];
 }
 
-export interface CitiesResponse {
+export interface RegionsResponse {
   message: string;
   status: number;
   data: {
-    cities: City[];
+    regions?: Region[];
+    cities?: Region[];
     tokens?: {
       jwtSession: string;
       jwtRefresh: string;

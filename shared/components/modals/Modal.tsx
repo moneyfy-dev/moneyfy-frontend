@@ -10,6 +10,7 @@ import Colors from '@/constants/Colors';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { ThemedText } from '../ui/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 interface ModalProps {
   visible: boolean;
   onClose: () => void;
@@ -19,6 +20,8 @@ interface ModalProps {
 
 export const Modal = ({ visible, onClose, title, children }: ModalProps) => {
   const themeColors = useThemeColor();
+  const insets = useSafeAreaInsets();
+
   return (
     <RNModal
       animationType="slide"
@@ -34,7 +37,15 @@ export const Modal = ({ visible, onClose, title, children }: ModalProps) => {
               <Ionicons name="close" size={24} color={themeColors.textColorAccent} />
             </Pressable>
           </View>
-          <ScrollView style={styles.content}>
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={[
+              styles.contentContainer,
+              { paddingBottom: Math.max(24, insets.bottom + 16) },
+            ]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator
+          >
             {children}
           </ScrollView>
         </View>
@@ -51,16 +62,21 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    width: '100%'
+    width: '100%',
+    maxHeight: '88%',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: 24,
+    paddingBottom: 8,
     paddingHorizontal: 24,
   },
   content: {
+    flexShrink: 1,
+  },
+  contentContainer: {
     padding: 24,
   },
 });

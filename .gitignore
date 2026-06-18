@@ -1,7 +1,9 @@
 node_modules/
+node_modules.stale-*/
 .expo/
 dist/
 npm-debug.*
+expo-audit.*.log
 .env
 .env.*
 !.env.example

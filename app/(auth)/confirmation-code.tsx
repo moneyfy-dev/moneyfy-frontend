@@ -32,7 +32,6 @@ export default function ConfirmationCodeScreen() {
     useMessageConfig([
         '/auth/resend/code',
         '/auth/confirm/registration',
-        '/auth/confirm/device/change',
     ]);
 
     const handleConfirmCode = async () => {
@@ -52,10 +51,6 @@ export default function ConfirmationCodeScreen() {
                 await setHasSeenOnboarding(false, registeredUserId);
                 setShouldShowOnboarding(true);
                 router.replace(ROUTES.TABS.INDEX);
-            } else if (flow === 'changeDevice' && response.status === 200) {
-                setTimeout(() => {
-                    router.replace(ROUTES.TABS.INDEX);
-                }, 3000);
             }
         } catch (error: any) {
             // HTTP errors are displayed by the global Moneyfy message provider.

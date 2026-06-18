@@ -17,14 +17,16 @@ export interface ApiResponse<T = any> {
 
 // Estructura común de tokens
 export interface TokenPair {
-  jwtRefresh: string;
-  jwtSession: string;
+  jwtRefresh?: string;
+  jwtSession?: string;
 }
 
 // Respuesta base que incluye tokens y usuario
 export interface BaseAuthResponse extends ApiResponse {
   data: {
-    tokens: TokenPair;
+    tokens?: TokenPair;
+    refreshToken?: string;
+    sessionToken?: string;
     user: User;
   };
 }
@@ -33,7 +35,9 @@ export interface BaseAuthResponse extends ApiResponse {
 export interface VehicleResponse extends BaseAuthResponse {
   data: {
     vehicles: Vehicle[];
-    tokens: TokenPair;
+    tokens?: TokenPair;
+    refreshToken?: string;
+    sessionToken?: string;
     user: User;
   };
 }
