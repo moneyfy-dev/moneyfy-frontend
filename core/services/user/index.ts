@@ -1,4 +1,6 @@
 import { api } from '../api';
+import { STORAGE_KEYS } from '@/core/types';
+import { storage } from '@/shared/utils/storage';
 import type { 
   User,
   ApiResponse,
@@ -6,6 +8,13 @@ import type {
   MonthlyEarnings,
   Payment
 } from '@/core/types';
+
+export interface UserDashboardEarningsCache {
+  fetchedAt: number;
+  mode: 'weekly' | 'monthly';
+  weeklyEarnings: WeeklyEarnings | null;
+  monthlyEarnings: MonthlyEarnings | null;
+}
 
 export const userService = {
   getUserData: async (): Promise<ApiResponse> => {
@@ -80,6 +89,14 @@ export const userService = {
       skipGlobalErrorMessage: true,
     } as any);
     return response.data;
+  },
+
+  getCachedDashboardEarnings: async (): Promise<UserDashboardEarningsCache | null> => {
+    return storage.get<UserDashboardEarningsCache>(STORAGE_KEYS.DASHBOARD.USER_EARNINGS);
+  },
+
+  setCachedDashboardEarnings: async (payload: UserDashboardEarningsCache): Promise<void> => {
+    await storage.set(STORAGE_KEYS.DASHBOARD.USER_EARNINGS, payload);
   },
 
   getPayments: async (): Promise<ApiResponse<{ userPayments: Payment[]; user?: User }>> => {

@@ -15,6 +15,27 @@ import { es } from 'date-fns/locale';
 
 type EarningsMode = 'weekly' | 'monthly';
 
+const applyCachedEarnings = (
+  cached: {
+    mode: EarningsMode;
+    weeklyEarnings: WeeklyEarnings | null;
+    monthlyEarnings: MonthlyEarnings | null;
+  } | null,
+  setters: {
+    setWeeklyEarnings: React.Dispatch<React.SetStateAction<WeeklyEarnings | null>>;
+    setMonthlyEarnings: React.Dispatch<React.SetStateAction<MonthlyEarnings | null>>;
+    setEarningsMode: React.Dispatch<React.SetStateAction<EarningsMode>>;
+  },
+) => {
+  if (!cached) {
+    return;
+  }
+
+  setters.setWeeklyEarnings(cached.weeklyEarnings);
+  setters.setMonthlyEarnings(cached.monthlyEarnings);
+  setters.setEarningsMode(cached.mode);
+};
+
 const formatChartAxisAmount = (value: string) => {
   const amount = Number(value);
 
@@ -63,14 +84,28 @@ export default function HomeScreen() {
   const loadEarnings = async () => {
     try {
       const response = await userService.getMonthlyEarnings();
-      setMonthlyEarnings(response.data?.monthlyEarnings ?? null);
+      const nextMonthlyEarnings = response.data?.monthlyEarnings ?? null;
+      setMonthlyEarnings(nextMonthlyEarnings);
       setWeeklyEarnings(null);
       setEarningsMode('monthly');
+      await userService.setCachedDashboardEarnings({
+        fetchedAt: Date.now(),
+        mode: 'monthly',
+        weeklyEarnings: null,
+        monthlyEarnings: nextMonthlyEarnings,
+      });
     } catch {
       const response = await userService.getWeeklyEarnings();
-      setWeeklyEarnings(response.data?.weeklyEarnings ?? null);
+      const nextWeeklyEarnings = response.data?.weeklyEarnings ?? null;
+      setWeeklyEarnings(nextWeeklyEarnings);
       setMonthlyEarnings(null);
       setEarningsMode('weekly');
+      await userService.setCachedDashboardEarnings({
+        fetchedAt: Date.now(),
+        mode: 'weekly',
+        weeklyEarnings: nextWeeklyEarnings,
+        monthlyEarnings: null,
+      });
     }
   };
 
@@ -90,27 +125,27 @@ export default function HomeScreen() {
   useEffect(() => {
     const initializeData = async () => {
       try {
-        await hydrateUserData(true);
-        await loadEarnings().catch(() => {
-          setWeeklyEarnings(null);
-          setMonthlyEarnings(null);
+        const cachedEarnings = await userService.getCachedDashboardEarnings();
+        applyCachedEarnings(cachedEarnings, {
+          setWeeklyEarnings,
+          setMonthlyEarnings,
+          setEarningsMode,
         });
+        await hydrateUserData(true);
+        await loadEarnings();
       } catch {
       }
     };
 
     initializeData();
 
-  }, []);
+  }, [hydrateUserData]);
 
   const onRefresh = async () => {
     setRefreshing(true);
     try {
       await hydrateUserData(true);
-      await loadEarnings().catch(() => {
-        setWeeklyEarnings(null);
-        setMonthlyEarnings(null);
-      });
+      await loadEarnings();
     } catch {
     } finally {
       setRefreshing(false);
@@ -175,7 +210,7 @@ export default function HomeScreen() {
     : 'Comisiones de este mes';
   const chartHint = earningsMode === 'weekly'
     ? 'Aun no hay comisiones aprobadas en los ultimos 7 dias.'
-    : 'Aun no hay comisiones aprobadas en los ultimos 5 meses.';
+    : 'Aun no hay comisiones aprobadas este mes.';
 
   if (!isOnboardingStatusLoaded) {
     return <LoadingScreen />;
@@ -213,7 +248,7 @@ export default function HomeScreen() {
           ) : (
             <AvatarIcon width={40} height={40} style={styles.profileImage} />
           )}
-          <ThemedText variant="title">¡Hola {personalInfo.nombre} {personalInfo.apellido}!</ThemedText>
+          <ThemedText variant="title">Hola, {personalInfo.nombre} {personalInfo.apellido}</ThemedText>
         </View>
         <View style={styles.iconContainer}>
           {/*<Ionicons name="notifications-outline" size={24} color={themeColors.textColor} style={styles.icon} />*/}
@@ -329,7 +364,7 @@ export default function HomeScreen() {
           </View>
           <View>
             <ThemedText variant="paragraph" color={themeColors.white}>Cotizador de seguros</ThemedText>
-            <ThemedText variant="title" color={themeColors.white}>Cotizar Ahora!</ThemedText>
+            <ThemedText variant="title" color={themeColors.white}>Cotizar ahora</ThemedText>
           </View>
         </LinearGradient>
       </TouchableOpacity>
@@ -351,7 +386,7 @@ export default function HomeScreen() {
           <View style={styles.actionButtonIcon}>
             <Ionicons name="cash-outline" size={20} color={themeColors.white} />
           </View>
-          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Ver pago</ThemedText>
+          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Solicitar pago</ThemedText>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -479,3 +514,4 @@ const styles = StyleSheet.create({
     height: 32,
   },
 });
+

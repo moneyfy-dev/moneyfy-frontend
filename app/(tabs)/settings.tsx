@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useRouter, Href } from 'expo-router';
 import { ROUTES } from '@/core/types';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, ConfirmationModal } from '@/shared/components';
-import { useAuth, useUser } from '@/core/context';
+import { useAuth } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SettingsScreen() {
@@ -21,8 +21,7 @@ export default function SettingsScreen() {
     try {
       await logout();
       setIsLogoutModalVisible(false);
-    } catch (error) {
-    }
+    } catch {}
   };
 
   const menuItems = [
@@ -145,3 +144,4 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   }
 });
+

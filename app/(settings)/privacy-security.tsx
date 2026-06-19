@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { ROUTES } from '@/core/types';
+import { ROUTES, STORAGE_KEYS } from '@/core/types';
 import { StyleSheet, View, Switch, TouchableOpacity } from 'react-native';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, MessageModal } from '@/shared/components';
 import { useSettings } from '@/core/context';
 import { Ionicons } from '@expo/vector-icons';
 import { storage } from '@/shared/utils/storage';
-import { STORAGE_KEYS } from '@/core/types';
 
 export default function PrivacySecurityScreen() {
     const themeColors = useThemeColor();
@@ -54,7 +53,7 @@ export default function PrivacySecurityScreen() {
                 'Autenticación biométrica desactivada'
             );
             setIsSuccessModalVisible(true);
-        } catch (error) {
+        } catch {
             setIsBiometricEnabled(previousValue);
             setErrorMessage('Error al actualizar la configuración');
             setIsErrorModalVisible(true);
@@ -191,3 +190,4 @@ const styles = StyleSheet.create({
         marginRight: 16,
     }
 });
+

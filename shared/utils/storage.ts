@@ -3,6 +3,12 @@ import * as SecureStore from 'expo-secure-store';
 import { STORAGE_KEYS } from '@/core/types';
 import type { Vehicle, InsurancePlan, OwnerDataDraft } from '@/core/types';
 
+const logStorageError = (...args: unknown[]) => {
+  if (__DEV__) {
+    console.error(...args);
+  }
+};
+
 export const storage = {
   // Métodos genéricos
   async get<T>(key: keyof typeof STORAGE_KEYS | string): Promise<T | null> {
@@ -10,7 +16,7 @@ export const storage = {
       const value = await AsyncStorage.getItem(key);
       return value ? JSON.parse(value) : null;
     } catch (error) {
-      console.error(`Error getting ${key}:`, error);
+      logStorageError(`Error getting ${key}:`, error);
       return null;
     }
   },
@@ -19,7 +25,7 @@ export const storage = {
     try {
       await AsyncStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-      console.error(`Error setting ${key}:`, error);
+      logStorageError(`Error setting ${key}:`, error);
     }
   },
 
@@ -27,7 +33,7 @@ export const storage = {
     try {
       await AsyncStorage.removeItem(key);
     } catch (error) {
-      console.error(`Error removing ${key}:`, error);
+      logStorageError(`Error removing ${key}:`, error);
     }
   },
 
@@ -35,7 +41,7 @@ export const storage = {
     try {
       await AsyncStorage.multiRemove(keys);
     } catch (error) {
-      console.error('Error removing multiple keys:', error);
+      logStorageError('Error removing multiple keys:', error);
     }
   },
 
@@ -44,7 +50,7 @@ export const storage = {
       try {
         return await SecureStore.getItemAsync(key);
       } catch (error) {
-        console.error(`[storage.getSecure] key=${key}`, error);
+        logStorageError(`[storage.getSecure] key=${key}`, error);
         return null;
       }
     },
@@ -53,7 +59,7 @@ export const storage = {
       try {
         await SecureStore.setItemAsync(key, value);
       } catch (error) {
-        console.error(`[storage.setSecure] key=${key}`, error);
+        logStorageError(`[storage.setSecure] key=${key}`, error);
         throw error;
       }
     },
@@ -62,7 +68,7 @@ export const storage = {
       try {
         await SecureStore.deleteItemAsync(key);
       } catch (error) {
-        console.error(`[storage.removeSecure] key=${key}`, error);
+        logStorageError(`[storage.removeSecure] key=${key}`, error);
         throw error;
       }
     },

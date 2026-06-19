@@ -145,7 +145,7 @@ export default function AddAccountScreen() {
                 await addAccount({ ...accountData, selected: false });
             }
             router.back();
-        } catch (error) {
+        } catch {
         }
     };
 

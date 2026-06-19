@@ -3,7 +3,7 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/core/types';
 import { useThemeColor } from '@/shared/hooks';
-import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, MessageModal, LoadingScreen } from '@/shared/components';
+import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, LoadingScreen } from '@/shared/components';
 import { validateEmail } from '@/shared/utils/validations';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/core/context';
@@ -57,7 +57,7 @@ export default function ForgotPasswordScreen() {
                     params: { email }
                 });
             }
-        } catch (error: any) {
+        } catch {
         }
     };
 

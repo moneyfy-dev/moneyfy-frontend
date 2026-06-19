@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { router, useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import { useSettings } from '@/core/context';
 import { ThemedLayout, ThemedInput, ThemedButton } from '@/shared/components';
 import { getPasswordErrors, validatePassword } from '@/shared/utils/validations';
@@ -77,7 +77,7 @@ export default function ChangePasswordScreen() {
             setTimeout(() => {
                 router.replace(ROUTES.TABS.INDEX);
             }, 1500);
-        } catch (error) {
+        } catch {
         }
     };
 

@@ -8,7 +8,7 @@ import { storage } from '@/shared/utils/storage';
 
 export default function AppearanceScreen() {
   const themeColors = useThemeColor();
-  const { themeMode, setThemeMode, currentTheme } = useTheme();
+  const { themeMode, setThemeMode } = useTheme();
 
   const themeOptions: ThemeOption[] = [
     {

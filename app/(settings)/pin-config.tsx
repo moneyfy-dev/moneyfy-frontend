@@ -72,7 +72,7 @@ export default function PinConfigScreen() {
                     try {
                         await storage.setSecure(PIN_KEY, pin);
                         setStage('success');
-                    } catch (error) {
+                    } catch {
                         setError('Error al guardar el PIN');
                         setIsErrorVisible(true);
                     }

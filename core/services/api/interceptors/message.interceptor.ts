@@ -9,6 +9,12 @@ interface ApiErrorResponse {
   data?: any;
 }
 
+const logInterceptorError = (...args: unknown[]) => {
+  if (__DEV__) {
+    console.error(...args);
+  }
+};
+
 const shouldSkipGlobalMessage = (config: any) => {
   return Boolean(config?.skipGlobalErrorMessage || config?.skipGlobalSuccessMessage);
 };
@@ -25,16 +31,16 @@ export const setMessageHandler = (handler: typeof messageHandler) => {
 
 const getEndpointFromUrl = (url: string | undefined) => {
   if (!url) return '';
-  
+
   try {
     const baseUrl = api.defaults.baseURL || '';
     const cleanUrl = url.replace(baseUrl, '');
     const path = cleanUrl.split('?')[0].replace(/\/[0-9a-fA-F]+$/, '');
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-    
+
     return normalizedPath;
   } catch (error) {
-    console.error('❌ Error procesando URL:', error);
+    logInterceptorError('Error processing request URL:', error);
     return '';
   }
 };
@@ -54,15 +60,15 @@ export const setupMessageInterceptor = () => {
         if (messageHandler && !shouldSkipGlobalMessage(response.config)) {
           const endpoint = getEndpointFromUrl(response.config.url);
           const config = messageHandler.getEndpointConfig(endpoint);
-          
+
           if (config?.showSuccessMessage) {
-            const successMessage = config.customSuccessMessage || response.data?.message || 'Operación exitosa';
+            const successMessage = config.customSuccessMessage || response.data?.message || 'Operacion exitosa';
             messageHandler.showSuccess(successMessage);
           }
         }
         return response;
       } catch (error) {
-        console.error('❌ Error en interceptor de mensajes:', error);
+        logInterceptorError('Error in message interceptor:', error);
         return response;
       }
     },
@@ -70,14 +76,14 @@ export const setupMessageInterceptor = () => {
       if (messageHandler && !shouldSkipGlobalMessage(error.config)) {
         const endpoint = getEndpointFromUrl(error.config?.url);
         const status = error.response?.status || 500;
-        const defaultMessage = (error.response?.data as ApiErrorResponse)?.message || error.message || 'Error de conexión';
-        
-        // Usar el mensaje predefinido según el endpoint y status
+        const defaultMessage =
+          (error.response?.data as ApiErrorResponse)?.message || error.message || 'Error de conexion';
+
         const errorMessage = getErrorMessage(endpoint, status, defaultMessage);
-        
+
         messageHandler.showError(errorMessage);
       }
       return Promise.reject(error);
     }
   );
-}; 
+};

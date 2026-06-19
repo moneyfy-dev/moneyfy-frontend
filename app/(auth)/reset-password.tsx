@@ -3,8 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ROUTES } from '@/core/types';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
-import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, ResendCode, LoadingScreen } from '@/shared/components';
-import { VerificationCode } from '@/shared/components';
+import { ThemedLayout, ThemedText, ThemedInput, ThemedButton, ResendCode, LoadingScreen, VerificationCode } from '@/shared/components';
 import { useAuth } from '@/core/context';
 import { validatePassword, getPasswordErrors } from '@/shared/utils/validations';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,8 +35,7 @@ export default function ResetPasswordScreen() {
         try {
             await resendCode(email as string, 'restorePassword');
 
-        } catch (error: any) {
-        }
+        } catch {}
     };
 
     const validateFields = () => {
@@ -69,8 +67,7 @@ export default function ResetPasswordScreen() {
             );
 
             router.replace(ROUTES.TABS.INDEX);
-        } catch (error: any) {
-        }
+        } catch {}
     };
 
     return (
@@ -163,3 +160,4 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
 }); 
+

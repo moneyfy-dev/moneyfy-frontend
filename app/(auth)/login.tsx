@@ -1,35 +1,26 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { StyleSheet, TouchableOpacity, Dimensions, ScrollView, Animated } from 'react-native';
-import { useRouter, Link } from 'expo-router';
-import { ROUTES, User } from '@/core/types';
-import { ThemedView, ThemedText, ThemedInput, ThemedButton, MessageModal, Logo, BackgroundCircles, LoadingScreen } from '@/shared/components';
+import { Link } from 'expo-router';
+import { ROUTES } from '@/core/types';
+import { ThemedView, ThemedText, ThemedInput, ThemedButton, Logo, BackgroundCircles, LoadingScreen } from '@/shared/components';
 import { validateEmail, validatePassword, getPasswordErrors } from '@/shared/utils/validations';
-import { useThemeColor, useCardVisibility, useMessageConfig } from '@/shared/hooks';
+import { useThemeColor, useMessageConfig } from '@/shared/hooks';
 import { useAuth } from '@/core/context';
-import { AnimatedCard } from '@/shared/components/composite/AnimatedCard';
 
 const { height } = Dimensions.get('window');
 
 export default function LoginScreen() {
     const [isLoading, setIsLoading] = useState(false);
     const themeColors = useThemeColor();
-    //const { isVisible, showCard, hideCard } = useCardVisibility();
-    const [isFormVisible, setIsFormVisible] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { login } = useAuth();
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
-    const [isFormValid, setIsFormValid] = useState(false);
     const formAnimation = useRef(new Animated.Value(height)).current;
     const [touchedFields, setTouchedFields] = useState({ email: false, password: false });
 
     useMessageConfig(['/auth/log-in']);
-
-    useEffect(() => {
-        const isValid = validateEmail(email) && validatePassword(password);
-        setIsFormValid(isValid);
-    }, [email, password]);
 
     const handleEmailChange = (text: string) => {
         setEmail(text);
@@ -68,14 +59,13 @@ export default function LoginScreen() {
             setIsLoading(true);
 
             await login(email, password);
-        } catch (error: any) {
+        } catch {
         } finally {
             setIsLoading(false);
         }
     };
 
     const showLoginForm = () => {
-        setIsFormVisible(true);
         Animated.spring(formAnimation, {
             toValue: 0,
             useNativeDriver: true,
@@ -86,9 +76,7 @@ export default function LoginScreen() {
         Animated.spring(formAnimation, {
             toValue: height,
             useNativeDriver: true,
-        }).start(() => {
-            setIsFormVisible(false);
-        });
+        }).start();
     };
 
     return (

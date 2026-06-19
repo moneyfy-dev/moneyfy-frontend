@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function NotificationsScreen() {
   const themeColors = useThemeColor();
-  const { user, updateUserData } = useUser();
+  const { user } = useUser();
   const [notificationSettings, setNotificationSettings] = useState<NotificationSetting[]>([
     { id: 'byEmail', title: 'Notificaciones por correo', description: 'Recibe actualizaciones importantes, resúmenes y promociones directamente en tu correo electrónico.', isEnabled: false, type: 'switch' },
     { id: 'byPush', title: 'Notificaciones push', description: 'Desactiva las alertas en tu dispositivo móvil, pero aún podrás consultar tus notificaciones dentro de la aplicación.', isEnabled: true, type: 'switch' },

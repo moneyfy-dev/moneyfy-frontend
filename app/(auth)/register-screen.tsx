@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter, Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { RegisterRequest, ROUTES } from '@/core/types';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useMessageConfig, useThemeColor } from '@/shared/hooks';
@@ -79,9 +79,17 @@ export default function RegisterScreen() {
                     const errorMessage = sanitizedName.length < 2
                         ? `El ${field} debe tener al menos 2 letras`
                         : `El ${field} solo puede contener letras y espacios`;
-                    field === 'nombre' ? setNombreError(errorMessage) : setApellidoError(errorMessage);
+                    if (field === 'nombre') {
+                        setNombreError(errorMessage);
+                    } else {
+                        setApellidoError(errorMessage);
+                    }
                 } else {
-                    field === 'nombre' ? setNombreError('') : setApellidoError('');
+                    if (field === 'nombre') {
+                        setNombreError('');
+                    } else {
+                        setApellidoError('');
+                    }
                 }
                 break;
             case 'email':

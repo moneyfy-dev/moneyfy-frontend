@@ -16,6 +16,9 @@ export const STORAGE_KEYS = {
   CATALOGS: {
     REGIONS: 'catalog_regions',
   },
+  DASHBOARD: {
+    USER_EARNINGS: 'dashboard_user_earnings',
+  },
   SESSION: {
     VEHICLES: 'session_vehicles',
     QUOTES: 'session_quotes',

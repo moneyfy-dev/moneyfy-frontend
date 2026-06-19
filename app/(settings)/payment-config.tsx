@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/core/types';
 import { useSettings } from '@/core/context';
-import { ThemedLayoutFlatList, ThemedText, ThemedButton, AccountListScreen, CreditCardIcon, MessageModal } from '@/shared/components';
+import { ThemedLayoutFlatList, ThemedText, ThemedButton, AccountListScreen, CreditCardIcon } from '@/shared/components';
 import { useMessageConfig } from '@/shared/hooks';
 
 export default function PaymentConfigScreen() {
@@ -15,12 +15,7 @@ export default function PaymentConfigScreen() {
     const handleSelectAccount = async (accountId: string) => {
         try {
             await selectAccount(accountId);
-        } catch (error) {
-        }
-    };
-
-    const handleAccountUpdated = () => {
-        // Recargar las cuentas se maneja automáticamente por el contexto
+        } catch {}
     };
 
     return (
@@ -37,7 +32,7 @@ export default function PaymentConfigScreen() {
                 <AccountListScreen
                     accounts={accounts}
                     onSelectAccount={handleSelectAccount}
-                    onAccountUpdated={handleAccountUpdated}
+                    onAccountUpdated={() => {}}
                 />
             )}
             <ThemedButton
@@ -68,3 +63,4 @@ const styles = StyleSheet.create({
         marginBottom: 40,
     },
 });
+
