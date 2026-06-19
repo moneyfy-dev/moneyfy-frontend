@@ -12,10 +12,11 @@ interface QuoterInfoCardProps {
 
 export const QuoterInfoCard = ({ personalData, addressData }: QuoterInfoCardProps) => {
   const themeColors = useThemeColor();
+  const regionName = addressData.region ?? addressData.city;
 
   const hasPersonalData = personalData.name;
   const hasAddressData =
-    addressData.street || addressData.streetNumber || addressData.city || addressData.commune;
+    addressData.street || addressData.streetNumber || regionName || addressData.commune;
 
   if (!hasPersonalData && !hasAddressData) return null;
 
@@ -80,11 +81,11 @@ export const QuoterInfoCard = ({ personalData, addressData }: QuoterInfoCardProp
                 <ThemedText variant="paragraph" color={themeColors.textColorAccent}>{addressData.department}</ThemedText>
               </View>
             )}
-            {addressData.city && (
+            {regionName && (
               <View style={styles.infoRow}>
                 <ThemedText variant="paragraph" color={themeColors.textParagraph}>Region:</ThemedText>
                 <ThemedText variant="paragraph" color={themeColors.textColorAccent}>
-                  {addressData.city}
+                  {regionName}
                 </ThemedText>
               </View>
             )}

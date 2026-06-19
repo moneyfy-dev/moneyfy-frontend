@@ -37,6 +37,7 @@ export interface QuoterAddressData {
   street: string;
   streetNumber: string;
   department: string;
+  region?: string;
   city?: string;
   commune?: string;
 }

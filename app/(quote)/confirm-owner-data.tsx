@@ -35,6 +35,7 @@ const FIELD_LABELS: Record<string, string> = {
     street: 'calle',
     streetNumber: 'numero',
     department: 'departamento',
+    region: 'region',
     city: 'region',
     commune: 'comuna',
 };
@@ -224,6 +225,8 @@ export default function ConfirmOwnerDataScreen() {
                 street: formData.street.trim(),
                 streetNumber: formData.streetNumber.trim(),
                 department: formData.department.trim(),
+                region: formData.city.trim(),
+                commune: formData.commune.trim(),
             });
 
             router.push({
@@ -245,7 +248,7 @@ export default function ConfirmOwnerDataScreen() {
                 street: backendErrors.street || '',
                 streetNumber: backendErrors.streetNumber || '',
                 department: backendErrors.department || '',
-                city: backendErrors.city || '',
+                city: backendErrors.region || backendErrors.city || '',
                 commune: backendErrors.commune || '',
             };
             const hiddenErrors = Object.entries(backendErrors)

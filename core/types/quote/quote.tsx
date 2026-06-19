@@ -94,6 +94,8 @@ export interface SelectPlanParams {
   street: string;
   streetNumber: string;
   department: string;
+  region?: string;
+  commune?: string;
 }
 
 export interface OwnerDataDraft {
