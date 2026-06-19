@@ -58,19 +58,19 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [weeklyEarnings, setWeeklyEarnings] = useState<WeeklyEarnings | null>(null);
   const [monthlyEarnings, setMonthlyEarnings] = useState<MonthlyEarnings | null>(null);
-  const [earningsMode, setEarningsMode] = useState<EarningsMode>('weekly');
+  const [earningsMode, setEarningsMode] = useState<EarningsMode>('monthly');
 
   const loadEarnings = async () => {
     try {
-      const response = await userService.getWeeklyEarnings();
-      setWeeklyEarnings(response.data?.weeklyEarnings ?? null);
-      setMonthlyEarnings(null);
-      setEarningsMode('weekly');
-    } catch {
       const response = await userService.getMonthlyEarnings();
       setMonthlyEarnings(response.data?.monthlyEarnings ?? null);
       setWeeklyEarnings(null);
       setEarningsMode('monthly');
+    } catch {
+      const response = await userService.getWeeklyEarnings();
+      setWeeklyEarnings(response.data?.weeklyEarnings ?? null);
+      setMonthlyEarnings(null);
+      setEarningsMode('weekly');
     }
   };
 

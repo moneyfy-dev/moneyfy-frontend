@@ -29,20 +29,51 @@ export const VerificationCode: React.FC<VerificationCodeProps> = ({
     };
 }, []);
 
+  const applyCodeChange = (nextCode: string[]) => {
+    setCode(nextCode);
+    onCodeComplete(nextCode.join(''));
+  };
+
   const handleCodeChange = (text: string, index: number) => {
-    if (text.length <= 1 && /^\d*$/.test(text)) {
+    const sanitizedText = text.replace(/\D/g, '');
+
+    if (sanitizedText.length === 0) {
       const newCode = [...code];
-      newCode[index] = text;
-      setCode(newCode);
+      newCode[index] = '';
+      applyCodeChange(newCode);
+      return;
+    }
 
-      if (text.length === 1 && index < 5) {
+    if (sanitizedText.length === 1) {
+      const newCode = [...code];
+      newCode[index] = sanitizedText;
+      applyCodeChange(newCode);
+
+      if (index < 5) {
         inputRefs.current[index + 1].current?.focus();
+      } else {
+        inputRefs.current[index].current?.blur();
       }
 
-      const fullCode = newCode.join('');
-      if (fullCode.length === 6) {
-        onCodeComplete(fullCode);
-      }
+      return;
+    }
+
+    const newCode = [...code];
+    const pastedDigits = sanitizedText.slice(0, 6 - index).split('');
+
+    pastedDigits.forEach((digit, digitIndex) => {
+      newCode[index + digitIndex] = digit;
+    });
+
+    applyCodeChange(newCode);
+
+    const nextIndex = Math.min(index + pastedDigits.length, 5);
+    const hasRemainingSlots = index + pastedDigits.length < 6;
+
+    if (hasRemainingSlots) {
+      inputRefs.current[nextIndex].current?.focus();
+    } else {
+      inputRefs.current[nextIndex].current?.blur();
     }
   };
 
@@ -50,7 +81,7 @@ export const VerificationCode: React.FC<VerificationCodeProps> = ({
     if (e.nativeEvent.key === 'Backspace' && index > 0 && code[index] === '') {
       const newCode = [...code];
       newCode[index - 1] = '';
-      setCode(newCode);
+      applyCodeChange(newCode);
       inputRefs.current[index - 1].current?.focus();
     }
   };
@@ -65,9 +96,11 @@ export const VerificationCode: React.FC<VerificationCodeProps> = ({
           onChangeText={(text) => handleCodeChange(text, index)}
           onKeyPress={(e) => handleKeyPress(e, index)}
           keyboardType="numeric"
-          maxLength={1}
+          autoComplete="one-time-code"
           placeholder=""
           style={[styles.codeInput, { color: themeColors.textColorAccent }]}
+          textContentType="oneTimeCode"
+          editable={!disabled}
         />
       ))}
     </View>
