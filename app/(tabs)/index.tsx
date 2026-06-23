@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { User, ROUTES, WeeklyEarnings, MonthlyEarnings } from '@/core/types';
+import { User, ROUTES, MonthlyEarnings } from '@/core/types';
 import { View, StyleSheet, TouchableOpacity, Image, RefreshControl, useWindowDimensions } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
@@ -13,27 +13,19 @@ import { userService } from '@/core/services';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-type EarningsMode = 'weekly' | 'monthly';
-
 const applyCachedEarnings = (
   cached: {
-    mode: EarningsMode;
-    weeklyEarnings: WeeklyEarnings | null;
     monthlyEarnings: MonthlyEarnings | null;
   } | null,
   setters: {
-    setWeeklyEarnings: React.Dispatch<React.SetStateAction<WeeklyEarnings | null>>;
     setMonthlyEarnings: React.Dispatch<React.SetStateAction<MonthlyEarnings | null>>;
-    setEarningsMode: React.Dispatch<React.SetStateAction<EarningsMode>>;
   },
 ) => {
   if (!cached) {
     return;
   }
 
-  setters.setWeeklyEarnings(cached.weeklyEarnings);
   setters.setMonthlyEarnings(cached.monthlyEarnings);
-  setters.setEarningsMode(cached.mode);
 };
 
 const formatChartAxisAmount = (value: string) => {
@@ -77,36 +69,16 @@ export default function HomeScreen() {
     isOnboardingStatusLoaded,
   } = useOnboarding();
   const [refreshing, setRefreshing] = useState(false);
-  const [weeklyEarnings, setWeeklyEarnings] = useState<WeeklyEarnings | null>(null);
   const [monthlyEarnings, setMonthlyEarnings] = useState<MonthlyEarnings | null>(null);
-  const [earningsMode, setEarningsMode] = useState<EarningsMode>('monthly');
 
   const loadEarnings = async () => {
-    try {
-      const response = await userService.getMonthlyEarnings();
-      const nextMonthlyEarnings = response.data?.monthlyEarnings ?? null;
-      setMonthlyEarnings(nextMonthlyEarnings);
-      setWeeklyEarnings(null);
-      setEarningsMode('monthly');
-      await userService.setCachedDashboardEarnings({
-        fetchedAt: Date.now(),
-        mode: 'monthly',
-        weeklyEarnings: null,
-        monthlyEarnings: nextMonthlyEarnings,
-      });
-    } catch {
-      const response = await userService.getWeeklyEarnings();
-      const nextWeeklyEarnings = response.data?.weeklyEarnings ?? null;
-      setWeeklyEarnings(nextWeeklyEarnings);
-      setMonthlyEarnings(null);
-      setEarningsMode('weekly');
-      await userService.setCachedDashboardEarnings({
-        fetchedAt: Date.now(),
-        mode: 'weekly',
-        weeklyEarnings: nextWeeklyEarnings,
-        monthlyEarnings: null,
-      });
-    }
+    const response = await userService.getMonthlyEarnings();
+    const nextMonthlyEarnings = response.data?.monthlyEarnings ?? null;
+    setMonthlyEarnings(nextMonthlyEarnings);
+    await userService.setCachedDashboardEarnings({
+      fetchedAt: Date.now(),
+      monthlyEarnings: nextMonthlyEarnings,
+    });
   };
 
   useEffect(() => {
@@ -127,9 +99,7 @@ export default function HomeScreen() {
       try {
         const cachedEarnings = await userService.getCachedDashboardEarnings();
         applyCachedEarnings(cachedEarnings, {
-          setWeeklyEarnings,
           setMonthlyEarnings,
-          setEarningsMode,
         });
         await hydrateUserData(true);
         await loadEarnings();
@@ -152,49 +122,27 @@ export default function HomeScreen() {
     }
   };
 
-  const chartPoints = earningsMode === 'weekly'
-    ? [...(weeklyEarnings?.days ?? [])]
-        .sort((left, right) => {
-          const leftTime = Date.parse(left.date);
-          const rightTime = Date.parse(right.date);
+  const chartPoints = [...(monthlyEarnings?.months ?? [])]
+    .sort((left, right) => {
+      const leftTime = Date.parse(left.month);
+      const rightTime = Date.parse(right.month);
 
-          if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime)) {
-            return left.date.localeCompare(right.date);
-          }
+      if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime)) {
+        return left.month.localeCompare(right.month);
+      }
 
-          return leftTime - rightTime;
-        })
-        .map((item) => ({
-          label: (() => {
-            try {
-              return format(parseISO(item.date), 'dd MMM', { locale: es }).replace('.', '');
-            } catch {
-              return item.date.slice(5, 10);
-            }
-          })(),
-          value: item.totalCommission,
-        }))
-    : [...(monthlyEarnings?.months ?? [])]
-        .sort((left, right) => {
-          const leftTime = Date.parse(left.month);
-          const rightTime = Date.parse(right.month);
-
-          if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime)) {
-            return left.month.localeCompare(right.month);
-          }
-
-          return leftTime - rightTime;
-        })
-        .map((item) => ({
-          label: (() => {
-            try {
-              return format(parseISO(item.month), 'MMM', { locale: es }).replace('.', '');
-            } catch {
-              return item.month.slice(5, 7);
-            }
-          })(),
-          value: item.totalCommission,
-        }));
+      return leftTime - rightTime;
+    })
+    .map((item) => ({
+      label: (() => {
+        try {
+          return format(parseISO(item.month), 'MMM', { locale: es }).replace('.', '');
+        } catch {
+          return item.month.slice(5, 7);
+        }
+      })(),
+      value: item.totalCommission,
+    }));
 
   const chartLabels = chartPoints.length > 0 ? chartPoints.map((item) => item.label) : [''];
   const chartValues = chartPoints.length > 0 ? chartPoints.map((item) => item.value) : [0];
@@ -202,15 +150,9 @@ export default function HomeScreen() {
     const currentMonthKey = format(new Date(), 'yyyy-MM');
     return monthlyEarnings?.months?.find((item) => item.month.startsWith(currentMonthKey))?.totalCommission ?? 0;
   })();
-  const headlineAmount = earningsMode === 'weekly'
-    ? (weeklyEarnings?.finalCommissions ?? 0)
-    : monthlyCommissions;
-  const headlineLabel = earningsMode === 'weekly'
-    ? 'Comisiones ultimos 7 dias'
-    : 'Comisiones de este mes';
-  const chartHint = earningsMode === 'weekly'
-    ? 'Aun no hay comisiones aprobadas en los ultimos 7 dias.'
-    : 'Aun no hay comisiones aprobadas este mes.';
+  const headlineAmount = monthlyCommissions;
+  const headlineLabel = 'Comisiones de este mes';
+  const chartHint = 'Aun no hay comisiones aprobadas este mes.';
 
   if (!isOnboardingStatusLoaded) {
     return <LoadingScreen />;

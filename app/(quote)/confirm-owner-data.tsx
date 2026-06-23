@@ -258,9 +258,9 @@ export default function ConfirmOwnerDataScreen() {
             setErrors(visibleErrors);
             setFormError(
                 hiddenErrors.length > 0
-                    ? `El backend rechazo datos del plan: ${hiddenErrors.join(', ')}`
+                    ? `Revisa los datos del plan seleccionado: ${hiddenErrors.join(', ')}`
                     : responseStatus === 424
-                        ? 'La cotizacion perdio su estado activo antes de seleccionar el plan. Vuelve a cotizar para generar una sesion consistente.'
+                        ? 'Esta cotizacion ya no esta disponible para continuar. Vuelve a cotizar para generar una nueva sesion.'
                         : responseMessage
                             ? String(responseMessage)
                             : 'Revisa los campos marcados antes de continuar.'

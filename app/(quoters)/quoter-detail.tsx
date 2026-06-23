@@ -103,6 +103,8 @@ export default function QuoterDetailScreen() {
       Recopilando: themeColors.status.info,
       Pendiente: themeColors.status.info,
       Aprobado: themeColors.status.success,
+      Pagado: themeColors.status.success,
+      Conflictivo: themeColors.status.warning,
       Rechazado: themeColors.status.error,
       Caducado: themeColors.status.warning,
     };
@@ -178,7 +180,7 @@ export default function QuoterDetailScreen() {
       setResumeError(getQuoteErrorMessage(error, {
         emptyPlansMessage: 'No encontramos planes disponibles para retomar esta cotizacion. Puedes iniciar una nueva cotizacion con los datos actualizados.',
         genericMessage: 'No fue posible retomar esta cotizacion. Intentalo nuevamente en unos minutos.',
-        invalidJwtMessage: 'La API rechazo la sesion de cotizacion al retomar este flujo. Cierra sesion e ingresa nuevamente; si sigue ocurriendo, el backend debe renovar el refresh token al iniciar sesion.',
+        invalidJwtMessage: 'Tu sesion ya no es valida para retomar esta cotizacion. Cierra sesion e ingresa nuevamente.',
       }));
     } finally {
       setIsLoading(false);

@@ -177,11 +177,11 @@ export default function SearchResultsScreen() {
       });
       router.push(ROUTES.QUOTE.QUOTE_RESULTS);
     } catch (error) {
-      setQuoteError(getQuoteErrorMessage(error, {
-        emptyPlansMessage: 'No encontramos planes vigentes para este vehiculo. Intenta con otra patente o vuelve a cotizar mas tarde.',
-        genericMessage: 'No fue posible obtener planes para esta cotizacion. Intentalo nuevamente en unos minutos.',
-        invalidJwtMessage: 'La API rechazo la sesion de cotizacion. Cierra sesion e ingresa nuevamente; si sigue ocurriendo, el backend debe renovar el refresh token al iniciar sesion.',
-      }));
+        setQuoteError(getQuoteErrorMessage(error, {
+          emptyPlansMessage: 'No encontramos planes vigentes para este vehiculo. Intenta con otra patente o vuelve a cotizar mas tarde.',
+          genericMessage: 'No fue posible obtener planes para esta cotizacion. Intentalo nuevamente en unos minutos.',
+          invalidJwtMessage: 'Tu sesion ya no es valida para continuar con esta cotizacion. Cierra sesion e ingresa nuevamente.',
+        }));
     }
   };
 

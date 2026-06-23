@@ -4,15 +4,12 @@ import { storage } from '@/shared/utils/storage';
 import type { 
   User,
   ApiResponse,
-  WeeklyEarnings,
   MonthlyEarnings,
   Payment
 } from '@/core/types';
 
 export interface UserDashboardEarningsCache {
   fetchedAt: number;
-  mode: 'weekly' | 'monthly';
-  weeklyEarnings: WeeklyEarnings | null;
   monthlyEarnings: MonthlyEarnings | null;
 }
 
@@ -72,13 +69,6 @@ export const userService = {
 
   getReferreds: async (): Promise<ApiResponse> => {
     const response = await api.post('/users/list/referreds', {}, {
-      skipGlobalErrorMessage: true,
-    } as any);
-    return response.data;
-  },
-
-  getWeeklyEarnings: async (): Promise<ApiResponse<{ weeklyEarnings: WeeklyEarnings; user?: User }>> => {
-    const response = await api.post('/users/weekly/earnings', {}, {
       skipGlobalErrorMessage: true,
     } as any);
     return response.data;

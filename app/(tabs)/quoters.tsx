@@ -43,6 +43,8 @@ export default function QuotersScreen() {
       Recopilando: themeColors.status.info,
       Pendiente: themeColors.status.info,
       Aprobado: themeColors.status.success,
+      Pagado: themeColors.status.success,
+      Conflictivo: themeColors.status.warning,
       Rechazado: themeColors.status.error,
       Caducado: themeColors.status.warning,
     };
@@ -129,6 +131,8 @@ export default function QuotersScreen() {
       'Recopilando': 'Recopilando',
       'Pendiente': 'Pendiente',
       'Aprobado': 'Aprobado',
+      'Pagado': 'Pagado',
+      'Conflictivo': 'Conflictivo',
       'Rechazado': 'Rechazado',
       'Caducado': 'Caducado'
     };
@@ -263,6 +267,8 @@ export default function QuotersScreen() {
     { key: 'Recopilando', label: 'RECOPILANDO' },
     { key: 'Pendiente', label: 'PENDIENTE' },
     { key: 'Aprobado', label: 'APROBADO' },
+    { key: 'Pagado', label: 'PAGADO' },
+    { key: 'Conflictivo', label: 'CONFLICTIVO' },
     { key: 'Rechazado', label: 'RECHAZADO' },
     { key: 'Caducado', label: 'CADUCADO' }
   ];
