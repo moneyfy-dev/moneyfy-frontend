@@ -10,6 +10,7 @@ interface AuthState {
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<ApiResponse>;
   logout: () => Promise<void>;
+  goToLogin: () => Promise<void>;
   register: (data: RegisterRequest) => Promise<RegisterResponse>;
   checkAuthStatus: () => Promise<void>;
   confirmPasswordReset: (

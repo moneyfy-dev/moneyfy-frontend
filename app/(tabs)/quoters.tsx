@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { ROUTES, Quoter, QuoterStatus } from '@/core/types';
 import { View, StyleSheet, FlatList, Pressable } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedListLayout, ThemedInput, ThemedText, ThemedButton, ThemedCheckGroup, FiltersModal, IconContainer, ThemedDatePicker } from '@/shared/components';
@@ -24,7 +25,8 @@ export default function QuotersScreen() {
     }
   });
 
-  const { user } = useUser();
+  const { user, hydrateUserData } = useUser();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     if (user?.quoters) {
@@ -110,6 +112,22 @@ export default function QuotersScreen() {
   useEffect(() => {
     filterQuoters();
   }, [filterQuoters]);
+
+  const refreshQuoters = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await hydrateUserData(true);
+    } catch {
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [hydrateUserData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshQuoters();
+    }, [refreshQuoters])
+  );
 
   const resetFilters = () => {
     setFilters({
@@ -285,6 +303,8 @@ export default function QuotersScreen() {
         keyExtractor={(item) => item.quoterId}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
+        refreshing={isRefreshing}
+        onRefresh={refreshQuoters}
         style={[styles.list, { borderTopColor: themeColors.borderBackgroundColor }]}
         contentContainerStyle={styles.listContent}
       />

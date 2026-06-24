@@ -112,6 +112,13 @@ export const storage = {
     async clearAuth() {
       const authKeys = Object.values(STORAGE_KEYS.AUTH);
       await Promise.all(authKeys.map(key => storage.removeSecure(key)));
+    },
+
+    async clearTokens() {
+      await Promise.all([
+        storage.removeSecure(STORAGE_KEYS.AUTH.TOKEN),
+        storage.removeSecure(STORAGE_KEYS.AUTH.SESSION_TOKEN),
+      ]);
     }
   },
 

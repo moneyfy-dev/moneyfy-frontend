@@ -172,6 +172,7 @@ export interface QuoteResult {
   error?: string;
   errorMessage?: string;
   insurerAlias?: string;
+  requestSucceeded?: boolean;
 }
 
 export interface Model {

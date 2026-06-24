@@ -14,9 +14,11 @@ import type {
 const EMPTY_QUOTE_RESULT: QuoteResult = {
     plans: [],
     quoterId: null,
+    requestSucceeded: false,
 };
 
 const QUOTE_PLAN_TIMEOUT_MS = 12000;
+const QUOTE_UPSTREAM_UNAVAILABLE_MESSAGE = 'No fue posible consultar las aseguradoras en este momento';
 
 export class NoQuotePlansError extends Error {
     details: QuoteResult[];
@@ -103,6 +105,9 @@ const buildQuoteResponse = (response: QuoteVehicleResponse): QuoteVehicleRespons
         }
     };
 };
+
+const hasAtLeastOneSuccessfulQuote = (results: QuoteResult[]) =>
+    results.some((result) => result.requestSucceeded);
 
 const withAbortableTimeout = async <T>(
     requestFactory: (signal: AbortSignal) => Promise<T>,
@@ -214,6 +219,7 @@ export const quoteService = {
                                 insurerAlias,
                                 error: response.data?.error,
                                 errorMessage: response.data?.errorMessage,
+                                requestSucceeded: true,
                             },
                         };
                     }
@@ -227,6 +233,7 @@ export const quoteService = {
                             insurerAlias,
                             error: response.data.error,
                             errorMessage: response.data.errorMessage,
+                            requestSucceeded: true,
                         },
                     };
                 } catch (error) {
@@ -273,6 +280,10 @@ export const quoteService = {
             const quoterId = activeQuoterId || results.find((result) => result.quoterId)?.quoterId;
 
             if (allPlans.length === 0) {
+                if (!hasAtLeastOneSuccessfulQuote(results)) {
+                    throw new Error(QUOTE_UPSTREAM_UNAVAILABLE_MESSAGE);
+                }
+
                 throw new NoQuotePlansError(results);
             }
 

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { User, ROUTES, MonthlyEarnings } from '@/core/types';
 import { View, StyleSheet, TouchableOpacity, Image, RefreshControl, useWindowDimensions } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import Colors from '@/constants/Colors';
 import { useThemeColor } from '@/shared/hooks';
 import { ThemedLayout, ThemedText, AvatarIcon, LoadingScreen, Onboarding } from '@/shared/components';
@@ -71,7 +72,7 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [monthlyEarnings, setMonthlyEarnings] = useState<MonthlyEarnings | null>(null);
 
-  const loadEarnings = async () => {
+  const loadEarnings = useCallback(async () => {
     const response = await userService.getMonthlyEarnings();
     const nextMonthlyEarnings = response.data?.monthlyEarnings ?? null;
     setMonthlyEarnings(nextMonthlyEarnings);
@@ -79,7 +80,12 @@ export default function HomeScreen() {
       fetchedAt: Date.now(),
       monthlyEarnings: nextMonthlyEarnings,
     });
-  };
+  }, []);
+
+  const refreshHomeData = useCallback(async () => {
+    await hydrateUserData(true);
+    await loadEarnings();
+  }, [hydrateUserData, loadEarnings]);
 
   useEffect(() => {
     if (user) {
@@ -101,21 +107,24 @@ export default function HomeScreen() {
         applyCachedEarnings(cachedEarnings, {
           setMonthlyEarnings,
         });
-        await hydrateUserData(true);
-        await loadEarnings();
       } catch {
       }
     };
 
-    initializeData();
+    void initializeData();
 
-  }, [hydrateUserData]);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshHomeData();
+    }, [refreshHomeData])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await hydrateUserData(true);
-      await loadEarnings();
+      await refreshHomeData();
     } catch {
     } finally {
       setRefreshing(false);
@@ -328,7 +337,7 @@ export default function HomeScreen() {
           <View style={styles.actionButtonIcon}>
             <Ionicons name="cash-outline" size={20} color={themeColors.white} />
           </View>
-          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Solicitar pago</ThemedText>
+          <ThemedText variant="paragraph" style={{ marginTop: 5 }}>Ver próximo pago</ThemedText>
         </TouchableOpacity>
 
         <TouchableOpacity

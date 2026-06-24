@@ -78,6 +78,14 @@ export const validateAddress = (address: string): boolean => {
     return addressRegex.test(address.trim());
 };
 
+export const sanitizeAddress = (address: string): string => {
+    return address
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .replace(/\s+/g, ' ');
+};
+
 export const validateRUT = (rut: string): boolean => {
     // Eliminar puntos y guión del RUT
     const cleanedRut = cleanRUT(rut);

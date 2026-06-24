@@ -94,6 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setAuthState(prev => ({
               ...prev,
               isAuthenticated: true,
+              isPersistentAuthRequired: false,
               isLoading: false
             }));
             router.replace(ROUTES.TABS.INDEX);
@@ -172,6 +173,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     } finally {
       setAuthState(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const goToLogin = async () => {
+    setAuthState(prev => ({
+      ...prev,
+      isLoading: true
+    }));
+
+    try {
+      setAuthState(prev => ({
+        ...prev,
+        isAuthenticated: false,
+        isPersistentAuthRequired: false
+      }));
+
+      await Promise.all([
+        storage.auth.clearTokens(),
+        storage.user.clearUser(),
+        storage.session.clearAll(),
+        storage.quote.clearQuote(),
+      ]);
+
+      router.replace(ROUTES.AUTH.LOGIN);
+    } catch (error) {
+    } finally {
+      setAuthState(prev => ({
+        ...prev,
+        isLoading: false
+      }));
     }
   };
 
@@ -286,6 +317,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         checkAuthStatus,
         login,
         logout,
+        goToLogin,
         register,
         requestPasswordReset,
         confirmPasswordReset,

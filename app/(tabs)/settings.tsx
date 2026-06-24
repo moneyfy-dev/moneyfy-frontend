@@ -30,61 +30,60 @@ export default function SettingsScreen() {
     { title: 'Apariencia', icon: 'color-palette-outline', route: ROUTES.SETTINGS.APPEARANCE },
     { title: 'Código de referido', icon: 'ticket-outline', route: ROUTES.SETTINGS.REFERRAL_CODE },
     { title: 'Privacidad y seguridad', icon: 'lock-closed-outline', route: ROUTES.SETTINGS.PRIVACY_SECURITY },
-    { title: 'Notificaciones', icon: 'notifications-outline', route: ROUTES.SETTINGS.NOTIFICATIONS },
     { title: 'Cerrar sesión', icon: 'log-out-outline', onPress: handleLogout },
   ];
 
   return (
     <ThemedLayout padding={[0, 40]}>
       <View style={styles.header}>
-        <ThemedText variant="title" textAlign="center">Ajustes</ThemedText>
+        <ThemedText variant="title" textAlign="center">
+          Ajustes
+        </ThemedText>
       </View>
 
       {menuItems.map((item, index) => (
         <TouchableOpacity
           key={index}
-          style={[styles.menuItem, { borderBottomWidth: index === menuItems.length - 1 ? 0 : 1, borderColor: themeColors.borderBackgroundColor }]}
+          style={[
+            styles.menuItem,
+            {
+              borderBottomWidth: index === menuItems.length - 1 ? 0 : 1,
+              borderColor: themeColors.borderBackgroundColor,
+            },
+          ]}
           onPress={item.onPress || (() => router.push(item.route as Href))}
         >
           <Ionicons name={item.icon as any} size={20} color={themeColors.textColorAccent} />
-          <ThemedText variant="subTitle" style={styles.menuItemText}>{item.title}</ThemedText>
+          <ThemedText variant="subTitle" style={styles.menuItemText}>
+            {item.title}
+          </ThemedText>
           <Ionicons name="chevron-forward" size={16} color={themeColors.textParagraph} />
         </TouchableOpacity>
       ))}
 
       <View style={styles.legalLinksContainer}>
         <View style={styles.legalLinksRow}>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => router.push('/(legal)/terms-and-conditions')}
             style={styles.legalLink}
           >
-            <ThemedText 
-              variant="textLink" 
-              textAlign="center"
-            >
+            <ThemedText variant="textLink" textAlign="center">
               Términos y condiciones
             </ThemedText>
           </TouchableOpacity>
 
           <ThemedText variant="paragraph">•</ThemedText>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => router.push('/(legal)/privacy-policy')}
             style={styles.legalLink}
           >
-            <ThemedText 
-              variant="textLink" 
-              textAlign="center"
-            >
+            <ThemedText variant="textLink" textAlign="center">
               Política de privacidad
             </ThemedText>
           </TouchableOpacity>
         </View>
-        <ThemedText 
-          variant="paragraph" 
-          textAlign="center" 
-          style={styles.versionText}
-        >
+        <ThemedText variant="paragraph" textAlign="center" style={styles.versionText}>
           Versión 1.0.0
         </ThemedText>
       </View>
@@ -100,7 +99,7 @@ export default function SettingsScreen() {
       />
     </ThemedLayout>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -142,6 +141,5 @@ const styles = StyleSheet.create({
   },
   versionText: {
     opacity: 0.5,
-  }
+  },
 });
-

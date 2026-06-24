@@ -10,7 +10,7 @@ interface HeaderInfo {
 const headerInfo: Record<string, HeaderInfo> = {
   'manual-search': {
     title: "Búsqueda manual",
-    subtitle: "Busca un vehiculo de forma manual"
+    subtitle: "Busca un vehículo de forma manual"
   },
   'search-results': {
     title: "Resultado de la búsqueda",

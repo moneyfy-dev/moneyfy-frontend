@@ -241,18 +241,18 @@ export default function ManualSearchScreen() {
             !formData.purchaserId || !formData.purchaserName || !formData.purchaserPaternalSur ||
             !formData.purchaserMaternalSur || !formData.purchaserEmail || !formData.purchaserPhone || !formData.isOwner) {
             setErrors({
-              ppu: !formData.ppu ? 'Ingrese la patente del vehiculo' : '',
-              brand: !formData.brand ? 'Ingrese la marca del vehiculo' : '',
-              model: !formData.model ? 'Ingrese el modelo del vehiculo' : '',
-              year: !formData.year ? 'Ingrese el ano del vehiculo' : '',
-              version: !formData.version ? 'Ingrese la version del vehiculo' : '',
+              ppu: !formData.ppu ? 'Ingrese la patente del vehículo' : '',
+              brand: !formData.brand ? 'Ingrese la marca del vehículo' : '',
+              model: !formData.model ? 'Ingrese el modelo del vehículo' : '',
+              year: !formData.year ? 'Ingrese el año del vehículo' : '',
+              version: !formData.version ? 'Ingrese la versión del vehículo' : '',
               purchaserId: !formData.purchaserId ? 'Ingrese el RUT del comprador' : '',
               purchaserName: !formData.purchaserName ? 'Ingrese el nombre del comprador' : '',
               purchaserPaternalSur: !formData.purchaserPaternalSur ? 'Ingrese el apellido paterno del comprador' : '',
               purchaserMaternalSur: !formData.purchaserMaternalSur ? 'Ingrese el apellido materno del comprador' : '',
               purchaserEmail: !formData.purchaserEmail ? 'Ingrese el email del comprador' : '',
-              purchaserPhone: !formData.purchaserPhone ? 'Ingrese el telefono del comprador' : '',
-              isOwner: !formData.isOwner ? 'Ingrese si es el dueno del vehiculo' : '',
+              purchaserPhone: !formData.purchaserPhone ? 'Ingrese el teléfono del comprador' : '',
+              isOwner: !formData.isOwner ? 'Ingrese si es el dueño del vehículo' : '',
             });
             return;
         }
@@ -286,9 +286,9 @@ export default function ManualSearchScreen() {
             });
         } catch (error) {
               setQuoteError(getQuoteErrorMessage(error, {
-                  emptyPlansMessage: 'No encontramos planes vigentes para este vehiculo. Intenta con otros datos o vuelve a cotizar mas tarde.',
-                  genericMessage: 'No fue posible obtener planes para esta cotizacion. Intentalo nuevamente en unos minutos.',
-                  invalidJwtMessage: 'Tu sesion ya no es valida para continuar con esta cotizacion. Cierra sesion e ingresa nuevamente.',
+                  emptyPlansMessage: 'No encontramos planes vigentes para este vehículo. Intenta con otros datos o vuelve a cotizar más tarde.',
+                  genericMessage: 'No fue posible consultar las aseguradoras en este momento. Inténtalo nuevamente en unos minutos.',
+                  invalidJwtMessage: 'Tu sesión ya no es válida para continuar con esta cotización. Cierra sesión e ingresa nuevamente.',
               }));
         }
     };
@@ -465,8 +465,8 @@ export default function ManualSearchScreen() {
             <MessageModal
                 isVisible={rutErrorVisible}
                 onClose={closeRutError}
-                title="RUT invalido"
-                message="Revisa el RUT ingresado. Debe tener un formato valido y digito verificador correcto."
+                title="RUT inválido"
+                message="Revisa el RUT ingresado. Debe tener un formato válido y dígito verificador correcto."
                 icon={{
                     name: 'alert-circle-outline',
                     color: themeColors.status.warning,

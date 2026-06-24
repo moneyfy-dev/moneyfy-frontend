@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, Share, TouchableOpacity, Pressable } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
+import { useFocusEffect } from '@react-navigation/native';
 import { useUser } from '@/core/context';
 import { ThemedListLayout, ThemedText, LoadingScreen, ThemedButton, ThemedLayout, IconContainer, ThemedInput } from '@/shared/components';
 import { Referred, ReferredStatus } from '@/core/types';
@@ -41,6 +42,12 @@ export default function ReferredsScreen() {
     useEffect(() => {
         loadReferreds();
     }, [loadReferreds]);
+
+    useFocusEffect(
+        useCallback(() => {
+            void loadReferreds();
+        }, [loadReferreds])
+    );
 
     const getStatusColor = (status: ReferredStatus) => {
         const colors: Record<ReferredStatus, string> = {
@@ -280,6 +287,8 @@ export default function ReferredsScreen() {
                             data={referreds}
                             renderItem={({ item, index }) => <ReferredItem item={item} index={index} isLast={index === referreds.length - 1} />}
                             keyExtractor={(item) => item.email}
+                            refreshing={isLoading}
+                            onRefresh={loadReferreds}
                             style={[styles.list, { borderTopColor: themeColors.borderBackgroundColor }]}
                             contentContainerStyle={styles.listContent}
                         />

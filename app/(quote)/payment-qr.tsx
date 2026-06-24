@@ -138,7 +138,7 @@ export default function PaymentQRScreen() {
                                 </ThemedText>
                                 <Logo width={156} height={38} style={styles.logo} />
                                 <ThemedText variant="paragraph" textAlign="center">
-                                    Revisa el vehiculo, el propietario y el plan antes de enviar la solicitud.
+                                    Revisa el vehículo, el propietario y el plan antes de enviar la solicitud.
                                 </ThemedText>
                             </View>
 

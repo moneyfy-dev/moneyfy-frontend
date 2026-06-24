@@ -9,7 +9,8 @@ export const isBiometricAvailable = async (): Promise<boolean> => {
 export const authenticateBiometric = async (): Promise<boolean> => {
   const result = await LocalAuthentication.authenticateAsync({
     promptMessage: 'Autenticar con huella digital',
-    fallbackLabel: 'Usar PIN',
+    cancelLabel: 'Cancelar',
+    disableDeviceFallback: true,
   });
   return result.success;
 };

@@ -10,13 +10,17 @@ interface ThemedDatePickerProps {
   onChange: (date: Date) => void;
   label?: string;
   placeholder?: string;
+  initialPickerDate?: Date;
+  maximumDate?: Date;
 }
 
 export const ThemedDatePicker: React.FC<ThemedDatePickerProps> = ({
   value,
   onChange,
   label,
-  placeholder = 'Seleccione una fecha'
+  placeholder = 'Seleccione una fecha',
+  initialPickerDate,
+  maximumDate,
 }) => {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const themeColors = useThemeColor();
@@ -51,7 +55,8 @@ export const ThemedDatePicker: React.FC<ThemedDatePickerProps> = ({
         mode="date"
         onConfirm={handleConfirm}
         onCancel={hideDatePicker}
-        date={value || new Date()}
+        date={value || initialPickerDate || new Date()}
+        maximumDate={maximumDate}
         // Configuración común para iOS y Android
         isDarkModeEnabled={currentTheme === 'dark'}
         themeVariant={currentTheme === 'dark' ? 'dark' : 'light'}
