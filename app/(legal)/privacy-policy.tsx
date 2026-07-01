@@ -1,62 +1,87 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Linking } from 'react-native';
-import { useThemeColor } from '@/shared/hooks';
-import { ThemedLayout, ThemedText } from '@/shared/components';
+import { Linking, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { ThemedLayout, ThemedText } from '@/shared/components';
+import { useThemeColor } from '@/shared/hooks';
+import { ROUTES } from '@/core/types';
+
+const LAST_UPDATED = '1 de julio de 2026';
+const SUPPORT_EMAIL = 'soporte@moneyfy.cl';
+
+type SectionProps = {
+  title: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  children: React.ReactNode;
+};
+
+type DefinitionItemProps = {
+  label: string;
+  children: React.ReactNode;
+};
+
+function Section({ title, icon, children }: SectionProps) {
+  const themeColors = useThemeColor();
+
+  return (
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <Ionicons name={icon} size={24} color={themeColors.textColorAccent} style={styles.icon} />
+        <ThemedText variant="subTitleBold">{title}</ThemedText>
+      </View>
+      <View style={styles.sectionContent}>{children}</View>
+    </View>
+  );
+}
+
+function DefinitionItem({ label, children }: DefinitionItemProps) {
+  const themeColors = useThemeColor();
+
+  return (
+    <View style={styles.definitionItem}>
+      <ThemedText variant="subTitle" color={themeColors.textColorAccent}>
+        {label}
+      </ThemedText>
+      <ThemedText variant="paragraph" color={themeColors.textParagraph} textAlign="justify">
+        {children}
+      </ThemedText>
+    </View>
+  );
+}
+
+function BulletList({ items }: { items: string[] }) {
+  const themeColors = useThemeColor();
+
+  return (
+    <View style={styles.list}>
+      {items.map((item) => (
+        <View key={item} style={styles.listItem}>
+          <ThemedText variant="paragraph" color={themeColors.textColorAccent} style={styles.bullet}>
+            •
+          </ThemedText>
+          <ThemedText variant="paragraph" color={themeColors.textParagraph} style={styles.listText} textAlign="justify">
+            {item}
+          </ThemedText>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+async function openSupportEmail() {
+  try {
+    const mailtoUrl = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Consulta sobre Política de Privacidad')}`;
+    const canOpen = await Linking.canOpenURL(mailtoUrl);
+
+    if (canOpen) {
+      await Linking.openURL(mailtoUrl);
+    }
+  } catch (error) {
+    console.error('Error al abrir el cliente de correo:', error);
+  }
+}
 
 export default function PrivacyPolicy() {
   const themeColors = useThemeColor();
-
-  const Section = ({ 
-    title, 
-    content, 
-    icon 
-  }: { 
-    title: string; 
-    content: string | React.ReactNode; 
-    icon: keyof typeof Ionicons.glyphMap 
-  }) => (
-    <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <Ionicons 
-          name={icon} 
-          size={24} 
-          color={themeColors.textColorAccent} 
-          style={styles.icon} 
-        />
-        <ThemedText variant="subTitleBold">
-          {title}
-        </ThemedText>
-      </View>
-      {typeof content === 'string' ? (
-        <ThemedText 
-          variant="paragraph" 
-          color={themeColors.textParagraph}
-          style={styles.content}
-          textAlign="justify"
-        >
-          {content}
-        </ThemedText>
-      ) : (
-        content
-      )}
-    </View>
-  );
-
-  const handleEmailPress = async () => {
-    try {
-      const email = 'desarrollo@connect360.cl';
-      const subject = 'Consulta sobre Política de Privacidad';
-      const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}`;
-      
-      const canOpen = await Linking.canOpenURL(mailtoUrl);
-      if (canOpen) {
-        await Linking.openURL(mailtoUrl);
-      }
-    } catch (error) {
-      console.error('Error al abrir el cliente de correo:', error);
-    }
-  };
 
   return (
     <ThemedLayout padding={[20, 40]}>
@@ -64,153 +89,147 @@ export default function PrivacyPolicy() {
         <ThemedText variant="superTitle" marginBottom={8} textAlign="center">
           Política de Privacidad
         </ThemedText>
-        <ThemedText 
-          variant="paragraph" 
-          color={themeColors.textParagraph} 
-          textAlign="center"
-        >
-          Última actualización: {new Date().toLocaleDateString()}
+        <ThemedText variant="paragraph" color={themeColors.textParagraph} textAlign="center">
+          Última actualización: {LAST_UPDATED}
         </ThemedText>
       </View>
 
-      <ThemedText 
-        variant="paragraph" 
-        color={themeColors.textParagraph} 
-        style={styles.intro}
-        textAlign="justify"
-      >
-        En Moneyfy, tu privacidad es nuestra prioridad. Esta política describe cómo recopilamos, 
-        usamos y protegemos tu información personal. Al utilizar nuestra aplicación, aceptas los 
-        términos descritos a continuación.
+      <ThemedText variant="paragraph" color={themeColors.textParagraph} style={styles.intro} textAlign="justify">
+        Esta Política de Privacidad regula el tratamiento de datos personales realizado en Moneyfy, plataforma operada
+        por Christian Torres, y aplica al uso del sitio web, la aplicación móvil y los servicios asociados. Su
+        contenido se interpreta conforme a la legislación chilena vigente sobre protección de datos personales y
+        derechos de los consumidores.
       </ThemedText>
 
-      <Section
-        title="1. Información que Recopilamos"
-        icon="document-text-outline"
-        content={
-          <View>
-            <View style={styles.definitionItem}>
-              <ThemedText 
-                variant="subTitle" 
-                color={themeColors.textColorAccent}
-                style={styles.content}
-              >
-                Información personal:
-              </ThemedText>
-              <ThemedText 
-                variant="paragraph" 
-                color={themeColors.textParagraph}
-                style={styles.content}
-              >
-                Incluye tu nombre, correo electrónico, número de teléfono y cualquier dato proporcionado al registrarte o realizar una cotización.
-              </ThemedText>
-            </View>
+      <Section title="1. Responsable del tratamiento" icon="badge-outline">
+        <ThemedText variant="paragraph" color={themeColors.textParagraph} textAlign="justify">
+          Moneyfy es una plataforma operada por Christian Torres para la intermediación comercial, gestión de
+          cotizaciones de seguros y administración de una red de referidos.
+        </ThemedText>
+        <ThemedText variant="paragraph" color={themeColors.textParagraph} textAlign="justify">
+          Para consultas sobre privacidad o ejercicio de derechos del titular, puedes escribir a:
+        </ThemedText>
+        <ThemedText variant="textLink" linkConfig={{ onPress: openSupportEmail }}>
+          {SUPPORT_EMAIL}
+        </ThemedText>
+      </Section>
 
-            <View style={styles.definitionItem}>
-              <ThemedText 
-                variant="subTitle" 
-                color={themeColors.textColorAccent}
-                style={styles.content}
-              >
-                Información de uso:
-              </ThemedText>
-              <ThemedText 
-                variant="paragraph" 
-                color={themeColors.textParagraph}
-                style={styles.content}
-              >
-                Datos relacionados con tu interacción en la aplicación, como accesos, clics y tiempo de uso.
-              </ThemedText>
-            </View>
+      <Section title="2. Datos que tratamos" icon="document-text-outline">
+        <BulletList
+          items={[
+            'Datos de cuenta y registro, como nombre, apellidos, RUT, correo electrónico, teléfono y clave de acceso.',
+            'Datos de identificación y contacto del titular, del comprador y del propietario del vehículo cuando una cotización lo requiera.',
+            'Datos del vehículo y de la cotización, como patente, marca, modelo, año, uso, dirección y antecedentes necesarios para solicitar propuestas de seguro.',
+            'Datos bancarios o de pago necesarios para liquidar comisiones o gestionar abonos asociados a la plataforma.',
+            'Datos de navegación, uso, soporte, seguridad y trazabilidad operativa dentro del sitio web y la aplicación.',
+            'Comunicaciones, solicitudes, reclamos o antecedentes que el usuario remita al equipo de soporte.',
+          ]}
+        />
+      </Section>
 
-            <View style={styles.definitionItem}>
-              <ThemedText 
-                variant="subTitle" 
-                color={themeColors.textColorAccent}
-                style={styles.content}
-              >
-                Información vehicular:
-              </ThemedText>
-              <ThemedText 
-                variant="paragraph" 
-                color={themeColors.textParagraph}
-                style={styles.content}
-              >
-                Datos de tu vehículo, como patente y características específicas, utilizados para generar cotizaciones de seguros.
-              </ThemedText>
-            </View>
-          </View>
-        }
-      />
+      <Section title="3. Finalidades del tratamiento" icon="analytics-outline">
+        <BulletList
+          items={[
+            'Crear, autenticar, administrar y mantener cuentas de usuario.',
+            'Generar, gestionar y actualizar cotizaciones de seguros de auto solicitadas por los usuarios.',
+            'Operar el sistema de referidos, calcular comisiones y gestionar su estado operativo.',
+            'Validar y procesar pagos o liquidaciones de comisiones a cuentas bancarias informadas por el usuario.',
+            'Prevenir fraude, usos abusivos, errores materiales y riesgos de seguridad o cumplimiento.',
+            'Atender consultas, reclamos, solicitudes de soporte y comunicaciones operativas o legales.',
+            'Cumplir obligaciones legales, regulatorias, contractuales o requerimientos de autoridad competente.',
+          ]}
+        />
+      </Section>
 
-      <Section
-        title="2. Uso de la Información"
-        icon="analytics-outline"
-        content="Utilizamos tu información para los siguientes fines:
-                • Facilitar la cotización y contratación de seguros.
-                • Gestionar el sistema de referidos y comisiones.
-                • Enviar notificaciones sobre actualizaciones de comisiones, estado de referidos y promociones relevantes.
-                • Mejorar nuestra aplicación mediante el análisis de datos de uso."
-      />
+      <Section title="4. Base de legitimación" icon="shield-checkmark-outline">
+        <ThemedText variant="paragraph" color={themeColors.textParagraph} textAlign="justify">
+          El tratamiento de datos se funda, según corresponda, en el consentimiento del titular, en la necesidad de
+          ejecutar medidas precontractuales o contractuales solicitadas por el usuario, en el cumplimiento de
+          obligaciones legales y en intereses legítimos vinculados a la seguridad y correcta operación de la
+          plataforma, siempre dentro de los márgenes permitidos por la normativa chilena aplicable.
+        </ThemedText>
+      </Section>
 
-      <Section
-        title="3. Compartir tu Información"
-        icon="share-social-outline"
-        content="Tu información será compartida únicamente con:
-                • Compañías de seguros asociadas, para procesar cotizaciones y contrataciones.
-                • Proveedores de servicios, como plataformas de pago o herramientas de análisis de datos.
-                • Autoridades legales, cuando sea requerido por ley."
-      />
+      <Section title="5. Comunicación a terceros" icon="share-social-outline">
+        <BulletList
+          items={[
+            'Aseguradoras, corredoras, intermediarios o partners que participen en el flujo de cotización, evaluación o emisión.',
+            'Proveedores tecnológicos, de infraestructura, mensajería, almacenamiento, autenticación, soporte o analítica.',
+            'Entidades financieras o prestadores de servicios de pago necesarios para procesar comisiones o abonos.',
+            'Autoridades administrativas, judiciales o regulatorias cuando exista obligación legal o requerimiento formal.',
+          ]}
+        />
+      </Section>
 
-      <Section
-        title="4. Seguridad de los Datos"
-        icon="lock-closed-outline"
-        content="Implementamos medidas de seguridad técnicas y organizativas para proteger tu información contra accesos no autorizados, pérdida o alteración.
-                Sin embargo, no podemos garantizar seguridad absoluta en la transmisión de datos a través de internet."
-      />
+      <Section title="6. Derechos del titular" icon="person-outline">
+        <BulletList
+          items={[
+            'Acceso a sus datos personales y a información sobre su tratamiento.',
+            'Rectificación, actualización o complementación de datos inexactos o incompletos.',
+            'Supresión o cancelación de datos cuando corresponda legalmente.',
+            'Oposición a determinados tratamientos en los casos permitidos por la normativa aplicable.',
+            'Revocación del consentimiento cuando el tratamiento se funde en este.',
+          ]}
+        />
+        <ThemedText variant="paragraph" color={themeColors.textParagraph} textAlign="justify">
+          Para ejercer estos derechos, el canal habilitado es:
+        </ThemedText>
+        <ThemedText variant="textLink" linkConfig={{ onPress: openSupportEmail }}>
+          {SUPPORT_EMAIL}
+        </ThemedText>
+      </Section>
 
-      <Section
-        title="5. Tus Derechos"
-        icon="person-outline"
-        content="Tienes derecho a:
-                • Acceder, corregir o eliminar tu información personal.
-                • Revocar tu consentimiento para el uso de datos en cualquier momento.
-                • Solicitar detalles sobre cómo se procesan tus datos."
-      />
+      <Section title="7. Seguridad, conservación y eliminación" icon="lock-closed-outline">
+        <ThemedText variant="paragraph" color={themeColors.textParagraph} textAlign="justify">
+          Moneyfy adopta medidas técnicas, administrativas y organizativas razonables para resguardar la
+          confidencialidad, integridad y disponibilidad de los datos personales. Los datos se conservarán solo durante
+          el tiempo necesario para cumplir las finalidades informadas, obligaciones legales, trazabilidad operativa,
+          prevención de fraude y resolución de controversias. Una vez concluida la necesidad del tratamiento, los datos
+          serán eliminados, anonimizados o bloqueados según corresponda.
+        </ThemedText>
+      </Section>
 
-      <Section
-        title="6. Cookies y Tecnologías Similares"
-        icon="code-working-outline"
-        content="Nuestra aplicación utiliza cookies y tecnologías similares para mejorar tu experiencia. Puedes desactivarlas ajustando la configuración de tu dispositivo."
-      />
+      <Section title="8. Almacenamiento y servicios de terceros" icon="cloud-outline">
+        <ThemedText variant="paragraph" color={themeColors.textParagraph} textAlign="justify">
+          Algunos servicios de Moneyfy pueden apoyarse en infraestructura o proveedores tecnológicos externos. En esos
+          casos, el tratamiento se realizará bajo medidas de seguridad razonables y con acceso limitado a lo necesario
+          para la prestación del servicio. Esta política no compromete una localización geográfica específica de la
+          infraestructura cuando ello no haya sido formalmente informado al usuario.
+        </ThemedText>
+      </Section>
 
-      <Section
-        title="7. Modificaciones a esta Política"
-        icon="git-branch-outline"
-        content="Nos reservamos el derecho de actualizar esta política en cualquier momento. Te notificaremos sobre cambios importantes a través de la aplicación."
-      />
+      <Section title="9. Uso por menores de edad" icon="people-outline">
+        <ThemedText variant="paragraph" color={themeColors.textParagraph} textAlign="justify">
+          Moneyfy está orientada exclusivamente a personas mayores de 18 años. Si detectamos antecedentes que indiquen
+          uso por menores de edad en contravención a esta regla, podremos limitar, suspender o eliminar la cuenta y
+          adoptar las medidas necesarias para cesar el tratamiento respectivo.
+        </ThemedText>
+      </Section>
 
-      <Section
-        title="8. Contacto"
-        icon="mail-outline"
-        content={
-          <View>
-            <ThemedText variant="paragraph" color={themeColors.textParagraph} style={styles.content}>
-              Si tienes dudas sobre nuestra Política de Privacidad o sobre el manejo de tus datos personales, 
-              por favor contáctanos en:
-            </ThemedText>
-            <ThemedText 
-              variant="textLink" 
-              linkConfig={{ 
-                onPress: handleEmailPress
-              }}
-              style={[styles.content, { minHeight: 48 }]}
-            >
-              desarrollo@connect360.cl
-            </ThemedText>
-          </View>
-        }
-      />
+      <Section title="10. Vigencia y cambios" icon="git-branch-outline">
+        <ThemedText variant="paragraph" color={themeColors.textParagraph} textAlign="justify">
+          Esta Política de Privacidad podrá actualizarse para reflejar cambios legales, operativos o funcionales de
+          Moneyfy. La versión vigente será la publicada en los canales oficiales de la plataforma. Los cambios
+          relevantes podrán ser informados por la aplicación, el sitio web o mediante comunicaciones directas cuando
+          corresponda.
+        </ThemedText>
+      </Section>
+
+      <Section title="11. Contacto" icon="mail-outline">
+        <ThemedText variant="paragraph" color={themeColors.textParagraph} textAlign="justify">
+          Si tienes dudas sobre esta Política de Privacidad o sobre el tratamiento de tus datos personales, puedes
+          escribir a:
+        </ThemedText>
+        <ThemedText variant="textLink" linkConfig={{ onPress: openSupportEmail }}>
+          {SUPPORT_EMAIL}
+        </ThemedText>
+        <ThemedText variant="paragraph" color={themeColors.textParagraph} textAlign="justify">
+          También puedes revisar nuestros Términos y Condiciones:
+        </ThemedText>
+        <ThemedText variant="textLink" linkConfig={{ route: ROUTES.LEGAL.TERMS }}>
+          Términos y Condiciones
+        </ThemedText>
+      </Section>
     </ThemedLayout>
   );
 }
@@ -231,16 +250,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  sectionContent: {
+    paddingLeft: 32,
+    gap: 12,
+  },
   icon: {
     marginRight: 8,
   },
-  content: {
-    paddingLeft: 32,
-  },
   definitionItem: {
-    marginBottom: 20
+    marginBottom: 12,
+    gap: 4,
   },
-  definitionText: {
-    paddingLeft: 16
-  }
+  list: {
+    gap: 8,
+  },
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  bullet: {
+    width: 14,
+    lineHeight: 16,
+  },
+  listText: {
+    flex: 1,
+  },
 });

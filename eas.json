@@ -5,6 +5,10 @@
   },
   "build": {
     "development": {
+      "ios": {
+        "image": "macos-sequoia-15.6-xcode-26.0",
+        "node": "20.19.4"
+      },
       "android": {
         "buildType": "apk",
         "node": "22.21.1",
@@ -12,6 +16,10 @@
       }
     },
     "preview": {
+      "ios": {
+        "image": "macos-sequoia-15.6-xcode-26.0",
+        "node": "20.19.4"
+      },
       "android": {
         "buildType": "apk",
         "node": "22.21.1"
@@ -19,6 +27,10 @@
     },
     "production": {
       "autoIncrement": true,
+      "ios": {
+        "image": "macos-sequoia-15.6-xcode-26.0",
+        "node": "20.19.4"
+      },
       "android": {
         "buildType": "app-bundle"
       }

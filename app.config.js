@@ -3,7 +3,7 @@ module.exports = {
     newArchEnabled: true,
     name: "Moneyfy",
     slug: "Moneyfy",
-    version: "1.0.1",
+    version: "1.0.2",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "myapp",
@@ -13,10 +13,12 @@ module.exports = {
       resizeMode: "contain",
       backgroundColor: "#ffffff",
     },
-    version: "1.0.2",
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.moneyfy.app",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false
+      }
     },
     android: {
       enableProguardInReleaseBuilds: true,
@@ -25,7 +27,7 @@ module.exports = {
         foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff",
       },
-      package: "com.moneyfy.app",
+      package: "cl.moneyfy.app",
     },
     web: {
       bundler: "metro",
